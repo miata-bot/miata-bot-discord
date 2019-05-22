@@ -29,12 +29,38 @@ defmodule MiataBot.Discord do
 
   def handle_event(_), do: :noop
 
+  def handle_command("help", %{channel_id: channel_id}) do
+    embed =
+      %Embed{}
+      |> Embed.put_title("Available commands")
+      |> Embed.put_field("carinfo", """
+      Shows the author's carinfo
+      """)
+      |> Embed.put_field("carinfo get <user>", """
+      Shows a users carinfo
+      """)
+      |> Embed.put_field("carinfo update title", """
+      Sets the author's carinfo title
+      """)
+      |> Embed.put_field("carinfo update image <url>", """
+      Updates the author's carinfo url
+      """)
+      |> Embed.put_field("carinfo update year <year>", """
+      Sets the author's carinfo year
+      """)
+      |> Embed.put_field("carinfo update color code <color>", """
+      Sets the author's carinfo color code
+      """)
+
+    Api.create_message(channel_id, embed: embed)
+  end
+
   def handle_command("carinfo", %{channel_id: channel_id, author: author}) do
     embed = carinfo(author)
     Api.create_message(channel_id, embed: embed)
   end
 
-  def handle_command("carinfo " <> user, %{channel_id: channel_id}) do
+  def handle_command("carinfo get" <> user, %{channel_id: channel_id}) do
     case get_user(user) do
       {:ok, user} ->
         embed = carinfo(user)

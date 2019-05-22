@@ -13,8 +13,7 @@ config :miata_bot, MiataBot.Repo,
   url: System.get_env("DATABASE_URL"),
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
-config :miata_bot, MiataBot.Web.Endpoint,
-  url: System.get_env("APP_URL")
+config :miata_bot, MiataBot.Web.Endpoint, url: System.get_env("APP_URL")
 
 # config :logger,
 #   handle_otp_reports: true,
