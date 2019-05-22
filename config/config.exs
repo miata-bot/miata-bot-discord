@@ -14,7 +14,7 @@ config :miata_bot, MiataBot.Repo,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
 config :miata_bot, MiataBot.Web.Endpoint,
-  port: String.to_integer(System.get_env("PORT") || "80"),
+  port: String.to_integer(System.get_env("PORT") || "4001"),
   url: System.get_env("APP_URL")
 
 # config :logger,
