@@ -22,7 +22,9 @@ defmodule MiataBot.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:nostrum, "~> 0.3.2"}
+      {:ecto_sql, "~> 3.1"},
+      {:postgrex, "~> 0.14.3"},
+      # {:nostrum, "~> 0.3.2"},
       {:nostrum, github: "Kraigie/nostrum"}
     ]
   end

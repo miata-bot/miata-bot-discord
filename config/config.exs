@@ -6,9 +6,13 @@ config :nostrum,
   token: "NTgwNTAwODkzODYzMTE2ODA1.XOR8uQ.3uk-kcSwtce_A_2MBXftw7aVzM8",
   num_shards: :auto
 
-config :logger,
-  handle_otp_reports: true,
-  handle_sasl_reports: true
+config :miata_bot, ecto_repos: [MiataBot.Repo]
+
+config :miata_bot, MiataBot.Repo, ssl: false
+
+# config :logger,
+#   handle_otp_reports: true,
+#   handle_sasl_reports: true
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

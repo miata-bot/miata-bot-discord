@@ -8,6 +8,7 @@ defmodule MiataBot.Application do
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
+      MiataBot.Repo,
       MiataBot.Discord
       # Starts a worker by calling: MiataBot.Worker.start_link(arg)
       # {MiataBot.Worker, arg}
