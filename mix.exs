@@ -14,7 +14,7 @@ defmodule MiataBot.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :ssl, :inets],
       mod: {MiataBot.Application, []}
     ]
   end
@@ -24,6 +24,7 @@ defmodule MiataBot.MixProject do
     [
       {:ecto_sql, "~> 3.1"},
       {:postgrex, "~> 0.14.3"},
+      {:plug_cowboy, "~> 2.0"},
       # {:nostrum, "~> 0.3.2"},
       {:nostrum, github: "Kraigie/nostrum"}
     ]

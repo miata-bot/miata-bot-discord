@@ -8,7 +8,14 @@ config :nostrum,
 
 config :miata_bot, ecto_repos: [MiataBot.Repo]
 
-config :miata_bot, MiataBot.Repo, ssl: false
+config :miata_bot, MiataBot.Repo,
+  ssl: false,
+  url: System.get_env("DATABASE_URL"),
+  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
+
+config :miata_bot, MiataBot.Web.Endpoint,
+  port: String.to_integer(System.get_env("PORT") || "80"),
+  url: System.get_env("APP_URL")
 
 # config :logger,
 #   handle_otp_reports: true,
