@@ -2,7 +2,6 @@ defmodule MiataBot.Web.Endpoint do
   use Supervisor
   alias MiataBot.Web.{Router, HerokuTask}
 
-  @port Application.get_env(:miata_bot, MiataBot.Web.Endpoint)[:port] || System.get_env("PORT")
   @url Application.get_env(:miata_bot, MiataBot.Web.Endpoint)[:url]
 
   def start_link(args) do
@@ -10,7 +9,7 @@ defmodule MiataBot.Web.Endpoint do
   end
 
   def init(_args) do
-    port = String.to_integer(to_string(@port))
+    port = String.to_integer(System.get_env("PORT"))
 
     children = [
       {Plug.Cowboy, scheme: :http, plug: Router, options: [port: port]},
