@@ -42,8 +42,8 @@ defmodule MiataBot.Discord do
       |> Embed.put_field("carinfo update title", """
       Sets the author's carinfo title
       """)
-      |> Embed.put_field("carinfo update image <url>", """
-      Updates the author's carinfo url
+      |> Embed.put_field("carinfo update image", """
+      Updates the author's carinfo from an attached photo
       """)
       |> Embed.put_field("carinfo update year <year>", """
       Sets the author's carinfo year
