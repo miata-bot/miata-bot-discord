@@ -11,6 +11,34 @@ defmodule MiataBot.Discord do
     Consumer.start_link(__MODULE__, name: __MODULE__)
   end
 
+  # uncomment to own Mark Sticken
+  # def handle_event({:MESSAGE_CREATE, {%{author: %{id: 362309360124428299}, channel_id: channel_id} = message}, _state}) do
+  #   Api.create_message(channel_id, "<@!362309360124428299> https://media.discordapp.net/attachments/322162421156282369/581557012593246209/13t5kz.jpg")
+  #   Api.delete_message(message)
+  # end
+
+  # def handle_event({:MESSAGE_CREATE, {%{author: author = %{id: id}, channel_id: channel_id} = message}, _state}) do
+  #   IO.inspect(author, label: "AUTHOR")
+  # end
+  
+  def handle_event({:MESSAGE_CREATE, {%{content: "!rotaryroas" <> _, channel_id: channel_id}}, _state}) do
+    Api.create_message(channel_id, "https://www.stancenation.com/wp-content/uploads/2012/04/1211.jpg")
+  end
+  
+  def handle_event({:MESSAGE_CREATE, {%{content: "!monstertruc" <> _, channel_id: channel_id}}, _state}) do
+    Api.create_message(channel_id, "https://cdn.discordapp.com/attachments/500143495043088395/590656753583259658/20190610_170551_HDR.jpg")
+  end
+
+  def handle_event({:MESSAGE_CREATE, {%{content: "!hercroas" <> _, channel_id: channel_id}}, _state}) do
+    msg = Enum.random([
+      "https://cdn-02.belfasttelegraph.co.uk/sunday-life/news/article37942274.ece/92675/AUTOCROP/w620h342/2019-03-24_sun_48967410_I1.JPG",
+      "https://cdn.carbuzz.com/gallery-images/840x560/523000/800/523834.jpg",
+      "https://cdn.discordapp.com/attachments/500143495043088395/590654429691248680/mlwmvhh1tzfiuydvxjuu.png",
+      "https://cdn.discordapp.com/attachments/500143495043088395/590654628115382277/032216_Fire_Car_AB.jpg"
+    ])
+    Api.create_message(channel_id, msg <> "\nhttps://static.nhtsa.gov/odi/rcl/2017/RCRIT-17V676-7418.pdf")
+  end
+
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
   end
