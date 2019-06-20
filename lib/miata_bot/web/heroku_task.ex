@@ -12,6 +12,6 @@ defmodule MiataBot.Web.HerokuTask do
 
   def handle_info(:timeout, url) do
     _ = :httpc.request(:get, {'#{url}', []}, [], [])
-    {:noreply, url, 15_000}
+    {:noreply, url, 600_000}
   end
 end

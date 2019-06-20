@@ -30,6 +30,22 @@ defmodule MiataBot.Discord do
   #   IO.inspect(author, label: "AUTHOR")
   # end
 
+  def handle_event({:MESSAGE_CREATE, {%{content: "ya rip" <> _, channel_id: channel_id}}, _state}) do
+    Api.create_message(
+      channel_id,
+      "https://www.youtube.com/watch?v=fKLmZNnMT0A"
+    )
+  end
+
+  def handle_event(
+        {:MESSAGE_CREATE, {%{content: "yeah rip" <> _, channel_id: channel_id}}, _state}
+      ) do
+    Api.create_message(
+      channel_id,
+      "https://www.youtube.com/watch?v=fKLmZNnMT0A"
+    )
+  end
+
   def handle_event(
         {:MESSAGE_CREATE, {%{content: "!rotaryroas" <> _, channel_id: channel_id}}, _state}
       ) do
