@@ -26,6 +26,7 @@ defmodule MiataBot.MixProject do
       {:postgrex, "~> 0.14.3"},
       {:plug_cowboy, "~> 2.0"},
       # {:nostrum, "~> 0.3.2"},
+      {:timex, "~> 3.5"},
       {:nostrum, github: "Kraigie/nostrum"}
     ]
   end

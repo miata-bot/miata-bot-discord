@@ -1,11 +1,20 @@
 defmodule MiataBot.Discord do
-  alias MiataBot.{Repo, Carinfo}
+  alias MiataBot.{
+    Repo,
+    Carinfo,
+    LookingForMiataTimer
+  }
+
+  require Logger
 
   use Nostrum.Consumer
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
 
+  @miata_discord_guild_id 322_080_266_761_797_633
   @verification_channel_id 322_127_502_212_333_570
+  @looking_for_miata_role_id 504_088_951_485_890_561
+  @miata_fan_role_id 439_493_557_301_280_789
 
   def start_link do
     Consumer.start_link(__MODULE__, name: __MODULE__)
@@ -20,23 +29,40 @@ defmodule MiataBot.Discord do
   # def handle_event({:MESSAGE_CREATE, {%{author: author = %{id: id}, channel_id: channel_id} = message}, _state}) do
   #   IO.inspect(author, label: "AUTHOR")
   # end
-  
-  def handle_event({:MESSAGE_CREATE, {%{content: "!rotaryroas" <> _, channel_id: channel_id}}, _state}) do
-    Api.create_message(channel_id, "https://www.stancenation.com/wp-content/uploads/2012/04/1211.jpg")
-  end
-  
-  def handle_event({:MESSAGE_CREATE, {%{content: "!monstertruc" <> _, channel_id: channel_id}}, _state}) do
-    Api.create_message(channel_id, "https://cdn.discordapp.com/attachments/500143495043088395/590656753583259658/20190610_170551_HDR.jpg")
+
+  def handle_event(
+        {:MESSAGE_CREATE, {%{content: "!rotaryroas" <> _, channel_id: channel_id}}, _state}
+      ) do
+    Api.create_message(
+      channel_id,
+      "https://www.stancenation.com/wp-content/uploads/2012/04/1211.jpg"
+    )
   end
 
-  def handle_event({:MESSAGE_CREATE, {%{content: "!hercroas" <> _, channel_id: channel_id}}, _state}) do
-    msg = Enum.random([
-      "https://cdn-02.belfasttelegraph.co.uk/sunday-life/news/article37942274.ece/92675/AUTOCROP/w620h342/2019-03-24_sun_48967410_I1.JPG",
-      "https://cdn.carbuzz.com/gallery-images/840x560/523000/800/523834.jpg",
-      "https://cdn.discordapp.com/attachments/500143495043088395/590654429691248680/mlwmvhh1tzfiuydvxjuu.png",
-      "https://cdn.discordapp.com/attachments/500143495043088395/590654628115382277/032216_Fire_Car_AB.jpg"
-    ])
-    Api.create_message(channel_id, msg <> "\nhttps://static.nhtsa.gov/odi/rcl/2017/RCRIT-17V676-7418.pdf")
+  def handle_event(
+        {:MESSAGE_CREATE, {%{content: "!monstertruc" <> _, channel_id: channel_id}}, _state}
+      ) do
+    Api.create_message(
+      channel_id,
+      "https://cdn.discordapp.com/attachments/500143495043088395/590656753583259658/20190610_170551_HDR.jpg"
+    )
+  end
+
+  def handle_event(
+        {:MESSAGE_CREATE, {%{content: "!hercroas" <> _, channel_id: channel_id}}, _state}
+      ) do
+    msg =
+      Enum.random([
+        "https://cdn-02.belfasttelegraph.co.uk/sunday-life/news/article37942274.ece/92675/AUTOCROP/w620h342/2019-03-24_sun_48967410_I1.JPG",
+        "https://cdn.carbuzz.com/gallery-images/840x560/523000/800/523834.jpg",
+        "https://cdn.discordapp.com/attachments/500143495043088395/590654429691248680/mlwmvhh1tzfiuydvxjuu.png",
+        "https://cdn.discordapp.com/attachments/500143495043088395/590654628115382277/032216_Fire_Car_AB.jpg"
+      ])
+
+    Api.create_message(
+      channel_id,
+      msg <> "\nhttps://static.nhtsa.gov/odi/rcl/2017/RCRIT-17V676-7418.pdf"
+    )
   end
 
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
@@ -57,19 +83,59 @@ defmodule MiataBot.Discord do
 
   def handle_event({:GUILD_AVAILABLE, {data}, _ws_state}) do
     # IO.inspect(data, label: "GUILD_AVAILABLE")
-    for {_m_id, m} <- data.members do
-      if 504088951485890561 in m.roles do
-        IO.inspect(m, label: "LOOKING FOR MIATA")
+    for {_member_id, m} <- data.members do
+      if @looking_for_miata_role_id in m.roles do
+        ensure_looking_for_miata_timer(m)
       end
     end
-    # 504088951485890561 = looking for miata role
-    # 439493557301280789 = miata fan
+  end
+
+  def handle_event({:GUILD_MEMBER_UPDATE, {_member_id, old, new}, _ws_state}) do
+    if @looking_for_miata_role_id in (new.roles -- old.roles) do
+      Logger.info("refreshing timer for #{new.user.username}")
+      timer = ensure_looking_for_miata_timer(new)
+      refresh_looking_for_miata_timer(timer)
+    end
+
+    if @looking_for_miata_role_id in (old.roles -- new.roles) do
+      Logger.info("refreshing timer for #{new.user.username}")
+      timer = ensure_looking_for_miata_timer(new)
+      Repo.delete!(timer)
+    end
+  end
+
+  # dyno
+  def handle_event(
+        {:MESSAGE_CREATE, {%{author: %{id: 155_149_108_183_695_360}} = message}, _state}
+      ) do
+    IO.inspect(message, label: "DYNO")
   end
 
   def handle_event(event) do
     _ = inspect(event)
     # IO.inspect(event, label: "UNHANDLED EVENT")
     :noop
+  end
+
+  defp ensure_looking_for_miata_timer(member) do
+    case Repo.get_by(LookingForMiataTimer, discord_user_id: member.user.id) do
+      nil ->
+        LookingForMiataTimer.changeset(%LookingForMiataTimer{}, %{
+          joined_at: member.joined_at,
+          discord_user_id: member.user.id
+        })
+        |> Repo.insert!()
+
+      timer ->
+        timer
+    end
+  end
+
+  def refresh_looking_for_miata_timer(timer) do
+    LookingForMiataTimer.changeset(timer, %{
+      refreshed_at: DateTime.utc_now()
+    })
+    |> Repo.update!()
   end
 
   def handle_command("help", %{channel_id: channel_id}) do
