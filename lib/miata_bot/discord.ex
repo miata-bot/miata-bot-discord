@@ -55,7 +55,22 @@ defmodule MiataBot.Discord do
     end
   end
 
-  def handle_event(_), do: :noop
+  def handle_event({:GUILD_AVAILABLE, {data}, _ws_state}) do
+    # IO.inspect(data, label: "GUILD_AVAILABLE")
+    for {_m_id, m} <- data.members do
+      if 504088951485890561 in m.roles do
+        IO.inspect(m, label: "LOOKING FOR MIATA")
+      end
+    end
+    # 504088951485890561 = looking for miata role
+    # 439493557301280789 = miata fan
+  end
+
+  def handle_event(event) do
+    _ = inspect(event)
+    # IO.inspect(event, label: "UNHANDLED EVENT")
+    :noop
+  end
 
   def handle_command("help", %{channel_id: channel_id}) do
     embed =
