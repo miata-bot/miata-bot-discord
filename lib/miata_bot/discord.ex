@@ -5,6 +5,8 @@ defmodule MiataBot.Discord do
     LookingForMiataTimer
   }
 
+  import MiataBot.Discord.Util
+
   require Logger
 
   use Nostrum.Consumer
@@ -30,56 +32,14 @@ defmodule MiataBot.Discord do
   #   IO.inspect(author, label: "AUTHOR")
   # end
 
-  def handle_event({:MESSAGE_CREATE, {%{content: "ya rip" <> _, channel_id: channel_id}}, _state}) do
-    Api.create_message(
-      channel_id,
-      "https://www.youtube.com/watch?v=fKLmZNnMT0A"
-    )
-  end
+  bang "ya rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A"
+  bang "!rotaryroast", "https://www.stancenation.com/wp-content/uploads/2012/04/1211.jpg"
 
-  def handle_event(
-        {:MESSAGE_CREATE, {%{content: "yeah rip" <> _, channel_id: channel_id}}, _state}
-      ) do
-    Api.create_message(
-      channel_id,
-      "https://www.youtube.com/watch?v=fKLmZNnMT0A"
-    )
-  end
+  bang "!monstertruck",
+       "https://cdn.discordapp.com/attachments/500143495043088395/590656753583259658/20190610_170551_HDR.jpg"
 
-  def handle_event(
-        {:MESSAGE_CREATE, {%{content: "!rotaryroas" <> _, channel_id: channel_id}}, _state}
-      ) do
-    Api.create_message(
-      channel_id,
-      "https://www.stancenation.com/wp-content/uploads/2012/04/1211.jpg"
-    )
-  end
-
-  def handle_event(
-        {:MESSAGE_CREATE, {%{content: "!monstertruc" <> _, channel_id: channel_id}}, _state}
-      ) do
-    Api.create_message(
-      channel_id,
-      "https://cdn.discordapp.com/attachments/500143495043088395/590656753583259658/20190610_170551_HDR.jpg"
-    )
-  end
-
-  def handle_event(
-        {:MESSAGE_CREATE, {%{content: "!hercroas" <> _, channel_id: channel_id}}, _state}
-      ) do
-    msg =
-      Enum.random([
-        "https://cdn-02.belfasttelegraph.co.uk/sunday-life/news/article37942274.ece/92675/AUTOCROP/w620h342/2019-03-24_sun_48967410_I1.JPG",
-        "https://cdn.carbuzz.com/gallery-images/840x560/523000/800/523834.jpg",
-        "https://cdn.discordapp.com/attachments/500143495043088395/590654429691248680/mlwmvhh1tzfiuydvxjuu.png",
-        "https://cdn.discordapp.com/attachments/500143495043088395/590654628115382277/032216_Fire_Car_AB.jpg"
-      ])
-
-    Api.create_message(
-      channel_id,
-      msg <> "\nhttps://static.nhtsa.gov/odi/rcl/2017/RCRIT-17V676-7418.pdf"
-    )
-  end
+  bang "!hercroast",
+       "https://cdn.discordapp.com/attachments/500143495043088395/590654628115382277/032216_Fire_Car_AB.jpg"
 
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
