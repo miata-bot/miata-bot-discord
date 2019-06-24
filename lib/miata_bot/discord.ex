@@ -13,10 +13,11 @@ defmodule MiataBot.Discord do
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
 
-  @miata_discord_guild_id 322_080_266_761_797_633
+  # @miata_discord_guild_id 322_080_266_761_797_633
   @verification_channel_id 322_127_502_212_333_570
   @looking_for_miata_role_id 504_088_951_485_890_561
-  @miata_fan_role_id 439_493_557_301_280_789
+  # @miata_fan_role_id 439_493_557_301_280_789
+  Module.register_attribute(__MODULE__, :bangs, accumulate: true)
 
   def start_link do
     Consumer.start_link(__MODULE__, name: __MODULE__)
@@ -42,7 +43,7 @@ defmodule MiataBot.Discord do
        "https://cdn.discordapp.com/attachments/500143495043088395/590654628115382277/032216_Fire_Car_AB.jpg"
 
   bang "!longintake",
-      "https://cdn.discordapp.com/attachments/384483113985900544/592810948201545739/IMG_20190613_153900.jpg"
+       "https://cdn.discordapp.com/attachments/384483113985900544/592810948201545739/IMG_20190613_153900.jpg"
 
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
@@ -115,6 +116,11 @@ defmodule MiataBot.Discord do
       refreshed_at: DateTime.utc_now()
     })
     |> Repo.update!()
+  end
+
+  def handle_command("bangs", %{channel_id: channel_id}) do
+    msg = Enum.join(@bangs, "\n")
+    Api.create_message!(channel_id, "Available bangs: #{msg}")
   end
 
   def handle_command("help", %{channel_id: channel_id}) do
