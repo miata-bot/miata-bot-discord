@@ -10,6 +10,7 @@ defmodule MiataBot.Web.Endpoint do
 
   def init(_args) do
     port = String.to_integer(System.get_env("PORT"))
+    IO.inspect(port, label: "starting web on port")
 
     children = [
       {Plug.Cowboy, scheme: :http, plug: Router, options: [port: port]},
