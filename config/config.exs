@@ -11,7 +11,7 @@ config :miata_bot, ecto_repos: [MiataBot.Repo]
 config :miata_bot, MiataBot.Repo,
   ssl: false,
   url: System.get_env("DATABASE_URL"),
-  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
+  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "2")
 
 config :miata_bot, MiataBot.Web.Endpoint, url: System.get_env("APP_URL")
 
