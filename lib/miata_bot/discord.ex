@@ -45,6 +45,9 @@ defmodule MiataBot.Discord do
   bang "!longintake",
        "https://cdn.discordapp.com/attachments/384483113985900544/592810948201545739/IMG_20190613_153900.jpg"
 
+  bang "!18swapintake",
+        "https://media.discordapp.net/attachments/322080529245798401/593511885664550921/IMG_1140.jpg"
+
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
   end
