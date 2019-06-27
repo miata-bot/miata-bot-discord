@@ -53,6 +53,9 @@ defmodule MiataBot.Discord do
   bang "!torquespecs",
        "https://www.miata.net/garage/torque.html"
 
+  bang "!fartbeard",
+       "https://cdn.discordapp.com/attachments/322162421156282369/593854324891713546/image0.jpg"
+
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
   end
