@@ -25,6 +25,7 @@ defmodule MiataBot.MixProject do
       {:ecto_sql, "~> 3.1"},
       {:postgrex, "~> 0.14.3"},
       {:plug_cowboy, "~> 2.0"},
+      {:ring_logger, "~> 0.7.0"},
       # {:nostrum, "~> 0.3.2"},
       {:timex, "~> 3.5"},
       {:nostrum, github: "Kraigie/nostrum"}
