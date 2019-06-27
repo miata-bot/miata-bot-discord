@@ -34,6 +34,8 @@ defmodule MiataBot.Discord do
   # end
 
   bang "ya rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A"
+  bang "yeah rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A"
+
   bang "!rotaryroast", "https://www.stancenation.com/wp-content/uploads/2012/04/1211.jpg"
 
   bang "!monstertruck",
