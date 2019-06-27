@@ -17,6 +17,7 @@ defmodule MiataBot.Discord do
   @verification_channel_id 322_127_502_212_333_570
   @looking_for_miata_role_id 504_088_951_485_890_561
   # @miata_fan_role_id 439_493_557_301_280_789
+  @maysh_user_id 326_204_806_165_430_273
   Module.register_attribute(__MODULE__, :bangs, accumulate: true)
 
   def start_link do
@@ -55,6 +56,8 @@ defmodule MiataBot.Discord do
 
   bang "!fartbeard",
        "https://cdn.discordapp.com/attachments/322162421156282369/593854324891713546/image0.jpg"
+
+  bang "!chicagoroast", "<@!#{@maysh_user_id}> Chicago sux lmao"
 
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)

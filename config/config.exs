@@ -15,6 +15,8 @@ config :miata_bot, MiataBot.Repo,
 
 config :miata_bot, MiataBot.Web.Endpoint, url: System.get_env("APP_URL")
 
+config :logger, backends: [RingLogger]
+
 # config :logger,
 #   handle_otp_reports: true,
 #   handle_sasl_reports: true
