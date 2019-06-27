@@ -59,7 +59,10 @@ defmodule MiataBot.Discord do
 
   bang "!chicagoroast", "<@!#{@maysh_user_id}> Chicago sux lmao"
 
-  bang "!bmwroast", "https://media.discordapp.net/attachments/322162421156282369/593869644365037628/b49d82b0ad.png?width=590&height=658"
+  bang "!bmwroast",
+       "https://media.discordapp.net/attachments/322162421156282369/593869644365037628/b49d82b0ad.png?width=590&height=658"
+
+  bang "!e", "https://i.ytimg.com/vi/J6NioWmscDc/maxresdefault.jpg"
 
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
