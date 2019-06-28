@@ -70,6 +70,9 @@ defmodule MiataBot.Discord do
   bang "!floridiaroast",
        "https://cdn.discordapp.com/attachments/322162421156282369/593905029094572032/florida.gif"
 
+  bang "!boing",
+       "https://www.youtube.com/watch?v=hoS1MCF8AeI"
+
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
   end
