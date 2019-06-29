@@ -129,7 +129,14 @@ defmodule MiataBot.Discord do
   def handle_event({:GUILD_AVAILABLE, {data}, _ws_state}) do
     Logger.info("GUILD AVAILABLE: #{inspect(data, limit: :infinity)}")
     # :ets.new()
-    for {_member_id, m} <- data.members do
+    table_name = String.to_atom(to_string(data.id))
+    case :ets.whereis(table_name) do
+      :undefined -> :ets.new(table_name, [:ordered_set, :named_table, :public])
+      ref when is_reference(ref) -> table_name
+    end
+
+    for {member_id, m} <- data.members do
+      :ets.insert(table_name, {member_id, m})
       if @looking_for_miata_role_id in m.roles do
         ensure_looking_for_miata_timer(m)
       end
