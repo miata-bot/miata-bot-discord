@@ -14,6 +14,7 @@ defmodule MiataBot.Discord do
   alias Nostrum.Struct.Embed
 
   # @miata_discord_guild_id 322_080_266_761_797_633
+  # 322080266761797633
   @verification_channel_id 322_127_502_212_333_570
   @looking_for_miata_role_id 504_088_951_485_890_561
   # @miata_fan_role_id 439_493_557_301_280_789
@@ -132,15 +133,16 @@ defmodule MiataBot.Discord do
 
     case :ets.whereis(table_name) do
       :undefined ->
-        Logger.warn("Creating new table: #{table_name}")
-        ^table_name = :ets.new(table_name, [:ordered_set, :named_table, :public])
+        Logger.warn("Creating new table: #{inspect(table_name)}")
+        ^table_name = :ets.new(table_name, [:named_table, :ordered_set, :protected])
 
       ref when is_reference(ref) ->
-        Logger.warn("Table already created: #{table_name}")
+        Logger.warn("Table already created: #{inspect(table_name)}")
         table_name
     end
 
     for {member_id, m} <- data.members do
+      Logger.info "inserting user: #{member_id}"
       true = :ets.insert(table_name, {member_id, m})
 
       if @looking_for_miata_role_id in m.roles do
