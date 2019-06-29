@@ -106,6 +106,11 @@ defmodule MiataBot.Discord do
   bang "!playstation",
        "https://youtu.be/oAhvQoLpvsM"
 
+  # url = Application.get_all_env(:miata_`)[MiataBot.Web.Endpoint][:url]
+  # {:ok, qr} = QRCode.create(url)
+  # {:ok, _} = QRCode.Svg.save_as(qr, "/tmp/qr.svg")
+
+
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
   end
