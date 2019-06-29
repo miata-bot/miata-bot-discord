@@ -16,9 +16,10 @@ defmodule MiataBot.Web.Router do
     channel_id = Nostrum.Snowflake.cast!(channel_id)
     user_id = conn.params["user_id"]
     user_id = Nostrum.Snowflake.cast!(user_id)
-    
+
     message = conn.params["message"]
     Nostrum.Api.create_message!(channel_id, "<@!#{user_id}> #{message}")
+
     send_resp(conn, 200, """
     <html>
     <head>
