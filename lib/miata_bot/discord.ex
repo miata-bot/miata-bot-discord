@@ -134,7 +134,7 @@ defmodule MiataBot.Discord do
     case :ets.whereis(table_name) do
       :undefined ->
         Logger.warn("Creating new table: #{inspect(table_name)}")
-        ^table_name = :ets.new(table_name, [:named_table, :ordered_set, :protected])
+        ^table_name = :ets.new(table_name, [:named_table, :ordered_set, :public])
 
       ref when is_reference(ref) ->
         Logger.warn("Table already created: #{inspect(table_name)}")
