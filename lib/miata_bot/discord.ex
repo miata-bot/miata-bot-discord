@@ -128,11 +128,14 @@ defmodule MiataBot.Discord do
 
   def handle_event({:GUILD_AVAILABLE, {data}, _ws_state}) do
     Logger.info("GUILD AVAILABLE: #{inspect(data, limit: :infinity)}")
-    # :ets.new()
     table_name = String.to_atom(to_string(data.id))
     case :ets.whereis(table_name) do
-      :undefined -> :ets.new(table_name, [:ordered_set, :named_table, :public])
-      ref when is_reference(ref) -> table_name
+      :undefined -> 
+        Logger.warn "Creating new table: #{table_name}"
+        :ets.new(table_name, [:ordered_set, :named_table, :public])
+      ref when is_reference(ref) -> 
+        Logger.warn "Table already created: #{table_name}"
+        table_name
     end
 
     for {member_id, m} <- data.members do
