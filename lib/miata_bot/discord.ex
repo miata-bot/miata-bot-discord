@@ -18,6 +18,7 @@ defmodule MiataBot.Discord do
   @looking_for_miata_role_id 504_088_951_485_890_561
   # @miata_fan_role_id 439_493_557_301_280_789
   @maysh_user_id 326_204_806_165_430_273
+
   Module.register_attribute(__MODULE__, :bangs, accumulate: true)
 
   def start_link do
@@ -30,8 +31,16 @@ defmodule MiataBot.Discord do
   #   Api.delete_message(message)
   # end
 
-  # def handle_event({:MESSAGE_CREATE, {%{author: author = %{id: id}, channel_id: channel_id} = message}, _state}) do
-  #   IO.inspect(author, label: "AUTHOR")
+  # Uncomment to own Dey See Me Corollin
+  # @dey_see_me_corollin_user_id 234_361_846_092_660_738
+  # @general_miata_channel_id 322_080_266_761_797_633
+  # def handle_event(
+  #       {:MESSAGE_CREATE,
+  #        {%{author: %{id: @dey_see_me_corollin_user_id}, channel_id: @general_miata_channel_id} =
+  #           message}, _state}
+  #     ) do
+  #   Api.create_message(@general_miata_channel_id, "<@!#{@dey_see_me_corollin_user_id}> denied")
+  #   Api.delete_message(message)
   # end
 
   bang "ya rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A"
@@ -79,6 +88,24 @@ defmodule MiataBot.Discord do
   bang "!doot",
        "https://youtu.be/eVrYbKBrI7o"
 
+  bang "!nou",
+       "https://cdn.discordapp.com/attachments/351767273712910336/594569216640942083/GJElD4jJUQ2xAPwjRIjBcUeAf311aN1oa791xzRpQbVJx1oF-zjoQZ1Sq1R_JpV31jSBPOJ9WvIQvhFDVpp7Cwoaye4yR0VxEOsy.png"
+
+  bang "!rotary",
+       "https://www.youtube.com/watch?v=FZUcpVmEHuk"
+
+  bang "!fca",
+       "https://www.youtube.com/watch?v=FZUcpVmEHuk"
+
+  bang "!FCA",
+       "https://www.youtube.com/watch?v=FZUcpVmEHuk"
+
+  bang "!potato",
+       "https://cdn.discordapp.com/attachments/591751583767724042/594582309639028745/unknown.png"
+
+  bang "!playstation",
+       "https://youtu.be/oAhvQoLpvsM"
+
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
   end
@@ -116,13 +143,6 @@ defmodule MiataBot.Discord do
       timer = ensure_looking_for_miata_timer(new)
       Repo.delete!(timer)
     end
-  end
-
-  # dyno
-  def handle_event(
-        {:MESSAGE_CREATE, {%{author: %{id: 155_149_108_183_695_360}} = message}, _state}
-      ) do
-    IO.inspect(message, label: "DYNO")
   end
 
   def handle_event(event) do

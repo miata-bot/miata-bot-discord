@@ -27,6 +27,7 @@ defmodule MiataBot.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:ring_logger, "~> 0.7.0"},
       # {:nostrum, "~> 0.3.2"},
+      {:qr_code, "~> 2.0.1"},
       {:timex, "~> 3.5"},
       {:nostrum, github: "Kraigie/nostrum"}
     ]
