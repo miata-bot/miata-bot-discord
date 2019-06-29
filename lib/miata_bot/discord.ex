@@ -73,6 +73,9 @@ defmodule MiataBot.Discord do
   bang "!boing",
        "https://www.youtube.com/watch?v=hoS1MCF8AeI"
 
+  bang "!weed",
+       "https://www.youtube.com/watch?v=5lEelz0iUJo"
+
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
   end
