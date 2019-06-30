@@ -9,6 +9,7 @@ defmodule MiataBot.Application do
     # List all child processes to be supervised
     children = [
       MiataBot.Repo,
+      MiataBot.Ets,
       MiataBot.Discord,
       MiataBot.LookingForMiataWorker,
       MiataBot.Web.Endpoint

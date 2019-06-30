@@ -107,8 +107,30 @@ defmodule MiataBot.Discord do
   bang "!playstation",
        "https://youtu.be/oAhvQoLpvsM"
 
-  def handle_event({:MESSAGE_CREATE, {%{content: <<"!qr", content::binary>>} = message}, _state}) do
+  def handle_event({:MESSAGE_CREATE, {%{content: <<"!qr ", content::binary>>} = message}, _state}) do
     Logger.info("#{inspect(message, limit: :infinity)}")
+
+    case String.split(content, " ") do
+      [nick | msg] ->
+        msg = Enum.join(msg, " ")
+
+        user_id =
+          :ets.match_object(:"322080266761797633", {:"$0", :"$1"})
+          |> Enum.find_value(fn
+            {user_id, %{nick: ^nick}} -> user_id
+            {user_id, %{user: %{username: ^nick}}} -> user_id
+            _ -> false
+          end)
+
+        if user_id do
+          MiataBot.qr(message.channel_id, user_id, msg)
+        else
+          Api.create_message!(message.channel_id, "Could not find user by alias: #{nick}")
+        end
+
+      _ ->
+        Api.create_message!(message.channel_id, "Usage: !qr USER MESSAGE")
+    end
   end
 
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
@@ -128,13 +150,13 @@ defmodule MiataBot.Discord do
   end
 
   def handle_event({:GUILD_AVAILABLE, {data}, _ws_state}) do
-    Logger.info("GUILD AVAILABLE: #{inspect(data, limit: :infinity)}")
+    # Logger.info("GUILD AVAILABLE: #{inspect(data, limit: :infinity)}")
     table_name = String.to_atom(to_string(data.id))
 
     case :ets.whereis(table_name) do
       :undefined ->
         Logger.warn("Creating new table: #{inspect(table_name)}")
-        ^table_name = :ets.new(table_name, [:named_table, :ordered_set, :public])
+        ^table_name = MiataBot.Ets.new(table_name, [:named_table, :ordered_set, :public])
 
       ref when is_reference(ref) ->
         Logger.warn("Table already created: #{inspect(table_name)}")
@@ -142,7 +164,6 @@ defmodule MiataBot.Discord do
     end
 
     for {member_id, m} <- data.members do
-      Logger.info "inserting user: #{member_id}"
       true = :ets.insert(table_name, {member_id, m})
 
       if @looking_for_miata_role_id in m.roles do
