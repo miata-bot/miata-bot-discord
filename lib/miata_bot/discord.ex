@@ -46,18 +46,18 @@ defmodule MiataBot.Discord do
 
   def handle_event(
         {:MESSAGE_CREATE,
-         {%{author: %{id: 126155471886352385}, channel_id: channel_id} =
-            message}, _state}
+         {%{author: %{id: 126_155_471_886_352_385}, channel_id: channel_id} = message}, _state}
       ) do
-        e = %Nostrum.Struct.Emoji{
-          animated: false,
-          id: 595123456996278273,
-          managed: false,
-          name: "blackice",
-          require_colons: true,
-          roles: [],
-          user: nil
-        }
+    e = %Nostrum.Struct.Emoji{
+      animated: false,
+      id: 595_123_456_996_278_273,
+      managed: false,
+      name: "blackice",
+      require_colons: true,
+      roles: [],
+      user: nil
+    }
+
     Api.create_reaction(channel_id, message.id, e)
   end
 
@@ -148,7 +148,6 @@ defmodule MiataBot.Discord do
   #     timestamp: 1_561_955_046,
   #     user_id: 160_078_347_886_526_464
   #   }}}
-
 
   # def handle_event({:TYPING_START, {%{channel_id: channel_id, user_id: 126155471886352385}}, _ws_state}) do
   #   Logger.info "tpye: "
