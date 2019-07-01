@@ -8,8 +8,8 @@ defmodule MiataBot do
 
     Mogrify.open("/tmp/qr.svg")
     |> Mogrify.format("png")
-    |> Mogrify.save(path: "/tmp/#{channel_id}#{user_id}.png")
+    |> Mogrify.save(path: "/tmp/qr.png")
 
-    Nostrum.Api.create_message!(351_767_273_712_910_336, file: "/tmp/qr.png")
+    Nostrum.Api.create_message!(channel_id, file: "/tmp/qr.png")
   end
 end
