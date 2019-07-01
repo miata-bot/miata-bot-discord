@@ -107,6 +107,9 @@ defmodule MiataBot.Discord do
   bang "!playstation",
        "https://youtu.be/oAhvQoLpvsM"
 
+  bang "!theresyourproblem",
+       "https://i.kym-cdn.com/photos/images/newsfeed/000/228/269/demotivational-posters-theres-your-problem.jpg"
+
   def handle_event({:MESSAGE_CREATE, {%{content: <<"!qr ", content::binary>>} = message}, _state}) do
     Logger.info("#{inspect(message, limit: :infinity)}")
 
