@@ -44,6 +44,23 @@ defmodule MiataBot.Discord do
   #   Api.delete_message(message)
   # end
 
+  def handle_event(
+        {:MESSAGE_CREATE,
+         {%{author: %{id: 126155471886352385}, channel_id: channel_id} =
+            message}, _state}
+      ) do
+        e = %Nostrum.Struct.Emoji{
+          animated: false,
+          id: 595123456996278273,
+          managed: false,
+          name: "blackice",
+          require_colons: true,
+          roles: [],
+          user: nil
+        }
+    Api.create_reaction(channel_id, message.id, e)
+  end
+
   bang "ya rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A"
   bang "yeah rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A"
 
@@ -109,6 +126,34 @@ defmodule MiataBot.Discord do
 
   bang "!theresyourproblem",
        "https://i.kym-cdn.com/photos/images/newsfeed/000/228/269/demotivational-posters-theres-your-problem.jpg"
+
+  # {:TYPING_START,
+  #  {%{
+  #     channel_id: 565_041_170_351_259_648,
+  #     guild_id: 322_080_266_761_797_633,
+  #     member: %{
+  #       deaf: false,
+  #       joined_at: "2019-03-22T19:51:45.818452+00:00",
+  #       mute: false,
+  #       nick: "BotuMann",
+  #       premium_since: nil,
+  #       roles: [322_082_487_243_112_448, 592_059_821_960_986_624, 416_661_791_750_488_065],
+  #       user: %{
+  #         avatar: "a68c3f4f25a15f0f2235c6bd73f76806",
+  #         discriminator: "3977",
+  #         id: 160_078_347_886_526_464,
+  #         username: "redbeard"
+  #       }
+  #     },
+  #     timestamp: 1_561_955_046,
+  #     user_id: 160_078_347_886_526_464
+  #   }}}
+
+
+  # def handle_event({:TYPING_START, {%{channel_id: channel_id, user_id: 126155471886352385}}, _ws_state}) do
+  #   Logger.info "tpye: "
+  #   Api.create_message!(channel_id, "<@!126155471886352385> get rekt newb")
+  # end
 
   def handle_event({:MESSAGE_CREATE, {%{content: <<"!qr ", content::binary>>} = message}, _state}) do
     Logger.info("#{inspect(message, limit: :infinity)}")
@@ -191,7 +236,7 @@ defmodule MiataBot.Discord do
 
   def handle_event(event) do
     _ = inspect(event)
-    # IO.inspect(event, label: "UNHANDLED EVENT")
+    # Logger.info("#{inspect(event, limit: :infinity)}")
     :noop
   end
 
