@@ -10,7 +10,7 @@ defmodule MiataBot.Application do
     children = [
       MiataBot.Repo,
       MiataBot.Ets,
-      MiataBot.Discord,
+      # MiataBot.Discord,
       MiataBot.LookingForMiataWorker,
       MiataBot.Web.Endpoint
       # Starts a worker by calling: MiataBot.Worker.start_link(arg)

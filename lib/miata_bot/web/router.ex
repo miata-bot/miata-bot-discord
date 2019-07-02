@@ -12,14 +12,24 @@ defmodule MiataBot.Web.Router do
 
   get "/qr/:id" do
     Logger.info("#{inspect(conn.params)}")
-    qr = MiataBot.Repo.get_by(MiataBot.QRCode, id: id)
-    Nostrum.Api.create_message(qr.discord_channel_id, "<@!#{qr.discord_user_id}> #{qr.message}")
+    qr = MiataBot.Repo.get_by!(MiataBot.QRCode, id: id)
+
+    qr =
+      qr
+      |> MiataBot.QRCode.changeset(%{scans: qr.scans + 1})
+      |> MiataBot.Repo.update!()
+
+    Nostrum.Api.create_message(
+      qr.discord_channel_id,
+      "<@!#{qr.discord_user_id}> #{qr.message}\n(Scanned: #{qr.scans} times)"
+    )
 
     resp =
       Poison.encode!(%{
         discord_guild_id: qr.discord_guild_id,
         discord_channel_id: qr.discord_channel_id,
         discord_user_id: qr.discord_user_id,
+        scans: qr.scans,
         inserted_at: qr.inserted_at,
         updated_at: qr.updated_at
       })
