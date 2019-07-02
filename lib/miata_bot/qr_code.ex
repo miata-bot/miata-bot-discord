@@ -14,6 +14,6 @@ defmodule MiataBot.QRCode do
 
   def changeset(qr_code, params \\ %{}) do
     qr_code
-    |> cast(params, [:discord_guild_id, :discord_channel_id, :discord_user_id, :message, :scan])
+    |> cast(params, [:discord_guild_id, :discord_channel_id, :discord_user_id, :message, :scans])
   end
 end
