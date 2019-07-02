@@ -19,10 +19,10 @@ defmodule MiataBot.Web.Router do
       |> MiataBot.QRCode.changeset(%{scans: qr.scans + 1})
       |> MiataBot.Repo.update!()
 
-    Nostrum.Api.create_message(
-      qr.discord_channel_id,
-      "<@!#{qr.discord_user_id}> #{qr.message}\n(Scanned: #{qr.scans} times)"
-    )
+    # Nostrum.Api.create_message(
+    #   qr.discord_channel_id,
+    #   "<@!#{qr.discord_user_id}> #{qr.message}\n(Scanned: #{qr.scans} times)"
+    # )
 
     resp =
       Poison.encode!(%{
