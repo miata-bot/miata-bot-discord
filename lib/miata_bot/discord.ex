@@ -13,7 +13,7 @@ defmodule MiataBot.Discord do
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
 
-  # @miata_discord_guild_id 322_080_266_761_797_633
+  @miata_discord_guild_id 322_080_266_761_797_633
   # 322080266761797633
   @verification_channel_id 322_127_502_212_333_570
   @looking_for_miata_role_id 504_088_951_485_890_561
@@ -170,7 +170,7 @@ defmodule MiataBot.Discord do
           end)
 
         if user_id do
-          MiataBot.qr(message.channel_id, user_id, msg)
+          qr(message.channel_id, user_id, msg)
         else
           Api.create_message!(message.channel_id, "Could not find user by alias: #{nick}")
         end
@@ -400,5 +400,28 @@ defmodule MiataBot.Discord do
       _ ->
         {:error, "unknown user"}
     end
+  end
+
+  def qr(channel_id, user_id, message) do
+    url = Application.get_all_env(:miata_bot)[MiataBot.Web.Endpoint][:url]
+
+    miata_qr =
+      MiataBot.QRCode.changeset(%MiataBot.QRCode{}, %{
+        discord_channel_id: channel_id,
+        discord_user_id: user_id,
+        discord_guild_id: @miata_discord_guild_id,
+        message: message
+      })
+      |> Repo.insert!()
+
+    url = url <> "/qr/#{miata_qr.id}"
+    {:ok, qr} = QRCode.create(url)
+    {:ok, _} = QRCode.Svg.save_as(qr, "/tmp/#{miata_qr.id}.svg")
+
+    Mogrify.open("/tmp/#{miata_qr.id}.svg")
+    |> Mogrify.format("png")
+    |> Mogrify.save(path: "/tmp/#{miata_qr.id}.png")
+
+    Nostrum.Api.create_message!(channel_id, file: "/tmp/#{miata_qr.id}.png")
   end
 end

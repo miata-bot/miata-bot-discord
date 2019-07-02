@@ -10,31 +10,23 @@ defmodule MiataBot.Web.Router do
     send_resp(conn, 200, "hello, world")
   end
 
-  get "/qr" do
+  get "/qr/:id" do
     Logger.info("#{inspect(conn.params)}")
-    channel_id = conn.params["channel_id"]
-    channel_id = Nostrum.Snowflake.cast!(channel_id)
-    # user_id = conn.params["user_id"]
-    # user_id = Nostrum.Snowflake.cast!(user_id)
+    qr = MiataBot.Repo.get_by(MiataBot.QRCode, id: id)
+    Nostrum.Api.create_message(qr.discord_channel_id, "<@!#{qr.discord_user_id}> #{qr.message}")
 
-    # message = conn.params["message"]
-    # Nostrum.Api.create_message!(channel_id, "<@!#{user_id}> #{message}")
-    Nostrum.Api.create_message(channel_id, "<@!298235773717708800> ruined this for everyone ")
+    resp =
+      Poison.encode!(%{
+        discord_guild_id: qr.discord_guild_id,
+        discord_channel_id: qr.discord_channel_id,
+        discord_user_id: qr.discord_user_id,
+        inserted_at: qr.inserted_at,
+        updated_at: qr.updated_at
+      })
 
-    send_resp(conn, 200, """
-    <html>
-    <head>
-    </head>
-    <body>
-    good job
-    <script type="text/javascript">
-    window.onload = function() {
-      window.close();
-    }
-    </script>
-    </body>
-    </html>
-    """)
+    conn
+    |> put_resp_content_type("application/json")
+    |> send_resp(200, resp)
   end
 
   match _ do
