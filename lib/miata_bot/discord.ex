@@ -19,6 +19,8 @@ defmodule MiataBot.Discord do
   @looking_for_miata_role_id 504_088_951_485_890_561
   # @miata_fan_role_id 439_493_557_301_280_789
   @maysh_user_id 326_204_806_165_430_273
+  @justin_user_id 126_155_471_886_352_385
+  @easyy_user_id 151_099_008_230_752_256
 
   Module.register_attribute(__MODULE__, :bangs, accumulate: true)
 
@@ -45,14 +47,31 @@ defmodule MiataBot.Discord do
   # end
 
   def handle_event(
-        {:MESSAGE_CREATE,
-         {%{author: %{id: 126_155_471_886_352_385}, channel_id: channel_id} = message}, _state}
+        {:MESSAGE_CREATE, {%{author: %{id: @justin_user_id}, channel_id: channel_id} = message},
+         _state}
       ) do
     e = %Nostrum.Struct.Emoji{
       animated: false,
       id: 595_123_456_996_278_273,
       managed: false,
       name: "blackice",
+      require_colons: true,
+      roles: [],
+      user: nil
+    }
+
+    Api.create_reaction(channel_id, message.id, e)
+  end
+
+  def handle_event(
+        {:MESSAGE_CREATE, {%{author: %{id: @easyy_user_id}, channel_id: channel_id} = message},
+         _state}
+      ) do
+    e = %Nostrum.Struct.Emoji{
+      animated: false,
+      id: 554_801_155_826_253_850,
+      managed: false,
+      name: "Raccy",
       require_colons: true,
       roles: [],
       user: nil
