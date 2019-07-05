@@ -46,39 +46,39 @@ defmodule MiataBot.Discord do
   #   Api.delete_message(message)
   # end
 
-  def handle_event(
-        {:MESSAGE_CREATE, {%{author: %{id: @justin_user_id}, channel_id: channel_id} = message},
-         _state}
-      ) do
-    e = %Nostrum.Struct.Emoji{
-      animated: false,
-      id: 595_123_456_996_278_273,
-      managed: false,
-      name: "blackice",
-      require_colons: true,
-      roles: [],
-      user: nil
-    }
+  # def handle_event(
+  #       {:MESSAGE_CREATE, {%{author: %{id: @justin_user_id}, channel_id: channel_id} = message},
+  #        _state}
+  #     ) do
+  #   e = %Nostrum.Struct.Emoji{
+  #     animated: false,
+  #     id: 595_123_456_996_278_273,
+  #     managed: false,
+  #     name: "blackice",
+  #     require_colons: true,
+  #     roles: [],
+  #     user: nil
+  #   }
 
-    Api.create_reaction(channel_id, message.id, e)
-  end
+  #   Api.create_reaction(channel_id, message.id, e)
+  # end
 
-  def handle_event(
-        {:MESSAGE_CREATE, {%{author: %{id: @easyy_user_id}, channel_id: channel_id} = message},
-         _state}
-      ) do
-    e = %Nostrum.Struct.Emoji{
-      animated: false,
-      id: 554_801_155_826_253_850,
-      managed: false,
-      name: "Raccy",
-      require_colons: true,
-      roles: [],
-      user: nil
-    }
+  # def handle_event(
+  #       {:MESSAGE_CREATE, {%{author: %{id: @easyy_user_id}, channel_id: channel_id} = message},
+  #        _state}
+  #     ) do
+  #   e = %Nostrum.Struct.Emoji{
+  #     animated: false,
+  #     id: 554_801_155_826_253_850,
+  #     managed: false,
+  #     name: "Raccy",
+  #     require_colons: true,
+  #     roles: [],
+  #     user: nil
+  #   }
 
-    Api.create_reaction(channel_id, message.id, e)
-  end
+  #   Api.create_reaction(channel_id, message.id, e)
+  # end
 
   bang "ya rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A"
   bang "yeah rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A"
