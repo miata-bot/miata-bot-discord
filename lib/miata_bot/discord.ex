@@ -149,6 +149,9 @@ defmodule MiataBot.Discord do
   bang "!spaghetti",
        "https://media.discordapp.net/attachments/322080529245798401/611652555037999124/RZ1AVzfrlMtElpqJQLAYfshvvmll12ED3q9MILYBYDESQeWyXiCLu0-93k76UCBtN9RFGjMaFoNme8whKXqXQXTZMWSeR4F4K8hS.png?width=494&height=659"
 
+  bang "!boogerwelds",
+       "https://media.discordapp.net/attachments/500143495043088395/631212983875272754/MvLRsuarIkV9veiMwWjIOT3MMVSIiqAp-mYEYVJtSuXroGeOzp5CVWNZ8TZ8pcG13CiXpjIW823BjyZNL-ABnj4mC_sdNKETxtc9.png?width=494&height=659"
+
   # {:TYPING_START,
   #  {%{
   #     channel_id: 565_041_170_351_259_648,
