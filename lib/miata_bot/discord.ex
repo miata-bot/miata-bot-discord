@@ -254,7 +254,10 @@ defmodule MiataBot.Discord do
     end
   end
 
-  def handle_event({:GUILD_MEMBER_UPDATE, {_member_id, old, new}, _ws_state}) do
+  def handle_event({:GUILD_MEMBER_UPDATE, {guild_id, old, new} = payload, _ws_state}) do
+    Logger.info("guild member update: #{inspect(payload)}")
+    true = :ets.insert(:"#{guild_id}", {new.user.id, new})
+
     if @looking_for_miata_role_id in (new.roles -- old.roles) do
       Logger.info("refreshing timer for #{new.user.username}")
       timer = ensure_looking_for_miata_timer(new)
@@ -331,8 +334,10 @@ defmodule MiataBot.Discord do
     Api.create_message(channel_id, embed: embed)
   end
 
-  def handle_command("carinfo get" <> user, %{channel_id: channel_id}) do
-    case get_user(user) do
+  def handle_command("carinfo get" <> user, %{channel_id: channel_id} = message) do
+    Logger.info("message=#{inspect(message)}")
+
+    case get_user(message) do
       {:ok, user} ->
         embed = carinfo(user)
         Api.create_message(channel_id, embed: embed)
@@ -422,18 +427,48 @@ defmodule MiataBot.Discord do
 
   defp extract_year(_), do: nil
 
-  defp get_user("<@!" <> almost_snowflake) do
-    snowflake = String.trim_trailing(almost_snowflake, ">")
-    get_user(snowflake)
+  defp get_user(%{mentions: [user | _]}) do
+    {:ok, user}
+  end
+
+  defp get_user(%{content: "$carinfo get" <> identifier} = message) do
+    case String.trim(identifier) do
+      "" ->
+        {:ok, message.author}
+
+      str ->
+        case Nostrum.Snowflake.cast(str) do
+          {:ok, snowflake} ->
+            Logger.info("using snowflake: #{str}")
+            Api.get_user(snowflake)
+
+          :error ->
+            Logger.info("using nick: #{str}")
+            get_user(str)
+        end
+    end
   end
 
   defp get_user(user) do
-    case Nostrum.Snowflake.cast(user) do
-      {:ok, snowflake} ->
-        Api.get_user(snowflake)
+    Logger.info("looking up by nick: #{user}")
 
-      _ ->
-        {:error, "unknown user"}
+    maybe_member =
+      :ets.match_object(:"322080266761797633", {:"$0", :"$1"})
+      |> Enum.find(fn
+        {id, %{nick: ^user}} ->
+          true
+
+        {id, %{user: %{username: ^user}}} ->
+          true
+
+        {_id, member} ->
+          # Logger.info "not match: #{inspect(member)}"
+          false
+      end)
+
+    case maybe_member do
+      {id, _member} -> Api.get_user(id)
+      nil -> {:error, "unable to match: #{user}"}
     end
   end
 
