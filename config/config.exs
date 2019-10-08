@@ -3,7 +3,7 @@
 use Mix.Config
 
 config :nostrum,
-  token: "NTgwNTAwODkzODYzMTE2ODA1.XOR8uQ.3uk-kcSwtce_A_2MBXftw7aVzM8",
+  token: System.get_env("DISCORD_TOKEN") || "${DISCORD_TOKEN}",
   num_shards: :auto
 
 config :miata_bot, ecto_repos: [MiataBot.Repo]
