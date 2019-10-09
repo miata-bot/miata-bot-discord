@@ -46,7 +46,8 @@ defmodule MiataBot.MixProject do
       {:ring_logger, "~> 0.7.0"},
       {:mogrify, "~> 0.7.2"},
       {:timex, "~> 3.5"},
-      {:nostrum, github: "Kraigie/nostrum"}
+      {:nostrum, github: "Kraigie/nostrum"},
+      {:oauth2, "~> 2.0"}
     ]
   end
 
