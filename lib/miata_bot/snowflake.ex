@@ -15,4 +15,9 @@ defmodule MiataBot.Snowflake do
   def load(term) do
     Nostrum.Snowflake.cast(term)
   end
+
+  def embed_as(_format), do: :self
+
+  def equal?(term, term), do: true
+  def equal?(_, _), do: false
 end
