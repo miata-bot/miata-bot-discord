@@ -7,4 +7,9 @@ defmodule MiataBotWeb.GuildController do
     guilds = MiataBot.Discord.OAuth2.get_guilds!(access_token)
     render(conn, "index.html", guilds: guilds)
   end
+
+  def show(conn, %{"id" => guild_id}) do
+    guild = Nostrum.Api.get_guild!(guild_id)
+    render(conn, "show.html", guild: guild)
+  end
 end

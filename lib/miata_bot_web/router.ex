@@ -35,7 +35,7 @@ defmodule MiataBotWeb.Router do
 
   scope "/", MiataBotWeb do
     pipe_through [:browser, :discord_oauth2]
-    get "/guilds", GuildController, :index
+    resources "/guilds", GuildController, only: [:index, :show]
   end
 
   # Other scopes may use custom stacks.

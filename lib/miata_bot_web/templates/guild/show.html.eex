@@ -1,0 +1,15 @@
+<h2> <%= @guild.name %> <%= @guild.id %> </h2>
+
+<h3> Roles </h3>
+<table style="width:100%">
+  <tr>
+    <th>Name</th>
+    <th>ID</th>
+  </tr>
+  <%= for {_, %{name: name, id: id}} <- @guild.roles do %>
+    <tr>
+      <td> <%= name %> </td>
+      <td> <%= id %> </td>
+    </tr>
+  <% end %>
+</table> 
