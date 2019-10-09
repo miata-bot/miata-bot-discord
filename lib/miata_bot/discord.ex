@@ -21,6 +21,26 @@ defmodule MiataBot.Discord do
   @maysh_user_id 326_204_806_165_430_273
   @justin_user_id 126_155_471_886_352_385
   @easyy_user_id 151_099_008_230_752_256
+  @help_message %Embed{}
+                |> Embed.put_title("Available commands")
+                |> Embed.put_field("carinfo", """
+                Shows the author's carinfo
+                """)
+                |> Embed.put_field("carinfo get <user>", """
+                Shows a users carinfo
+                """)
+                |> Embed.put_field("carinfo update title", """
+                Sets the author's carinfo title
+                """)
+                |> Embed.put_field("carinfo update image", """
+                Updates the author's carinfo from an attached photo
+                """)
+                |> Embed.put_field("carinfo update year <year>", """
+                Sets the author's carinfo year
+                """)
+                |> Embed.put_field("carinfo update color code <color>", """
+                Sets the author's carinfo color code
+                """)
 
   Module.register_attribute(__MODULE__, :bangs, accumulate: true)
 
@@ -307,29 +327,11 @@ defmodule MiataBot.Discord do
   end
 
   def handle_command("help", %{channel_id: channel_id}) do
-    embed =
-      %Embed{}
-      |> Embed.put_title("Available commands")
-      |> Embed.put_field("carinfo", """
-      Shows the author's carinfo
-      """)
-      |> Embed.put_field("carinfo get <user>", """
-      Shows a users carinfo
-      """)
-      |> Embed.put_field("carinfo update title", """
-      Sets the author's carinfo title
-      """)
-      |> Embed.put_field("carinfo update image", """
-      Updates the author's carinfo from an attached photo
-      """)
-      |> Embed.put_field("carinfo update year <year>", """
-      Sets the author's carinfo year
-      """)
-      |> Embed.put_field("carinfo update color code <color>", """
-      Sets the author's carinfo color code
-      """)
+    Api.create_message(channel_id, embed: @help_message)
+  end
 
-    Api.create_message(channel_id, embed: embed)
+  def handle_command("carinfo help", %{channel_id: channel_id}) do
+    Api.create_message(channel_id, embed: @help_message)
   end
 
   def handle_command("carinfo", %{channel_id: channel_id, author: author}) do
