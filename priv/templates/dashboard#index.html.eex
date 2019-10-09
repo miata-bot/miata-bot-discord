@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<table>
+  <tr>
+    <%= for guild <- guilds do %>
+      <td>
+        <a href="/dashboard/<%= guild.id %>"> <%= guild.id %> </a>
+      </td>
+    <% end %>
+  </tr>
+</table>
+
+</body>
+</html>

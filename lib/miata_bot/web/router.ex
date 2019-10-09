@@ -1,4 +1,5 @@
 defmodule MiataBot.Web.Router do
+  alias MiataBot.GuildCache
   use Plug.Router
   require Logger
 
@@ -10,8 +11,19 @@ defmodule MiataBot.Web.Router do
     send_resp(conn, 200, "hello, world")
   end
 
+  get "/dashboard" do
+    guilds = GuildCache.list_guilds()
+    send_resp(conn, 200, eval_template("dashboard#index.html.eex", guilds: guilds))
+  end
+
   get "/dashboard/:guild_id" do
-    send_resp(conn, 200, eval_template("dashboard.html.eex"))
+    case GuildCache.get_guild(guild_id) do
+      nil ->
+        send_resp(conn, 404, "could not find guild: #{guild_id}")
+
+      guild ->
+        send_resp(conn, 200, eval_template("dashboard#show.html.eex", guild: guild))
+    end
   end
 
   match _ do

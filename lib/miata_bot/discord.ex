@@ -229,9 +229,9 @@ defmodule MiataBot.Discord do
     end
   end
 
-  def handle_event({:GUILD_AVAILABLE, {%{id: guild_id, members: members}}, _ws_state}) do
+  def handle_event({:GUILD_AVAILABLE, {%{id: guild_id, members: members} = guild}, _ws_state}) do
     # Logger.info("GUILD AVAILABLE: #{inspect(data, limit: :infinity)}")
-    GuildCache.upsert_guild(guild_id)
+    GuildCache.upsert_guild(guild)
 
     for {member_id, m} <- members do
       true = GuildCache.upsert_guild_member(guild_id, member_id, m)
@@ -303,7 +303,7 @@ defmodule MiataBot.Discord do
     Api.create_message(channel_id, embed: @help_message)
   end
 
-  def handle_command("carinfo me" <> _, %{channel_id: channel_id, author: author} = message) do
+  def handle_command("carinfo me" <> _, %{channel_id: channel_id, author: author}) do
     embed = carinfo(author)
     Api.create_message(channel_id, embed: embed)
   end
@@ -430,7 +430,7 @@ defmodule MiataBot.Discord do
     Logger.info("looking up by nick: #{nick}")
 
     maybe_member =
-      Enum.find(GuildCache.all_guild_members(guild_id), fn
+      Enum.find(GuildCache.list_guild_members(guild_id), fn
         {_id, %{nick: ^nick}} ->
           true
 
