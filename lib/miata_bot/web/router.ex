@@ -10,36 +10,16 @@ defmodule MiataBot.Web.Router do
     send_resp(conn, 200, "hello, world")
   end
 
-  get "/qr/:id" do
-    Logger.info("#{inspect(conn.params)}")
-    qr = MiataBot.Repo.get_by!(MiataBot.QRCode, id: id)
-
-    qr =
-      qr
-      |> MiataBot.QRCode.changeset(%{scans: qr.scans + 1})
-      |> MiataBot.Repo.update!()
-
-    # Nostrum.Api.create_message(
-    #   qr.discord_channel_id,
-    #   "<@!#{qr.discord_user_id}> #{qr.message}\n(Scanned: #{qr.scans} times)"
-    # )
-
-    resp =
-      Poison.encode!(%{
-        discord_guild_id: qr.discord_guild_id,
-        discord_channel_id: qr.discord_channel_id,
-        discord_user_id: qr.discord_user_id,
-        scans: qr.scans,
-        inserted_at: qr.inserted_at,
-        updated_at: qr.updated_at
-      })
-
-    conn
-    |> put_resp_content_type("application/json")
-    |> send_resp(200, resp)
+  get "/dashboard/:guild_id" do
+    send_resp(conn, 200, eval_template("dashboard.html.eex"))
   end
 
   match _ do
     send_resp(conn, 404, "oops")
+  end
+
+  def eval_template(file, bindings \\ []) do
+    file = Application.app_dir(:miata_bot, ["priv", "templates", file])
+    EEx.eval_file(file, bindings)
   end
 end

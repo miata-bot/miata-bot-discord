@@ -6,6 +6,7 @@ defmodule MiataBot.Discord do
   }
 
   import MiataBot.Discord.Util
+  alias MiataBot.GuildCache
 
   require Logger
 
@@ -13,14 +14,14 @@ defmodule MiataBot.Discord do
   alias Nostrum.Api
   alias Nostrum.Struct.Embed
 
-  @miata_discord_guild_id 322_080_266_761_797_633
+  # @miata_discord_guild_id 322_080_266_761_797_633
   # 322080266761797633
   @verification_channel_id 322_127_502_212_333_570
   @looking_for_miata_role_id 504_088_951_485_890_561
   # @miata_fan_role_id 439_493_557_301_280_789
   @maysh_user_id 326_204_806_165_430_273
-  @justin_user_id 126_155_471_886_352_385
-  @easyy_user_id 151_099_008_230_752_256
+  # @justin_user_id 126_155_471_886_352_385
+  # @easyy_user_id 151_099_008_230_752_256
   @help_message %Embed{}
                 |> Embed.put_title("Available commands")
                 |> Embed.put_field("carinfo", """
@@ -199,32 +200,6 @@ defmodule MiataBot.Discord do
   #   Api.create_message!(channel_id, "<@!126155471886352385> get rekt newb")
   # end
 
-  def handle_event({:MESSAGE_CREATE, {%{content: <<"!qr ", content::binary>>} = message}, _state}) do
-    Logger.info("#{inspect(message, limit: :infinity)}")
-
-    case String.split(content, " ") do
-      [nick | msg] ->
-        msg = Enum.join(msg, " ")
-
-        user_id =
-          :ets.match_object(:"322080266761797633", {:"$0", :"$1"})
-          |> Enum.find_value(fn
-            {user_id, %{nick: ^nick}} -> user_id
-            {user_id, %{user: %{username: ^nick}}} -> user_id
-            _ -> false
-          end)
-
-        if user_id do
-          qr(message.channel_id, user_id, msg)
-        else
-          Api.create_message!(message.channel_id, "Could not find user by alias: #{nick}")
-        end
-
-      _ ->
-        Api.create_message!(message.channel_id, "Usage: !qr USER MESSAGE")
-    end
-  end
-
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
   end
@@ -254,22 +229,12 @@ defmodule MiataBot.Discord do
     end
   end
 
-  def handle_event({:GUILD_AVAILABLE, {data}, _ws_state}) do
+  def handle_event({:GUILD_AVAILABLE, {%{id: guild_id, members: members}}, _ws_state}) do
     # Logger.info("GUILD AVAILABLE: #{inspect(data, limit: :infinity)}")
-    table_name = String.to_atom(to_string(data.id))
+    GuildCache.upsert_guild(guild_id)
 
-    case :ets.whereis(table_name) do
-      :undefined ->
-        Logger.warn("Creating new table: #{inspect(table_name)}")
-        ^table_name = MiataBot.Ets.new(table_name, [:named_table, :ordered_set, :public])
-
-      ref when is_reference(ref) ->
-        Logger.warn("Table already created: #{inspect(table_name)}")
-        table_name
-    end
-
-    for {member_id, m} <- data.members do
-      true = :ets.insert(table_name, {member_id, m})
+    for {member_id, m} <- members do
+      true = GuildCache.upsert_guild_member(guild_id, member_id, m)
 
       if @looking_for_miata_role_id in m.roles do
         ensure_looking_for_miata_timer(m)
@@ -279,7 +244,7 @@ defmodule MiataBot.Discord do
 
   def handle_event({:GUILD_MEMBER_UPDATE, {guild_id, old, new} = payload, _ws_state}) do
     Logger.info("guild member update: #{inspect(payload)}")
-    true = :ets.insert(:"#{guild_id}", {new.user.id, new})
+    GuildCache.upsert_guild_member(guild_id, new.user.id, new)
 
     if @looking_for_miata_role_id in (new.roles -- old.roles) do
       Logger.info("refreshing timer for #{new.user.username}")
@@ -449,54 +414,30 @@ defmodule MiataBot.Discord do
 
           :error ->
             Logger.info("using nick: #{str}")
-            get_user(str)
+            get_user_by_nick(str, message)
         end
     end
   end
 
-  defp get_user(user) do
-    Logger.info("looking up by nick: #{user}")
+  defp get_user_by_nick(nick, %{guild_id: guild_id} = _message) do
+    Logger.info("looking up by nick: #{nick}")
 
     maybe_member =
-      :ets.match_object(:"322080266761797633", {:"$0", :"$1"})
-      |> Enum.find(fn
-        {id, %{nick: ^user}} ->
+      Enum.find(GuildCache.all_guild_members(guild_id), fn
+        {_id, %{nick: ^nick}} ->
           true
 
-        {id, %{user: %{username: ^user}}} ->
+        {_id, %{user: %{username: ^nick}}} ->
           true
 
-        {_id, member} ->
+        {_id, _member} ->
           # Logger.info "not match: #{inspect(member)}"
           false
       end)
 
     case maybe_member do
       {id, _member} -> Api.get_user(id)
-      nil -> {:error, "unable to match: #{user}"}
+      nil -> {:error, "unable to match: #{nick}"}
     end
-  end
-
-  def qr(channel_id, user_id, message) do
-    url = Application.get_all_env(:miata_bot)[MiataBot.Web.Endpoint][:url]
-
-    miata_qr =
-      MiataBot.QRCode.changeset(%MiataBot.QRCode{}, %{
-        discord_channel_id: channel_id,
-        discord_user_id: user_id,
-        discord_guild_id: @miata_discord_guild_id,
-        message: message
-      })
-      |> Repo.insert!()
-
-    url = url <> "/qr/#{miata_qr.id}"
-    {:ok, qr} = QRCode.create(url)
-    {:ok, _} = QRCode.Svg.save_as(qr, "/tmp/#{miata_qr.id}.svg")
-
-    Mogrify.open("/tmp/#{miata_qr.id}.svg")
-    |> Mogrify.format("png")
-    |> Mogrify.save(path: "/tmp/#{miata_qr.id}.png")
-
-    Nostrum.Api.create_message!(channel_id, file: "/tmp/#{miata_qr.id}.png")
   end
 end
