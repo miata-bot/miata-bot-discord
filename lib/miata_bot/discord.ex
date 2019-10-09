@@ -299,7 +299,11 @@ defmodule MiataBot.Discord do
     Api.create_message(channel_id, embed: @help_message)
   end
 
-  def handle_command("carinfo", %{channel_id: channel_id, author: author}) do
+  def handle_command("carinfo", %{channel_id: channel_id}) do
+    Api.create_message(channel_id, embed: @help_message)
+  end
+
+  def handle_command("carinfo me" <> _, %{channel_id: channel_id, author: author} = message) do
     embed = carinfo(author)
     Api.create_message(channel_id, embed: embed)
   end
@@ -403,6 +407,9 @@ defmodule MiataBot.Discord do
 
   defp get_user(%{content: "$carinfo get" <> identifier} = message) do
     case String.trim(identifier) do
+      "me" ->
+        {:ok, message.author}
+
       "" ->
         {:ok, message.author}
 
