@@ -1,8 +1,0 @@
-<!DOCTYPE html>
-<html>
-<body>
-
-Guild info: <%= guild.id %>
-
-</body>
-</html>

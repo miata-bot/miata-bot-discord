@@ -1,4 +1,4 @@
-defmodule MiataBot.Web.HerokuTask do
+defmodule MiataBotWeb.HerokuTask do
   use GenServer
 
   def start_link(args) do
@@ -6,6 +6,7 @@ defmodule MiataBot.Web.HerokuTask do
   end
 
   def init(args) do
+    args = Keyword.merge(Application.get_env(:miata_bot, __MODULE__, []), args)
     url = Keyword.fetch!(args, :url)
     {:ok, url, 5000}
   end
