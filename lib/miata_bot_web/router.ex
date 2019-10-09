@@ -1,5 +1,6 @@
 defmodule MiataBotWeb.Router do
   use MiataBotWeb, :router
+  require Logger
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -7,6 +8,18 @@ defmodule MiataBotWeb.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+  end
+
+  pipeline :discord_oauth2 do
+    plug :ensure_discord_auth
+  end
+
+  def ensure_discord_auth(conn, _opts) do
+    if is_nil(get_session(conn, "discord_token")) do
+      send_resp(conn, 401, "not authenticated by discord!")
+    else
+      conn
+    end
   end
 
   pipeline :api do
@@ -17,6 +30,12 @@ defmodule MiataBotWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    get "/auth/callback", AuthCallbackController, :index
+  end
+
+  scope "/", MiataBotWeb do
+    pipe_through [:browser, :discord_oauth2]
+    get "/guilds", GuildController, :index
   end
 
   # Other scopes may use custom stacks.

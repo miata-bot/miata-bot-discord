@@ -11,6 +11,13 @@ config :nostrum,
   token: System.get_env("DISCORD_TOKEN") || "${DISCORD_TOKEN}",
   num_shards: :auto
 
+config :miata_bot, MiataBot.Discord.OAuth2,
+  client_id: System.get_env("DISCORD_CLIENT_ID"),
+  client_secret: System.get_env("DISCORD_CLIENT_SECRET"),
+  redirect_uri: System.get_env("DISCORD_REDIRECT_URI")
+
+config :miata_bot, MiataBotWeb.PageController, auth_url: System.get_env("DISCORD_AUTH_URL")
+
 config :miata_bot,
   ecto_repos: [MiataBot.Repo]
 
