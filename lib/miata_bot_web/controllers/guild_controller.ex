@@ -9,6 +9,7 @@ defmodule MiataBotWeb.GuildController do
   end
 
   def show(conn, %{"id" => guild_id}) do
+    {:ok, guild_id} = MiataBot.Snowflake.cast(guild_id)
     guild = Nostrum.Api.get_guild!(guild_id)
     render(conn, "show.html", guild: guild)
   end
