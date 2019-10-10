@@ -11,6 +11,7 @@ defmodule MiataBot.Application do
       # Start the Ecto repository
       MiataBot.Repo,
       MiataBot.Discord.Supervisor,
+      MiataBot.CopyPastaWorker,
       MiataBot.LookingForMiataWorker,
       # Start the endpoint when the application starts
       MiataBotWeb.Endpoint,

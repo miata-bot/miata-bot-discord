@@ -1,12 +1,13 @@
 defmodule MiataBot.Discord do
   alias MiataBot.{
     Repo,
+    CopyPastaWorker,
     Carinfo,
+    GuildCache,
     LookingForMiataTimer
   }
 
   import MiataBot.Discord.Util
-  alias MiataBot.GuildCache
 
   require Logger
 
@@ -22,6 +23,7 @@ defmodule MiataBot.Discord do
   @maysh_user_id 326_204_806_165_430_273
   # @justin_user_id 126_155_471_886_352_385
   # @easyy_user_id 151_099_008_230_752_256
+  @memes_channel_id 555_431_196_884_992_000
   @help_message %Embed{}
                 |> Embed.put_title("Available commands")
                 |> Embed.put_field("carinfo", """
@@ -257,6 +259,11 @@ defmodule MiataBot.Discord do
       |> Embed.put_title("let me google that for you")
 
     Api.create_message!(channel_id, embed: embed)
+  end
+
+  def handle_event({:MESSAGE_CREATE, {%{channel_id: @memes_channel_id} = message}, _state}) do
+    CopyPastaWorker.activity(message)
+    :noop
   end
 
   def handle_event({:MESSAGE_CREATE, {%{channel_id: @verification_channel_id} = message}, _state}) do
