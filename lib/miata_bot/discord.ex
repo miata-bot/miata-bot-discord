@@ -403,7 +403,13 @@ defmodule MiataBot.Discord do
     do_update(channel_id, author, params)
   end
 
-  def handle_command(_command, message) do
+  def handle_command("miatabot auth", message) do
+    url = Application.get_env(:miata_bot, MiataBotWeb.PageController)[:auth_url]
+    Api.create_message!(message.channel_id, url || "no url specified")
+  end
+
+  def handle_command(command, message) do
+    Logger.debug("unknown command #{command}: #{inspect(message, limit: :infinity)}")
     IO.inspect(message, label: "unhandled command")
   end
 
