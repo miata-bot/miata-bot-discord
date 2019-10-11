@@ -18,6 +18,8 @@ config :miata_bot, MiataBot.Discord.OAuth2,
 
 config :miata_bot, MiataBotWeb.PageController, auth_url: System.get_env("DISCORD_AUTH_URL")
 
+config :miata_bot, Nrel, api_key: System.get_env("NREL_API_KEY")
+
 config :miata_bot,
   ecto_repos: [MiataBot.Repo]
 

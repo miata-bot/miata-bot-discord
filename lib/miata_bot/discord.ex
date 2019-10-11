@@ -45,6 +45,15 @@ defmodule MiataBot.Discord do
                 Sets the author's carinfo color code
                 """)
 
+  @e85_help_message %Embed{}
+                    |> Embed.put_title("Available E85 commands")
+                    |> Embed.put_field("e85 zip <zip>", """
+                    Shows e85 stations in a zip
+                    """)
+                    |> Embed.put_field("e85 state <state code>", """
+                    Shows e85 stations in a state
+                    """)
+
   Module.register_attribute(__MODULE__, :bangs, accumulate: true)
 
   def start_link do
@@ -340,6 +349,34 @@ defmodule MiataBot.Discord do
     Api.create_message!(channel_id, "Available bangs: #{msg}")
   end
 
+  def handle_command("e85 state " <> state_code, %{channel_id: channel_id}) do
+    state_code = String.upcase(state_code)
+
+    case Nrel.e85_stations_by_state(state_code, %{limit: 5}) do
+      {:ok, stations} ->
+        embed = e85_stations_to_embed(stations)
+        Api.create_message!(channel_id, embed: embed)
+
+      _ ->
+        Api.create_message!(channel_id, "developer.nrel.gov is currently unavailable")
+    end
+  end
+
+  def handle_command("e85 zip " <> zip_code, %{channel_id: channel_id}) do
+    case Nrel.e85_stations_by_zip(zip_code, %{limit: 5}) do
+      {:ok, stations} ->
+        embed = e85_stations_to_embed(stations)
+        Api.create_message!(channel_id, embed: embed)
+
+      _ ->
+        Api.create_message!(channel_id, "developer.nrel.gov is currently unavailable")
+    end
+  end
+
+  def handle_command("e85" <> _, %{channel_id: channel_id}) do
+    Api.create_message!(channel_id, embed: @e85_help_message)
+  end
+
   def handle_command("help", %{channel_id: channel_id}) do
     Api.create_message(channel_id, embed: @help_message)
   end
@@ -501,5 +538,41 @@ defmodule MiataBot.Discord do
       {id, _member} -> Api.get_user(id)
       nil -> {:error, "unable to match: #{nick}"}
     end
+  end
+
+  def e85_stations_to_embed(stations) do
+    embed =
+      %Embed{}
+      |> Embed.put_title("E85 search result")
+
+    # |> Embed.put_description()
+    # |> Embed.put_color(14_734_378)
+
+    Enum.reduce(stations, embed, fn
+      %{
+        "station_name" => name,
+        "street_address" => address,
+        "city" => city,
+        "state" => state,
+        "station_phone" => phone,
+        "access_days_time" => access_days_time
+        # "e85_other_ethanol_blends" => blends
+      },
+      embed ->
+        embed
+        |> Embed.put_field(name || "unnamed station", """
+        **Address**
+        #{address} #{city}, #{state}
+
+        **Phone Number**
+        #{phone}
+
+        **Access**
+        #{access_days_time}
+        """)
+
+      _, embed ->
+        embed
+    end)
   end
 end

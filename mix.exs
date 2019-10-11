@@ -47,7 +47,8 @@ defmodule MiataBot.MixProject do
       {:mogrify, "~> 0.7.2"},
       {:timex, "~> 3.5"},
       {:nostrum, github: "Kraigie/nostrum"},
-      {:oauth2, "~> 2.0"}
+      {:oauth2, "~> 2.0"},
+      {:tesla, "~> 1.3"}
     ]
   end
 
