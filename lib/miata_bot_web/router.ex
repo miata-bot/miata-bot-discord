@@ -31,6 +31,7 @@ defmodule MiataBotWeb.Router do
 
     get "/", PageController, :index
     get "/auth/callback", AuthCallbackController, :index
+    get "/copypasta", CopyPastaController, :index
   end
 
   scope "/", MiataBotWeb do
