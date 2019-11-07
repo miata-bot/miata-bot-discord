@@ -66,6 +66,20 @@ defmodule MiataBot.Discord do
   #   Api.delete_message(message)
   # end
 
+  # uncomment to own Syylo#2314
+  # def handle_event({:MESSAGE_CREATE, {%{author: %{id: 234461132881002498}, channel_id: channel_id} = message}, _state}) do
+  #   Nostrum.Api.modify_guild_member(322_080_266_761_797_633, 234461132881002498, [nick: "annoying shitlord"])
+  #   Api.create_message(channel_id, "<@!234461132881002498> stop being an annoying shitlord")
+  #   Api.delete_message(message)
+  # end
+
+  # uncomment to own Syylo#2314
+  # def handle_event({:MESSAGE_CREATE, {%{author: %{id: 611072179991478272}, channel_id: channel_id} = message}, _state}) do
+  #   Nostrum.Api.modify_guild_member(322_080_266_761_797_633, 611072179991478272, [nick: "still an annoying shitlord"])
+  #   # Api.create_message(channel_id, "<@!611072179991478272> stop being an annoying shitlord")
+  #   Api.delete_message(message)
+  # end
+
   # Uncomment to own Dey See Me Corollin
   # @dey_see_me_corollin_user_id 234_361_846_092_660_738
   # @general_miata_channel_id 322_080_266_761_797_633
