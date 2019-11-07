@@ -349,6 +349,10 @@ defmodule MiataBot.Discord do
     Api.create_message!(channel_id, "Available bangs: #{msg}")
   end
 
+  def handle_command("copypasta", %{channel_id: channel_id}) do
+    do_copypasta(channel_id)
+  end
+
   def handle_command("e85 state " <> state_code, %{channel_id: channel_id}) do
     state_code = String.upcase(state_code)
 
@@ -574,5 +578,26 @@ defmodule MiataBot.Discord do
       _, embed ->
         embed
     end)
+  end
+
+  def do_copypasta(channel_id, attempts \\ 0)
+
+  def do_copypasta(channel_id, 10) do
+    Logger.error("failed to get any copypastas")
+    Api.create_message(channel_id, "failed to get any copypastas")
+  end
+
+  def do_copypasta(channel_id, attempts) do
+    paste = PastebinRandomizer.good_paste()
+    copypasta = PastebinRandomizer.get(paste)
+
+    case Api.create_message(channel_id, copypasta) do
+      {:error, reason} ->
+        Logger.error("copypasta randomizer error: #{inspect(reason)}")
+        do_copypasta(channel_id, attempts + 1)
+
+      _ ->
+        :ok
+    end
   end
 end
