@@ -1,5 +1,6 @@
 defmodule PastebinRandomizer do
   require Logger
+  use GenServer
 
   def good_paste do
     Enum.random([
