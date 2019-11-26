@@ -11,6 +11,7 @@ defmodule MiataBot.Application do
       PastebinRandomizer,
       # Start the Ecto repository
       MiataBot.Repo,
+      MiataBot.GuildCache.Supervisor,
       MiataBot.Discord.Supervisor,
       MiataBot.CopyPastaWorker,
       MiataBot.LookingForMiataWorker,

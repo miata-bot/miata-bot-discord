@@ -1,57 +1,57 @@
 defmodule MiataBot.GuildCache do
   require Logger
-  @miata_bot_guilds __MODULE__
+  use GenServer
 
   def upsert_guild(%{id: guild_id} = guild) do
-    # this really should not be here...
-    case :ets.whereis(:miata_bot_guilds) do
-      :undefined ->
-        Logger.warn("Creating guild cache")
-
-        @miata_bot_guilds = :ets.new(@miata_bot_guilds, [:named_table, :ordered_set, :public])
-
-      ref when is_reference(ref) ->
-        @miata_bot_guilds
-    end
-
-    true = :ets.insert(@miata_bot_guilds, {guild_id, guild})
-
-    table_name = table_name(guild_id)
-
-    case :ets.whereis(table_name) do
-      :undefined ->
-        Logger.warn("Creating new table: #{inspect(table_name)}")
-        ^table_name = :ets.new(table_name, [:named_table, :ordered_set, :public])
-
-      ref when is_reference(ref) ->
-        Logger.warn("Table already created: #{inspect(table_name)}")
-        table_name
-    end
+    GenServer.call(table_name(guild_id), {:upsert_guild, guild})
   end
 
-  def list_guilds() do
-    :ets.match_object(@miata_bot_guilds, {:"$0", :"$1"})
-    |> Enum.map(fn {_, guild} -> guild end)
+  def get_guild(%{id: guild_id}) do
+    get_guild(guild_id)
   end
 
   def get_guild(guild_id) when is_binary(guild_id) do
     get_guild(String.to_integer(guild_id))
   end
 
-  def get_guild(guild_id) do
-    :ets.match_object(@miata_bot_guilds, {:"$0", :"$1"})
-    |> Enum.find_value(fn
-      {^guild_id, guild} -> guild
-      _ -> nil
-    end)
+  def get_guild(guild_id) when is_integer(guild_id) do
+    GenServer.call(table_name(guild_id), :get_guild)
   end
 
   def upsert_guild_member(guild_id, member_id, member) do
-    :ets.insert(table_name(guild_id), {member_id, member})
+    GenServer.call(table_name(guild_id), {:upsert_guild_member, member_id, member})
   end
 
   def list_guild_members(guild_id) do
-    :ets.match_object(table_name(guild_id), {:"$0", :"$1"})
+    GenServer.call(table_name(guild_id), :list_guild_members)
+  end
+
+  def start_link(%{id: guild_id} = guild) do
+    GenServer.start_link(__MODULE__, guild, name: table_name(guild_id))
+  end
+
+  def init(guild) do
+    table_name = table_name(guild.id)
+    ^table_name = :ets.new(table_name, [:named_table, :ordered_set, :public])
+    {:ok, %{guild: guild, table: table_name}}
+  end
+
+  def handle_call({:upsert_guild, guild}, _from, state) do
+    {:reply, :ok, %{state | guild: guild}}
+  end
+
+  def handle_call(:get_guild, _from, %{guild: guild} = state) do
+    {:reply, guild, state}
+  end
+
+  def handle_call({:upsert_guild_member, member_id, member}, _from, %{table: table} = state) do
+    reply = :ets.insert(table, {member_id, member})
+    {:reply, reply, state}
+  end
+
+  def handle_call(:list_guild_members, _from, %{table: table} = state) do
+    reply = :ets.match_object(table, {:"$0", :"$1"})
+    {:reply, reply, state}
   end
 
   def table_name(guild_id), do: String.to_atom(to_string(guild_id))
