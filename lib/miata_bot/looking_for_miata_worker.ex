@@ -1,7 +1,8 @@
 defmodule MiataBot.LookingForMiataWorker do
   use GenServer
+  require Logger
   alias Nostrum.Struct.Embed
-  alias MiataBot.{Repo, LookingForMiataTimer}
+  alias MiataBot.{GuildCache, Repo, LookingForMiataTimer}
   # @seconds_in_a_day 86400
   @miata_discord_guild_id 322_080_266_761_797_633
   @looking_for_miata_role_id 504_088_951_485_890_561
@@ -52,7 +53,11 @@ defmodule MiataBot.LookingForMiataWorker do
   end
 
   def do_expire_timer(timer) do
-    member = Nostrum.Api.get_guild_member!(@miata_discord_guild_id, timer.discord_user_id)
+    member =
+      GuildCache.get_guild_member(@miata_discord_guild_id, timer.discord_user_id) ||
+        Nostrum.Api.get_guild_member!(@miata_discord_guild_id, timer.discord_user_id)
+
+    Logger.info("expiring timer for member: #{inspect(member)}")
 
     with {:ok} <- remove_looking_for_miata(member.user.id),
          {:ok} <- add_miata_fan(member.user.id) do

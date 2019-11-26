@@ -22,6 +22,10 @@ defmodule MiataBot.GuildCache do
     GenServer.call(table_name(guild_id), {:upsert_guild_member, member_id, member})
   end
 
+  def get_guild_member(guild_id, member_id) do
+    GenServer.call(table_name(guild_id), {:get_guild_member, member_id})
+  end
+
   def list_guild_members(guild_id) do
     GenServer.call(table_name(guild_id), :list_guild_members)
   end
@@ -52,6 +56,16 @@ defmodule MiataBot.GuildCache do
   def handle_call(:list_guild_members, _from, %{table: table} = state) do
     reply = :ets.match_object(table, {:"$0", :"$1"})
     {:reply, reply, state}
+  end
+
+  def handle_call({:get_guild_member, member_id}, _from, %{table: table} = state) do
+    case :ets.match_object(table, {member_id, :"$0"}) do
+      [{_id, member}] ->
+        {:reply, member, state}
+
+      [] ->
+        {:reply, nil, state}
+    end
   end
 
   def table_name(guild_id), do: String.to_atom(to_string(guild_id))
