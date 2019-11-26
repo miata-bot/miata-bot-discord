@@ -54,22 +54,41 @@ defmodule MiataBot.LookingForMiataWorker do
   def do_expire_timer(timer) do
     member = Nostrum.Api.get_guild_member!(@miata_discord_guild_id, timer.discord_user_id)
 
-    embed =
-      %Embed{}
-      |> Embed.put_color(1_146_534)
-      |> Embed.put_author(
-        "#{member.user.username}##{member.user.discriminator}",
-        nil,
-        "https://cdn.discordapp.com/avatars/#{member.user.id}/#{member.user.avatar}?size=128"
-      )
-      |> Embed.put_description(
-        "**#{Nostrum.Struct.Guild.Member.mention(member)} will be demoted**"
-      )
-      |> Embed.put_footer("ID: #{member.user.id}")
+    with {:ok} <- remove_looking_for_miata(member.user.id),
+         {:ok} <- add_miata_fan(member.user.id) do
+      embed =
+        %Embed{}
+        |> Embed.put_color(1_146_534)
+        |> Embed.put_author(
+          "#{member.user.username}##{member.user.discriminator}",
+          nil,
+          "https://cdn.discordapp.com/avatars/#{member.user.id}/#{member.user.avatar}?size=128"
+        )
+        |> Embed.put_description(
+          "**#{Nostrum.Struct.Guild.Member.mention(member)} will be demoted**"
+        )
+        |> Embed.put_footer("ID: #{member.user.id}")
 
-    Nostrum.Api.create_message!(@bot_spam_channel_id, embed: embed)
-    remove_looking_for_miata(member.user.id)
-    add_miata_fan(member.user.id)
+      Nostrum.Api.create_message!(@bot_spam_channel_id, embed: embed)
+    else
+      {:error, error} ->
+        fail_embed =
+          %Embed{}
+          |> Embed.put_color(1_146_534)
+          |> Embed.put_author(
+            "#{member.user.username}##{member.user.discriminator}",
+            nil,
+            "https://cdn.discordapp.com/avatars/#{member.user.id}/#{member.user.avatar}?size=128"
+          )
+          |> Embed.put_description(
+            "**#{Nostrum.Struct.Guild.Member.mention(member)} could not be demoted: #{
+              inspect(error)
+            } **"
+          )
+          |> Embed.put_footer("ID: #{member.user.id}")
+
+        Nostrum.Api.create_message!(@bot_spam_channel_id, embed: fail_embed)
+    end
   end
 
   def add_miata_fan(user_id) do
