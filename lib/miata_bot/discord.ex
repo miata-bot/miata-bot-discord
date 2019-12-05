@@ -284,6 +284,28 @@ defmodule MiataBot.Discord do
     Api.create_message!(channel_id, embed: embed)
   end
 
+  def handle_event(
+        {:MESSAGE_CREATE, {%{content: "!mock " <> text, channel_id: channel_id} = message},
+         _state}
+      ) do
+    unless File.exists?("/tmp/spongemock") do
+      Tesla.client([Tesla.Middleware.FollowRedirects])
+      |> Tesla.get!(
+        "https://github.com/ConnorRigby/spongemock/releases/download/v0.0.1/spongemock"
+      )
+      |> Map.fetch!(:body)
+      |> (fn data ->
+            File.write!("/tmp/spongemock", data)
+            "/tmp/spongemock"
+          end).()
+      |> File.chmod(777)
+    end
+
+    {new_text, 0} = System.cmd("/tmp/spongemock", [text])
+    _ = Api.delete_message!(message)
+    _ = Api.create_message!(channel_id, new_text)
+  end
+
   def handle_event({:MESSAGE_CREATE, {%{channel_id: @memes_channel_id} = message}, _state}) do
     CopyPastaWorker.activity(message)
     :noop
