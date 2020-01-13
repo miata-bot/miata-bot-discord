@@ -20,7 +20,7 @@ defmodule MiataBot.MixProject do
   def application do
     [
       mod: {MiataBot.Application, []},
-      extra_applications: [:logger, :runtime_tools, :edg]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
@@ -49,8 +49,8 @@ defmodule MiataBot.MixProject do
       {:nostrum, github: "Kraigie/nostrum"},
       {:oauth2, "~> 2.0"},
       {:tesla, "~> 1.3"},
-      {:chisel, github: "luisgabrielroldan/chisel"},
-      {:egd, github: "erlang/egd"}
+      {:chisel, github: "luisgabrielroldan/chisel"}
+      # {:egd, github: "erlang/egd"}
     ]
   end
 
