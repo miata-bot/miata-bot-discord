@@ -13,7 +13,10 @@ defmodule MiataBot.Discord do
 
   use Nostrum.Consumer
   alias Nostrum.Api
-  alias Nostrum.Struct.Embed
+  alias Nostrum.Struct.{Embed, User}
+
+  @josh_user_id 149_677_654_101_065_728
+  @herc_user_id 226_052_366_745_600_000
 
   # @miata_discord_guild_id 322_080_266_761_797_633
   # 322080266761797633
@@ -266,6 +269,32 @@ defmodule MiataBot.Discord do
   #   Logger.info "tpye: "
   #   Api.create_message!(channel_id, "<@!126155471886352385> get rekt newb")
   # end
+
+  def handle_event({:MESSAGE_CREATE, {%{content: "!josh"} = message}, _state}) do
+    if AnnoyingPingCache.ping?(message.author.id, @josh_user_id) do
+      spam = User.mention(%User{id: @josh_user_id}) <> " auto bad lmao"
+      Api.create_message!(message.channel_id, spam)
+    else
+      spam =
+        User.mention(%User{id: message.author.id}) <>
+          " Don't be a jerk to the poor boi. he already has an auto miata."
+
+      Api.create_message!(message.channel_id, spam)
+    end
+  end
+
+  def handle_event({:MESSAGE_CREATE, {%{content: "!herc"} = message}, _state}) do
+    if AnnoyingPingCache.ping?(message.author.id, @herc_user_id) do
+      spam = User.mention(%User{id: @herc_user_id}) <> " bmw bad lmao"
+      Api.create_message!(message.channel_id, spam)
+    else
+      spam =
+        User.mention(%User{id: message.author.id}) <>
+          " Don't be a jerk to the poor boi. he likes german cars"
+
+      Api.create_message!(message.channel_id, spam)
+    end
+  end
 
   def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
     handle_command(command, message)
