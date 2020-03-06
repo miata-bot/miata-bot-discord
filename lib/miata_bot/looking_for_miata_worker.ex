@@ -75,6 +75,7 @@ defmodule MiataBot.LookingForMiataWorker do
         |> Embed.put_footer("ID: #{member.user.id}")
 
       Nostrum.Api.create_message!(@bot_spam_channel_id, embed: embed)
+      Repo.delete!(timer)
     else
       {:error, error} ->
         fail_embed =
@@ -93,10 +94,12 @@ defmodule MiataBot.LookingForMiataWorker do
           |> Embed.put_footer("ID: #{member.user.id}")
 
         Nostrum.Api.create_message!(@bot_spam_channel_id, embed: fail_embed)
+        Repo.delete!(timer)
     end
   catch
     _, error ->
       Logger.error("error doing miata timer thing idk: #{inspect(error)}")
+      Repo.delete!(timer)
   end
 
   def add_miata_fan(user_id) do
