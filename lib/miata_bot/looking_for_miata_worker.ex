@@ -94,6 +94,9 @@ defmodule MiataBot.LookingForMiataWorker do
 
         Nostrum.Api.create_message!(@bot_spam_channel_id, embed: fail_embed)
     end
+  catch
+    _, error ->
+      Logger.error("error doing miata timer thing idk: #{inspect(error)}")
   end
 
   def add_miata_fan(user_id) do
