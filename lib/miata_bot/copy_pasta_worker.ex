@@ -235,6 +235,17 @@ defmodule MiataBot.CopyPastaWorker do
     watermelon. watermelons are the best melons in history. watermelons are great i 
     absolutely adore their taste. but other types of melons are inferior.i just bought hour
     ago 3 magnificent watermelons. i ate them there is no day when i don't eat watermelons.
+    """,
+    """
+    So you motherfuckers thought you had saw the end of me huh? No you haven't and I'll continue to harass you cunts as long as it takes until you start treating people right.
+
+    You motherfuckers had no right to ban me and yet you did anyway. You motherfuckers are an EMBARRASSMENT to the Miata community and are a overall waste of space on the face of this earth. Facts.
+
+    You motherfuckers are some of the least, sympathetic, most judgemental, least accepting people I've EVER met and should be absolutely ashamed of your childish, bullying tolerant environment and behavior.
+
+    You all will never anything but a waste of human space and oxygen and your ape brains will never comprehend how to talk to people with any SHRED of charisma or tolerance. A buch of useless chad fucks that suck and fuck eachother off. Your power hungry chad mods are also nothing but a waste of human space and oxygen as they encourage the bullying just as much if not moreso..
+
+    Enjoy my reddit post on your own subreddit you pathetic chad fucks. Go back to sucking and fucking eachother until your irrelevant piece of shit server fades into obscurity, cunts
     """
   ]
 
