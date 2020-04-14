@@ -1,86 +1,117 @@
 version: 2
-jobs:
-  test:
-    working_directory: ~/miata_bot
 
+jobs:
+  deploy_api:
     docker:
-      - image: "bitwalker/alpine-elixir-phoenix:latest"
+      - image: binarynoggin/elixir-release-builder:ubuntu-18.04-elixir-1.10
+        environment:
+          MIX_ENV: prod
+          DEPLOYMENT_NAME: miata_bot
+          DEPLOY_USER: www-data
+          DEPLOY_HOST: sixtyeightplus.one
+    working_directory: ~/app
+
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "78:6f:2d:2e:34:00:1a:75:79:12:58:06:63:fd:cb:9b"
+      - checkout
+      - run: echo ${MIX_ENV} >> MIX_ENV
+      - restore_cache:
+          keys:
+            - v0-mix-dependency-cache-{{ checksum "mix.lock" }}-{{ checksum "MIX_ENV" }}
+      - restore_cache:
+          keys:
+            - v0-npm-dependency-cache-{{ checksum "assets/package.json" }}
+      - run: mix deps.get
+      - run: npm install --prefix assets
+      - run: npm run deploy --prefix assets
+      - run: mix phx.digest
+      - run: mix release --overwrite
+      - run:
+          name: Upload release
+          command: |
+            scp -q -o "StrictHostKeyChecking no" ~/app/_build/${MIX_ENV}/${DEPLOYMENT_NAME}*.tar.gz \
+            ${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/${DEPLOYMENT_NAME}-${MIX_ENV}-${CIRCLE_TAG}.tar
+      - run:
+          name: Untar release
+          command: |
+            ssh -o "StrictHostKeyChecking no" ${DEPLOY_USER}@${DEPLOY_HOST} \
+            "tar xf /tmp/${DEPLOYMENT_NAME}-${MIX_ENV}-${CIRCLE_TAG}.tar -C /srv/${DEPLOYMENT_NAME}"
+      - run:
+          name: Stop running instance
+          command: |
+            ssh -o "StrictHostKeyChecking no" ${DEPLOY_USER}@${DEPLOY_HOST} \
+            "/srv/${DEPLOYMENT_NAME}/bin/${DEPLOYMENT_NAME} stop; echo \"Ignore if this command fails\""
+      - run:
+          name: Start a new instance
+          command: |
+            ssh -o "StrictHostKeyChecking no" ${DEPLOY_USER}@${DEPLOY_HOST} \
+            "bash --login -c \"/srv/${DEPLOYMENT_NAME}/bin/${DEPLOYMENT_NAME} daemon\""
+      - run:
+          name: Check the new instance is running
+          command: |
+            ssh -o "StrictHostKeyChecking no" ${DEPLOY_USER}@${DEPLOY_HOST} \
+            "/srv/${DEPLOYMENT_NAME}/bin/${DEPLOYMENT_NAME} version"
+      - save_cache:
+          key: v0-mix-dependency-cache-{{ checksum "mix.lock" }}-{{ checksum "MIX_ENV" }}
+          paths:
+            - deps
+            - _build
+      - save_cache:
+          key: v0-npm-dependency-cache-{{ checksum "assets/package.json" }}
+          paths:
+            - assets/node_modules
+
+  build:
+    docker:
+      - image: binarynoggin/elixir-release-builder:elixir-1.10
         environment:
           MIX_ENV: test
-          DATABASE_URL: postgres://db:db@localhost:5432/db
-          APP_URL: http://localhost:4001
+          POSTGRES_USER: ubuntu
+          POSTGRES_DB: miata_bot_test
 
       - image: circleci/postgres:9.6.2-alpine
         environment:
-          POSTGRES_USER: db
-          POSTGRES_PASSWORD: db
-          POSTGRES_DB: db
-
+          POSTGRES_USER: ubuntu
+          POSTGRES_DB: miata_bot_test
+    working_directory: ~/app
     steps:
       - checkout
+      - run: echo ${MIX_ENV} >> MIX_ENV
       - restore_cache:
           keys:
-            - v1-mix-deps-cache-{{ checksum "mix.lock" }}
-            - v1-mix-deps-cache-
+            - v0-mix-dependency-cache-{{ checksum "mix.lock" }}-{{ checksum "MIX_ENV" }}
       - restore_cache:
           keys:
-            - v1-mix-build-cache-{{ checksum "mix.lock" }}
-            - v1-mix-build-cache-
-
-      - run:
-          name: Install Dependencies
-          command: |
-            mix deps.get --all
-            mix deps.compile
-            mix local.hex --force
-            mix local.rebar --force
-
-      # - run:
-      #     name: Database setup
-      #     command: |
-      #       mix ecto.create
-      #       mix ecto.migrate
-
-      - run:
-          name: Check format
-          command: mix format --check-formatted
-
-      - run:
-          name: Test
-          command: mix test --no-start
-
+            - v0-npm-dependency-cache-{{ checksum "assets/package.json" }}
+      - run: mix deps.get
+      - run: mix ecto.setup
+      - run: mix format --check-formatted
+      # - run: mix test
       - save_cache:
-          key: v1-mix-deps-cache-{{ checksum "mix.lock" }}
+          key: v0-mix-dependency-cache-{{ checksum "mix.lock" }}-{{ checksum "MIX_ENV" }}
           paths:
-            - ~/miata_bot/deps
-      
+            - deps
+            - _build
       - save_cache:
-          key: v1-mix-build-cache-{{ checksum "mix.lock" }}
+          key: v0-npm-dependency-cache-{{ checksum "assets/package.json" }}
           paths:
-            - ~/miata_bot/_build
+            - assets/node_modules
 
-  deploy:
-    working_directory: ~/miata_bot
-    docker:
-      - image: bitwalker/alpine-elixir-phoenix:latest
-    steps:
-      - checkout
-      - run:
-          name: Deploy to Gigalixir
-          command: |
-            git remote add gigalixir $GIGALIXIR_REMOTE_URL
-            git push -f gigalixir HEAD:refs/heads/master
-        
 workflows:
   version: 2
-  test_deploy:
+  test:
     jobs:
-      - test:
-          context: org-global
-      - deploy:
-          context: org-global
-          requires:
-            - test
+      - build:
           filters:
+            tags:
+              ignore: /.*/
+  deploy_production:
+    jobs:
+      - deploy_api:
+          filters:
+            tags:
+              only: /^v.*/
             branches:
-              only: master
+              ignore: /.*/

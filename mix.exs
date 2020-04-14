@@ -5,12 +5,13 @@ defmodule MiataBot.MixProject do
     [
       app: :miata_bot,
       version: "0.1.0",
-      elixir: "~> 1.5",
+      elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      releases: releases()
     ]
   end
 
@@ -43,14 +44,12 @@ defmodule MiataBot.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:ring_logger, "~> 0.7.0"},
+      {:ring_logger, "~> 0.8"},
       {:mogrify, "~> 0.7.2"},
       {:timex, "~> 3.5"},
-      {:nostrum, github: "Kraigie/nostrum"},
+      {:nostrum, "~> 0.4.1"},
       {:oauth2, "~> 2.0"},
-      {:tesla, "~> 1.3"},
-      {:chisel, github: "luisgabrielroldan/chisel"}
-      # {:egd, github: "erlang/egd"}
+      {:tesla, "~> 1.3"}
     ]
   end
 
@@ -65,6 +64,16 @@ defmodule MiataBot.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate", "test"]
+    ]
+  end
+
+  defp releases do
+    [
+      miata_bot: [
+        include_executables_for: [:unix],
+        applications: [runtime_tools: :permanent],
+        steps: [:assemble, :tar]
+      ]
     ]
   end
 end
