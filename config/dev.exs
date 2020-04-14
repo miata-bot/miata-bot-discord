@@ -5,7 +5,7 @@ config :miata_bot, MiataBot.Repo,
   username: "postgres",
   password: "postgres",
   database: "miata_bot_dev",
-  hostname: "localhost",
+  hostname: System.get_env("DATABSE_URL") || "localhost",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
