@@ -27,6 +27,7 @@ defmodule MiataBot.Discord do
   # @justin_user_id 126_155_471_886_352_385
   # @easyy_user_id 151_099_008_230_752_256
   @memes_channel_id 555_431_196_884_992_000
+  @bot_spam_channel_id 351_767_273_712_910_336
   @help_message %Embed{}
                 |> Embed.put_title("Available commands")
                 |> Embed.put_field("carinfo", """
@@ -270,7 +271,7 @@ defmodule MiataBot.Discord do
   #   Api.create_message!(channel_id, "<@!126155471886352385> get rekt newb")
   # end
 
-  def handle_event({:MESSAGE_CREATE, {%{content: "!josh"} = message}, _state}) do
+  def handle_event({:MESSAGE_CREATE, %{content: "!josh"} = message, _state}) do
     if AnnoyingPingCache.ping?(message.author.id, @josh_user_id) do
       spam = User.mention(%User{id: @josh_user_id}) <> " auto bad lmao"
       Api.create_message!(message.channel_id, spam)
@@ -283,7 +284,7 @@ defmodule MiataBot.Discord do
     end
   end
 
-  def handle_event({:MESSAGE_CREATE, {%{content: "!herc"} = message}, _state}) do
+  def handle_event({:MESSAGE_CREATE, %{content: "!herc"} = message, _state}) do
     if AnnoyingPingCache.ping?(message.author.id, @herc_user_id) do
       spam = User.mention(%User{id: @herc_user_id}) <> " bmw bad lmao"
       Api.create_message!(message.channel_id, spam)
@@ -296,12 +297,12 @@ defmodule MiataBot.Discord do
     end
   end
 
-  def handle_event({:MESSAGE_CREATE, {%{content: "$" <> command} = message}, _state}) do
+  def handle_event({:MESSAGE_CREATE, %{content: "$" <> command} = message, _state}) do
     handle_command(command, message)
   end
 
   def handle_event(
-        {:MESSAGE_CREATE, {%{content: "!google " <> search, channel_id: channel_id}}, _state}
+        {:MESSAGE_CREATE, %{content: "!google " <> search, channel_id: channel_id}, _state}
       ) do
     q = URI.encode_query(%{q: search, iee: 1})
     lmgtfy = "https://lmgtfy.com/?#{q}"
@@ -314,8 +315,7 @@ defmodule MiataBot.Discord do
   end
 
   def handle_event(
-        {:MESSAGE_CREATE, {%{content: "!mock " <> text, channel_id: channel_id} = message},
-         _state}
+        {:MESSAGE_CREATE, %{content: "!mock " <> text, channel_id: channel_id} = message, _state}
       ) do
     unless File.exists?("/tmp/spongemock") do
       Tesla.client([Tesla.Middleware.FollowRedirects])
@@ -335,12 +335,12 @@ defmodule MiataBot.Discord do
     _ = Api.create_message!(channel_id, new_text)
   end
 
-  def handle_event({:MESSAGE_CREATE, {%{channel_id: @memes_channel_id} = message}, _state}) do
+  def handle_event({:MESSAGE_CREATE, %{channel_id: @memes_channel_id} = message, _state}) do
     CopyPastaWorker.activity(message)
     :noop
   end
 
-  def handle_event({:MESSAGE_CREATE, {%{channel_id: @verification_channel_id} = message}, _state}) do
+  def handle_event({:MESSAGE_CREATE, %{channel_id: @verification_channel_id} = message, _state}) do
     case message.attachments do
       [%{url: url} | _rest] ->
         year = extract_year(message.content)
@@ -352,7 +352,22 @@ defmodule MiataBot.Discord do
     end
   end
 
+  # not sure which of these is correct
   def handle_event({:GUILD_AVAILABLE, {%{id: guild_id, members: members} = guild}, _ws_state}) do
+    # Logger.info("GUILD AVAILABLE: #{inspect(data, limit: :infinity)}")
+    _ = GuildCache.Supervisor.start_child(guild)
+
+    for {member_id, m} <- members do
+      true = GuildCache.upsert_guild_member(guild_id, member_id, m)
+
+      if @looking_for_miata_role_id in m.roles do
+        ensure_looking_for_miata_timer(m)
+      end
+    end
+  end
+
+  # not sure which of these is correct
+  def handle_event({:GUILD_AVAILABLE, %{id: guild_id, members: members} = guild, _ws_state}) do
     # Logger.info("GUILD AVAILABLE: #{inspect(data, limit: :infinity)}")
     _ = GuildCache.Supervisor.start_child(guild)
 
