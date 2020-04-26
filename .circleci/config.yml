@@ -28,10 +28,11 @@ jobs:
       - run: npm run deploy --prefix assets
       - run: mix phx.digest
       - run: mix release --overwrite
+      - run: mix baked_bot export_version
       - run:
           name: Upload release
           command: |
-            scp -q -o "StrictHostKeyChecking no" ~/app/_build/${MIX_ENV}/${DEPLOYMENT_NAME}*.tar.gz \
+            scp -q -o "StrictHostKeyChecking no" ~/app/_build/${MIX_ENV}/${DEPLOYMENT_NAME}-$(cat VERSION).tar.gz \
             ${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/${DEPLOYMENT_NAME}-${MIX_ENV}-${CIRCLE_TAG}.tar
       - run:
           name: Untar release
@@ -101,17 +102,6 @@ jobs:
 
 workflows:
   version: 2
-  test:
-    jobs:
-      - build:
-          filters:
-            tags:
-              ignore: /.*/
   deploy_production:
     jobs:
-      - deploy_api:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
+      - deploy_api
