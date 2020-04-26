@@ -335,7 +335,7 @@ defmodule MiataBot.Discord do
     _ = Api.create_message!(channel_id, new_text)
   end
 
-  def handle_event({:MESSAGE_CREATE, %{channel_id: @memes_channel_id = message}, _state}) do
+  def handle_event({:MESSAGE_CREATE, %{channel_id: @memes_channel_id} = message, _state}) do
     CopyPastaWorker.activity(message)
     :noop
   end
