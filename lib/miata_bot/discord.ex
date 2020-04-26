@@ -315,7 +315,7 @@ defmodule MiataBot.Discord do
   end
 
   def handle_event(
-        {:MESSAGE_CREATE, %{content: "!mock " <> text, channel_id: channel_id} = message, _state}
+        {:MESSAGE_CREATE, %{content: "!mock " <> text, channel_id: channel_id = message}, _state}
       ) do
     unless File.exists?("/tmp/spongemock") do
       Tesla.client([Tesla.Middleware.FollowRedirects])
@@ -335,12 +335,12 @@ defmodule MiataBot.Discord do
     _ = Api.create_message!(channel_id, new_text)
   end
 
-  def handle_event({:MESSAGE_CREATE, %{channel_id: @memes_channel_id} = message, _state}) do
+  def handle_event({:MESSAGE_CREATE, %{channel_id: @memes_channel_id = message}, _state}) do
     CopyPastaWorker.activity(message)
     :noop
   end
 
-  def handle_event({:MESSAGE_CREATE, %{channel_id: @verification_channel_id} = message, _state}) do
+  def handle_event({:MESSAGE_CREATE, %{channel_id: @verification_channel_id = message}, _state}) do
     case message.attachments do
       [%{url: url} | _rest] ->
         year = extract_year(message.content)
@@ -352,8 +352,7 @@ defmodule MiataBot.Discord do
     end
   end
 
-  # not sure which of these is correct
-  def handle_event({:GUILD_AVAILABLE, {%{id: guild_id, members: members} = guild}, _ws_state}) do
+  def handle_event({:GUILD_AVAILABLE, %{id: guild_id, members: members = guild}, _ws_state}) do
     # Logger.info("GUILD AVAILABLE: #{inspect(data, limit: :infinity)}")
     _ = GuildCache.Supervisor.start_child(guild)
 
@@ -366,21 +365,7 @@ defmodule MiataBot.Discord do
     end
   end
 
-  # not sure which of these is correct
-  def handle_event({:GUILD_AVAILABLE, %{id: guild_id, members: members} = guild, _ws_state}) do
-    # Logger.info("GUILD AVAILABLE: #{inspect(data, limit: :infinity)}")
-    _ = GuildCache.Supervisor.start_child(guild)
-
-    for {member_id, m} <- members do
-      true = GuildCache.upsert_guild_member(guild_id, member_id, m)
-
-      if @looking_for_miata_role_id in m.roles do
-        ensure_looking_for_miata_timer(m)
-      end
-    end
-  end
-
-  def handle_event({:GUILD_MEMBER_UPDATE, {guild_id, old, new} = payload, _ws_state}) do
+  def handle_event({:GUILD_MEMBER_UPDATE, guild_id, old, new = payload, _ws_state}) do
     Logger.info("guild member update: #{inspect(payload)}")
     GuildCache.upsert_guild_member(guild_id, new.user.id, new)
 
