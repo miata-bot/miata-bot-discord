@@ -429,6 +429,16 @@ defmodule MiataBot.Discord do
     end
   end
 
+  def handle_event(
+        {:MESSAGE_UPDATE, %{channel_id: @general_channel_id, member: member} = message},
+        _ws_state
+      ) do
+    if @miata_fan_role_id in member.roles do
+      Logger.info("doing channel limit for #{inspect(member)}")
+      ChannelLimits.process_activity(message)
+    end
+  end
+
   def handle_event({:GUILD_AVAILABLE, {%{id: guild_id, members: members} = guild}, _ws_state}) do
     Logger.info("GUILD AVAILABLE: #{inspect(guild, limit: :infinity)}")
 
@@ -476,8 +486,8 @@ defmodule MiataBot.Discord do
       :TYPING_START ->
         :ok
 
-      :MESSAGE_UPDATE ->
-        :ok
+      # :MESSAGE_UPDATE ->
+      #   :ok
 
       _ ->
         Logger.info("#{inspect(event, limit: :infinity)}")
