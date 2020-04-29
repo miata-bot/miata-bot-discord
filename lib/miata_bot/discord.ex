@@ -27,6 +27,7 @@ defmodule MiataBot.Discord do
   # @justin_user_id 126_155_471_886_352_385
   # @easyy_user_id 151_099_008_230_752_256
   @memes_channel_id 555_431_196_884_992_000
+  @bot_spam_channel_id 351_767_273_712_910_336
   @help_message %Embed{}
                 |> Embed.put_title("Available commands")
                 |> Embed.put_field("carinfo", """
@@ -334,7 +335,7 @@ defmodule MiataBot.Discord do
     _ = Api.create_message!(channel_id, new_text)
   end
 
-  def handle_event({:MESSAGE_CREATE, %{channel_id: @memes_channel_id = message}, _state}) do
+  def handle_event({:MESSAGE_CREATE, %{channel_id: @memes_channel_id} = message, _state}) do
     CopyPastaWorker.activity(message)
     :noop
   end

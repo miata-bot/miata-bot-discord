@@ -28,10 +28,11 @@ jobs:
       - run: npm run deploy --prefix assets
       - run: mix phx.digest
       - run: mix release --overwrite
+      - run: mix baked_bot export_version
       - run:
           name: Upload release
           command: |
-            scp -q -o "StrictHostKeyChecking no" ~/app/_build/${MIX_ENV}/${DEPLOYMENT_NAME}*.tar.gz \
+            scp -q -o "StrictHostKeyChecking no" ~/app/_build/${MIX_ENV}/${DEPLOYMENT_NAME}-$(cat VERSION).tar.gz \
             ${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/${DEPLOYMENT_NAME}-${MIX_ENV}-${CIRCLE_TAG}.tar
       - run:
           name: Untar release
@@ -39,20 +40,15 @@ jobs:
             ssh -o "StrictHostKeyChecking no" ${DEPLOY_USER}@${DEPLOY_HOST} \
             "tar xf /tmp/${DEPLOYMENT_NAME}-${MIX_ENV}-${CIRCLE_TAG}.tar -C /srv/${DEPLOYMENT_NAME}"
       - run:
-          name: Stop running instance
+          name: Restart running instance
           command: |
             ssh -o "StrictHostKeyChecking no" ${DEPLOY_USER}@${DEPLOY_HOST} \
-            "/srv/${DEPLOYMENT_NAME}/bin/${DEPLOYMENT_NAME} stop; echo \"Ignore if this command fails\""
-      - run:
-          name: Start a new instance
-          command: |
-            ssh -o "StrictHostKeyChecking no" ${DEPLOY_USER}@${DEPLOY_HOST} \
-            "bash --login -c \"/srv/${DEPLOYMENT_NAME}/bin/${DEPLOYMENT_NAME} daemon\""
+            "sleep 5 && sudo systemctl restart miata-bot"
       - run:
           name: Check the new instance is running
           command: |
             ssh -o "StrictHostKeyChecking no" ${DEPLOY_USER}@${DEPLOY_HOST} \
-            "/srv/${DEPLOYMENT_NAME}/bin/${DEPLOYMENT_NAME} version"
+            "/srv/${DEPLOYMENT_NAME}/bin/${DEPLOYMENT_NAME} pid"
       - save_cache:
           key: v0-mix-dependency-cache-{{ checksum "mix.lock" }}-{{ checksum "MIX_ENV" }}
           paths:
@@ -101,17 +97,6 @@ jobs:
 
 workflows:
   version: 2
-  test:
-    jobs:
-      - build:
-          filters:
-            tags:
-              ignore: /.*/
   deploy_production:
     jobs:
-      - deploy_api:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
+      - deploy_api

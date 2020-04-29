@@ -5,7 +5,7 @@ defmodule MiataBot.Discord.Util do
       def handle_event(
             {:MESSAGE_CREATE, %{content: unquote(msg), channel_id: channel_id}, _state}
           ) do
-        Nostrum.Api.create_message(
+        Nostrum.Api.create_message!(
           channel_id,
           unquote(resp)
         )
