@@ -7,7 +7,7 @@ defmodule MiataBot.Discord.Supervisor do
 
   def init(_args) do
     children = [
-      MiataBot.Discord
+      {MiataBot.Discord, []}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

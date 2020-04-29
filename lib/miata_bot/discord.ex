@@ -339,7 +339,7 @@ defmodule MiataBot.Discord do
     :noop
   end
 
-  def handle_event({:MESSAGE_CREATE, %{channel_id: @verification_channel_id = message}, _state}) do
+  def handle_event({:MESSAGE_CREATE, %{channel_id: @verification_channel_id} = message, _state}) do
     case message.attachments do
       [%{url: url} | _rest] ->
         year = extract_year(message.content)
@@ -351,8 +351,8 @@ defmodule MiataBot.Discord do
     end
   end
 
-  def handle_event({:GUILD_AVAILABLE, %{id: guild_id, members: members = guild}, _ws_state}) do
-    # Logger.info("GUILD AVAILABLE: #{inspect(data, limit: :infinity)}")
+  def handle_event({:GUILD_AVAILABLE, %{id: guild_id, members: members} = guild, _ws_state}) do
+    Logger.info("GUILD AVAILABLE: #{inspect(guild, limit: :infinity)}")
     _ = GuildCache.Supervisor.start_child(guild)
 
     for {member_id, m} <- members do
@@ -364,7 +364,7 @@ defmodule MiataBot.Discord do
     end
   end
 
-  def handle_event({:GUILD_MEMBER_UPDATE, guild_id, old, new = payload, _ws_state}) do
+  def handle_event({:GUILD_MEMBER_UPDATE, {guild_id, old, new} = payload, _ws_state}) do
     Logger.info("guild member update: #{inspect(payload)}")
     GuildCache.upsert_guild_member(guild_id, new.user.id, new)
 
@@ -383,7 +383,7 @@ defmodule MiataBot.Discord do
 
   def handle_event(event) do
     _ = inspect(event)
-    # Logger.info("#{inspect(event, limit: :infinity)}")
+    Logger.info("#{inspect(event, limit: :infinity)}")
     :noop
   end
 
