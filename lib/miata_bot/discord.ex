@@ -352,7 +352,7 @@ defmodule MiataBot.Discord do
     end
   end
 
-  def handle_event({:GUILD_AVAILABLE, %{id: guild_id, members: members} = guild, _ws_state}) do
+  def handle_event({:GUILD_AVAILABLE, {%{id: guild_id, members: members} = guild}, _ws_state}) do
     Logger.info("GUILD AVAILABLE: #{inspect(guild, limit: :infinity)}")
 
     case GuildCache.Supervisor.start_child(guild) do
