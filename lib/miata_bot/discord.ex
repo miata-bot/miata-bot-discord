@@ -18,7 +18,7 @@ defmodule MiataBot.Discord do
   @josh_user_id 149_677_654_101_065_728
   @herc_user_id 226_052_366_745_600_000
 
-  # @miata_discord_guild_id 322_080_266_761_797_633
+  # @miata_discord_guild_id 322080266761797633
   # 322080266761797633
   @verification_channel_id 322_127_502_212_333_570
   @looking_for_miata_role_id 504_088_951_485_890_561
@@ -354,7 +354,16 @@ defmodule MiataBot.Discord do
 
   def handle_event({:GUILD_AVAILABLE, %{id: guild_id, members: members} = guild, _ws_state}) do
     Logger.info("GUILD AVAILABLE: #{inspect(guild, limit: :infinity)}")
-    _ = GuildCache.Supervisor.start_child(guild)
+
+    case GuildCache.Supervisor.start_child(guild) do
+      {:ok, pid} ->
+        Logger.info("Started guild cache #{guild.id}: #{inspect(pid)}")
+
+      {:error, reason} ->
+        Logger.error(
+          "Failed to start guild cache: #{guild.id}: #{inspect(reason, limit: :infinity)}"
+        )
+    end
 
     for {member_id, m} <- members do
       true = GuildCache.upsert_guild_member(guild_id, member_id, m)
@@ -383,8 +392,20 @@ defmodule MiataBot.Discord do
   end
 
   def handle_event(event) do
-    _ = inspect(event)
-    Logger.info("#{inspect(event, limit: :infinity)}")
+    case elem(event, 0) do
+      :PRESENCE_UPDATE ->
+        :ok
+
+      :TYPING_START ->
+        :ok
+
+      :MESSAGE_UPDATE ->
+        :ok
+
+      _ ->
+        Logger.info("#{inspect(event, limit: :infinity)}")
+    end
+
     :noop
   end
 
