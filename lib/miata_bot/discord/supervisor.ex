@@ -7,6 +7,7 @@ defmodule MiataBot.Discord.Supervisor do
 
   def init(_args) do
     children = [
+      {MiataBot.ChannelLimits, 322_080_266_761_797_633},
       {MiataBot.Discord, []}
     ]
 

@@ -18,11 +18,12 @@ defmodule MiataBot.Discord do
   @josh_user_id 149_677_654_101_065_728
   @herc_user_id 226_052_366_745_600_000
 
-  # @miata_discord_guild_id 322080266761797633
+  @miata_discord_guild_id 322_080_266_761_797_633
+  @general_channel_id 322_080_266_761_797_633
   # 322080266761797633
   @verification_channel_id 322_127_502_212_333_570
   @looking_for_miata_role_id 504_088_951_485_890_561
-  # @miata_fan_role_id 439_493_557_301_280_789
+  @miata_fan_role_id 439_493_557_301_280_789
   @maysh_user_id 326_204_806_165_430_273
   # @justin_user_id 126_155_471_886_352_385
   # @easyy_user_id 151_099_008_230_752_256
@@ -59,6 +60,71 @@ defmodule MiataBot.Discord do
                     """)
 
   Module.register_attribute(__MODULE__, :bangs, accumulate: true)
+
+  @na_role_id 322_082_252_320_145_408
+  @nb_role_id 322_082_375_578_419_210
+  @nc_role_id 322_082_487_243_112_448
+  @nd_role_id 322_082_550_640_279_553
+  @accepted_role_id 591_899_819_132_583_936
+
+  def list_unverified do
+    unverified =
+      @miata_discord_guild_id
+      |> MiataBot.GuildCache.get_guild()
+      |> Map.get(:members)
+      |> Enum.filter(fn {_user_id, %{roles: roles, joined_at: joined_at}} ->
+        with {:ok, %DateTime{} = dt, _} <- DateTime.from_iso8601(joined_at),
+             day_difference when day_difference < 14 <- Timex.diff(DateTime.utc_now(), dt, :days) do
+          @accepted_role_id in roles
+        else
+          _ -> false
+        end
+      end)
+
+    embed =
+      %Embed{}
+      |> Embed.put_title("Unverified members")
+      |> Embed.put_description("someone should check these members out")
+
+    embed =
+      Enum.reduce(unverified, embed, fn
+        {_, member}, embed ->
+          Embed.put_field(
+            embed,
+            "**#{member.nick || member.user.username} (#{member.user.id}) **",
+            "needs verification"
+          )
+      end)
+
+    Nostrum.Api.create_message!(@bot_spam_channel_id, embed: embed)
+  end
+
+  def verify_user(user_id, roles) do
+    roles =
+      Enum.map(roles, fn
+        "na" -> @na_role_id
+        "nb" -> @nb_role_id
+        "nc" -> @nc_role_id
+        "nd" -> @nd_role_id
+      end)
+
+    for role_id <- roles do
+      Logger.info("Assigning role:#{role_id} to user:#{user_id}")
+
+      Nostrum.Api.create_message!(
+        @bot_spam_channel_id,
+        "Assigning role:#{role_id} to user:#{user_id}"
+      )
+
+      {:ok} =
+        Nostrum.Api.add_guild_member_role(
+          @miata_discord_guild_id,
+          user_id,
+          role_id,
+          "miata bot verification"
+        )
+    end
+  end
 
   def start_link do
     Consumer.start_link(__MODULE__, name: __MODULE__)
@@ -349,6 +415,17 @@ defmodule MiataBot.Discord do
 
       _ ->
         :noop
+    end
+  end
+
+  alias MiataBot.ChannelLimits
+
+  def handle_event(
+        {:MESSAGE_CREATE, %{channel_id: @general_channel_id, member: member} = message, _state}
+      ) do
+    if @miata_fan_role_id in member.roles do
+      Logger.info("doing channel limit for #{inspect(member)}")
+      ChannelLimits.process_activity(message)
     end
   end
 
