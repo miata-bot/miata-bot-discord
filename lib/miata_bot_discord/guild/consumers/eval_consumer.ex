@@ -71,9 +71,13 @@ defmodule MiataBotDiscord.Guild.EvalConsumer do
   end
 
   def handle_eval(%{"content" => code}, message, {actions, state}) do
-    state = start_extty(state, message.channel_id)
-    _ = ExTTY.send_text(state.extty, code)
-    {actions, state}
+    if state.config.admin_role_id in message.member.roles do
+      state = start_extty(state, message.channel_id)
+      _ = ExTTY.send_text(state.extty, code)
+      {actions, state}
+    else
+      {actions ++ [{:create_message!, [message.channel_id, "You can't do that sorry."]}], state}
+    end
   end
 
   def start_extty(%{extty: nil, channel_id: nil} = state, channel_id) do
