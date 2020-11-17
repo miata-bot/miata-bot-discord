@@ -33,6 +33,12 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
                 |> Embed.put_field("carinfo update color code <color>", """
                 Sets the author's carinfo color code
                 """)
+                |> Embed.put_field("carinfo update wheels <wheel name>", """
+                Sets the author's carinfo wheels
+                """)
+                |> Embed.put_field("carinfo update tires <tire name>", """
+                Sets the author's carinfo tire
+                """)
 
   @doc false
   def start_link({guild, config, current_user}) do
