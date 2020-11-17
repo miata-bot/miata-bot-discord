@@ -8,17 +8,15 @@ defmodule MiataBot.Application do
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
-      AnnoyingPingCache,
       PastebinRandomizer,
       # Start the Ecto repository
       MiataBot.Repo,
-      MiataBot.GuildCache.Supervisor,
-      MiataBot.Discord.Supervisor,
       MiataBot.CopyPastaWorker,
       MiataBot.LookingForMiataWorker,
       # Start the endpoint when the application starts
       MiataBotWeb.Endpoint,
-      MiataBotWeb.HerokuTask
+      MiataBotWeb.HerokuTask,
+      MiataBotDiscord.Supervisor,
       # Starts a worker by calling: MiataBot.Worker.start_link(arg)
       # {MiataBot.Worker, arg},
     ]

@@ -1,8 +1,12 @@
-defmodule MiataBot.Snowflake do
+defmodule Snowflake do
   @behaviour Ecto.Type
   require Nostrum.Snowflake
 
   def type, do: :string
+
+  def dump(str) when is_binary(str) do
+    {:ok, str}
+  end
 
   def dump(term) do
     {:ok, Nostrum.Snowflake.dump(term)}

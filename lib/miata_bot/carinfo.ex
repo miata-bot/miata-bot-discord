@@ -8,7 +8,7 @@ defmodule MiataBot.Carinfo do
     field(:color_code, :string)
     field(:title, :string)
     field(:image_url, :string)
-    field(:discord_user_id, MiataBot.Snowflake)
+    field(:discord_user_id, Snowflake)
   end
 
   def changeset(carinfo, params \\ %{}) do

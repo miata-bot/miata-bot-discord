@@ -1,4 +1,4 @@
-defmodule AnnoyingPingCache do
+defmodule MiataBotDiscord.AnnoyingPingCache do
   use GenServer
 
   def ping?(pinger, pingee) do

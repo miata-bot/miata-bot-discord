@@ -20,7 +20,7 @@ defmodule MiataBot.LookingForMiataTimer do
   schema "looking_for_miatas" do
     field(:joined_at, :utc_datetime)
     field(:refreshed_at, :utc_datetime, default: @enactment_date)
-    field(:discord_user_id, MiataBot.Snowflake)
+    field(:discord_user_id, Snowflake)
   end
 
   def changeset(looking_for_miata, params \\ %{}) do
