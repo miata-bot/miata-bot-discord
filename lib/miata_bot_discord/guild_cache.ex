@@ -9,6 +9,39 @@ defmodule MiataBotDiscord.GuildCache do
     :ets.tab2list(:guilds)
   end
 
+  def upsert_guild_member(guild_id, member_id, member) do
+    guild =
+      case :ets.lookup(:guilds, guild_id) do
+        [] -> %Nostrum.Struct.Guild{id: guild_id, members: %{}}
+        [{^guild_id, guild}] -> guild
+        unknown -> raise "Unexpected result in ets lookup: #{inspect(unknown)}"
+      end
+
+    :ets.insert(
+      :guilds,
+      {guild.id, %{guild | members: Map.put(guild.members, member_id, member)}}
+    )
+  end
+
+  def list_guild_members(guild_id) do
+    case :ets.lookup(:guilds, guild_id) do
+      [] -> nil
+      [{_, %{members: members}}] -> members
+      unknown -> raise "Unexpected result in ets lookup: #{inspect(unknown)}"
+    end
+  end
+
+  def get_guild_member(guild_id, member_id) do
+    guild =
+      case :ets.lookup(:guilds, guild_id) do
+        [] -> %Nostrum.Struct.Guild{id: guild_id, members: %{}}
+        [{^guild_id, guild}] -> guild
+        unknown -> raise "Unexpected result in ets lookup: #{inspect(unknown)}"
+      end
+
+    guild.members[member_id]
+  end
+
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end

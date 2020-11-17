@@ -2,7 +2,8 @@ defmodule MiataBot.LookingForMiataWorker do
   use GenServer
   require Logger
   alias Nostrum.Struct.Embed
-  alias MiataBot.{GuildCache, Repo, LookingForMiataTimer}
+  alias MiataBot.{Repo, LookingForMiataTimer}
+  alias MiataBotDiscord.GuildCache
   # @seconds_in_a_day 86400
   @miata_discord_guild_id 322_080_266_761_797_633
   @looking_for_miata_role_id 504_088_951_485_890_561

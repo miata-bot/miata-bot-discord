@@ -30,9 +30,6 @@ defmodule MiataBotDiscord do
   @memes_channel_id 555_431_196_884_992_000
   @bot_spam_channel_id 351_767_273_712_910_336
 
-
-
-
   Module.register_attribute(__MODULE__, :bangs, accumulate: true)
 
   @na_role_id 322_082_252_320_145_408
@@ -104,7 +101,6 @@ defmodule MiataBotDiscord do
     Consumer.start_link(__MODULE__, name: __MODULE__)
   end
 
-
   # {:TYPING_START,
   #  {%{
   #     channel_id: 565_041_170_351_259_648,
@@ -162,14 +158,6 @@ defmodule MiataBotDiscord do
     handle_command(command, message)
   end
 
-
-
-
-
-
-
-
-
   def handle_command("miatabot auth", message) do
     url = Application.get_env(:miata_bot, MiataBotWeb.PageController)[:auth_url]
     Api.create_message!(message.channel_id, url || "no url specified")
@@ -179,8 +167,6 @@ defmodule MiataBotDiscord do
     Logger.debug("unknown command #{command}: #{inspect(message, limit: :infinity)}")
     IO.inspect(message, label: "unhandled command")
   end
-
-
 
   def e85_stations_to_embed(stations) do
     embed =

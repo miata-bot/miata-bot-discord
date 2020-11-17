@@ -26,11 +26,13 @@ defmodule MiataBotDiscord.ChannelLimits do
     new_limits = Map.put(state.limits, author_id, new_limits_for_user)
 
     if length(new_limits_for_user) >= 5 do
-      offtopic_channel = %Nostrum.Struct.Channel{id: 322162421156282369}
-
+      offtopic_channel = %Nostrum.Struct.Channel{id: 322_162_421_156_282_369}
 
       Nostrum.Api.create_message!(
-        state.channel_id, "#{author} due to the increase in offtopic messages from miata fans in general miata, the amount of messages they can send are limited. Please move to #{offtopic_channel}"
+        state.channel_id,
+        "#{author} due to the increase in offtopic messages from miata fans in general miata, the amount of messages they can send are limited. Please move to #{
+          offtopic_channel
+        }"
       )
 
       Nostrum.Api.delete_message(message)

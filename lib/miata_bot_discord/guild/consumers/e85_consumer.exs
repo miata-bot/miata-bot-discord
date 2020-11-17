@@ -1,11 +1,11 @@
 @e85_help_message %Embed{}
-|> Embed.put_title("Available E85 commands")
-|> Embed.put_field("e85 zip <zip>", """
-Shows e85 stations in a zip
-""")
-|> Embed.put_field("e85 state <state code>", """
-Shows e85 stations in a state
-""")
+                  |> Embed.put_title("Available E85 commands")
+                  |> Embed.put_field("e85 zip <zip>", """
+                  Shows e85 stations in a zip
+                  """)
+                  |> Embed.put_field("e85 state <state code>", """
+                  Shows e85 stations in a state
+                  """)
 
 def handle_command("e85 state " <> state_code, %{channel_id: channel_id}) do
   state_code = String.upcase(state_code)

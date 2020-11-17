@@ -7,10 +7,8 @@ defmodule MiataBotDiscord.Guild do
   use Supervisor
 
   alias MiataBotDiscord.Guild.{
-    ChannelCache,
-    CommandProcessor,
-    DeviceStatusChannel,
-    LuaConsumer
+    AutoreplyConsumer,
+    CarinfoConsumer
   }
 
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
@@ -35,21 +33,16 @@ defmodule MiataBotDiscord.Guild do
       {MiataBotDiscord.Guild.EventDispatcher, guild},
 
       # consumers
-      {ChannelCache, {guild, config, current_user}},
-      {CommandProcessor, {guild, config, current_user}},
-      {DeviceStatusChannel, {guild, config, current_user}},
-      {LuaConsumer, {guild, config, current_user}},
+      {AutoreplyConsumer, {guild, config, current_user}},
+      {CarinfoConsumer, {guild, config, current_user}},
 
       # Responder
       {MiataBotDiscord.Guild.Responder,
        {guild,
         [
-          via(guild, ChannelCache),
-          via(guild, CommandProcessor),
-          via(guild, DeviceStatusChannel),
-          via(guild, LuaConsumer)
-        ]}},
-      {Task, fn -> LuaConsumer.index_scripts(guild) end}
+          via(guild, AutoreplyConsumer),
+          via(guild, CarinfoConsumer)
+        ]}}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

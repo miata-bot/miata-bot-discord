@@ -41,6 +41,15 @@ defmodule MiataBotDiscord.NostrumConsumer do
       error ->
         Logger.error("Could not start guild: #{guild.name}: #{inspect(error)}")
     end
+
+    for {member_id, m} <- guild.members do
+      true = MiataBotDiscord.GuildCache.upsert_guild_member(guild.id, member_id, m)
+    end
+  end
+
+  def handle_event({:GUILD_MEMBER_UPDATE, {guild_id, _old, new} = payload, _ws_state}) do
+    Logger.info("guild member update: #{inspect(payload)}")
+    MiataBotDiscord.GuildCache.upsert_guild_member(guild_id, new.user.id, new)
   end
 
   def handle_event({:READY, _ready, _ws_state}) do
@@ -166,7 +175,7 @@ defmodule MiataBotDiscord.NostrumConsumer do
   #    zlib_ctx: #Reference<0.667557440.280100868.41537>
   #  }}
 
-  def handle_event(event) do
-    Logger.error(["Unhandled event from Nostrum ", inspect(event, pretty: true)])
+  def handle_event(_event) do
+    # Logger.error(["Unhandled event from Nostrum ", inspect(event, pretty: true)])
   end
 end

@@ -21,7 +21,7 @@ config :miata_bot, MiataBotWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "bMgF4nNbm7GThARLJUuKMhoMWzj3aw2MxDEkFeX7vSaxTgWtm5qs5/UvbA3DG2B3",
   render_errors: [view: MiataBotWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: MiataBot.PubSub, adapter: Phoenix.PubSub.PG2]
+  pubsub_server: MiataBot.PubSub
 
 config :miata_bot, MiataBotWeb.HerokuTask, url: System.get_env("APP_URL")
 

@@ -1,5 +1,7 @@
 # MiataBot
 
+[click me for test](https://discordapp.com/api/oauth2/authorize?client_id=758372245512388650&scope=bot&permissions=8)
+
 **TODO: Add description**
 
 [click me](https://discordapp.com/api/oauth2/authorize?client_id=580500893863116805&scope=bot&permissions=8)

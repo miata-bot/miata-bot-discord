@@ -2,11 +2,11 @@ defmodule MiataBotDiscord.Supervisor do
   @moduledoc false
   use Supervisor
 
-  if Mix.env() == :prod && Application.get_env(:nostrum, :token) do
-    @dispatch_source MiataBotDiscord.NostrumConsumer
-  else
-    @dispatch_source MiataBotDiscord.FakeDiscordSource
-  end
+  # if Mix.env() == :prod && Application.get_env(:nostrum, :token) do
+  @dispatch_source MiataBotDiscord.NostrumConsumer
+  # else
+  #   @dispatch_source MiataBotDiscord.FakeDiscordSource
+  # end
 
   @doc false
   def start_link(args) do

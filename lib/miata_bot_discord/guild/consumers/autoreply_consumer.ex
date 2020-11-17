@@ -7,8 +7,7 @@ defmodule MiataBotDiscord.Guild.AutoreplyConsumer do
   require Logger
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
   alias MiataBotDiscord.Guild.EventDispatcher
-
-  import Nostrum.Struct.Message
+  import MiataBotDiscord.Guild.AutoreplyConsumer.Bang
 
   @doc false
   def start_link({guild, config, current_user}) do
@@ -38,14 +37,6 @@ defmodule MiataBotDiscord.Guild.AutoreplyConsumer do
       end)
 
     {:noreply, actions, state}
-  end
-
-  defmacro bang(match, reply) do
-    quote location: :keep do
-      def handle_message(%Message{content: unquote(match) <> _} = message, {actions, state}) do
-        {actions ++ [{:create_message!, [message.channel_id, unquote(reply)}], state}
-      end
-    end
   end
 
   bang("ya rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A")

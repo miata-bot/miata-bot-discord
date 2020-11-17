@@ -14,9 +14,10 @@ defmodule MiataBot.Application do
       MiataBot.CopyPastaWorker,
       MiataBot.LookingForMiataWorker,
       # Start the endpoint when the application starts
+      {Phoenix.PubSub, [name: MiataBot.PubSub, adapter: Phoenix.PubSub.PG2]},
       MiataBotWeb.Endpoint,
       MiataBotWeb.HerokuTask,
-      MiataBotDiscord.Supervisor,
+      MiataBotDiscord.Supervisor
       # Starts a worker by calling: MiataBot.Worker.start_link(arg)
       # {MiataBot.Worker, arg},
     ]

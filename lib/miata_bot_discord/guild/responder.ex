@@ -3,11 +3,11 @@ defmodule MiataBotDiscord.Guild.Responder do
   use GenStage
   require Logger
 
-  if Mix.env() == :prod do
-    @api Nostrum.Api
-  else
-    @api MiataBotDiscord.FakeAPI
-  end
+  # if Mix.env() == :prod do
+  @api Nostrum.Api
+  # else
+  #   @api MiataBotDiscord.FakeAPI
+  # end
 
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
 
@@ -27,6 +27,7 @@ defmodule MiataBotDiscord.Guild.Responder do
 
   @impl GenStage
   def handle_events(events, from, state) do
+    IO.inspect(events, label: "responder event")
     for event <- events, do: handle_event(event, from)
     {:noreply, [], state}
   end
