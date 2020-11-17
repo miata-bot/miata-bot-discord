@@ -8,17 +8,16 @@ defmodule MiataBot.Application do
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
-      PastebinRandomizer,
       # Start the Ecto repository
       MiataBot.Repo,
-      MiataBot.CopyPastaWorker,
+
       # Start the endpoint when the application starts
       {Phoenix.PubSub, [name: MiataBot.PubSub, adapter: Phoenix.PubSub.PG2]},
       MiataBotWeb.Endpoint,
       MiataBotWeb.HerokuTask,
+
+      # Start the discord subsystem
       MiataBotDiscord.Supervisor
-      # Starts a worker by calling: MiataBot.Worker.start_link(arg)
-      # {MiataBot.Worker, arg},
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

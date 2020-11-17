@@ -11,6 +11,7 @@ defmodule MiataBot.Repo.Migrations.AddGuildConfigsTable do
       add :miata_fan_role_id, :string
       add :looking_for_miata_role_id, :string
       add :bot_spam_channel_id, :string
+      add :admin_role_id, :string
     end
   end
 end
