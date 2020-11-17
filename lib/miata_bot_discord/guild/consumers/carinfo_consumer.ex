@@ -156,6 +156,30 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     do_update(channel_id, author, params, {actions, state})
   end
 
+  def handle_message(
+        %Message{
+          content: "$carinfo update wheels " <> wheels,
+          channel_id: channel_id,
+          author: author
+        },
+        {actions, state}
+      ) do
+    params = %{wheels: wheels, discord_user_id: author.id}
+    do_update(channel_id, author, params, {actions, state})
+  end
+
+  def handle_message(
+        %Message{
+          content: "$carinfo update tires " <> tires,
+          channel_id: channel_id,
+          author: author
+        },
+        {actions, state}
+      ) do
+    params = %{tires: tires, discord_user_id: author.id}
+    do_update(channel_id, author, params, {actions, state})
+  end
+
   def handle_message(_message, {actions, state}) do
     {actions, state}
   end
@@ -198,8 +222,16 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         |> Embed.put_field("Year", info.year || "unknown year")
         |> Embed.put_field("Color Code", info.color_code || "unknown color code")
         |> Embed.put_image(info.image_url)
+        |> maybe_add_wheels(info)
+        |> maybe_add_tires(info)
     end
   end
+
+  def maybe_add_wheels(embed, %{wheels: nil}), do: embed
+  def maybe_add_wheels(embed, %{wheels: wheels}), do: Embed.put_field(embed, "Wheels", wheels)
+
+  def maybe_add_tires(embed, %{tires: nil}), do: embed
+  def maybe_add_tires(embed, %{tires: tires}), do: Embed.put_field(embed, "Tires", tires)
 
   defp get_user(%Message{mentions: [user | _]}) do
     {:ok, user}

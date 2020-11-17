@@ -8,12 +8,23 @@ defmodule MiataBot.Carinfo do
     field(:color_code, :string)
     field(:title, :string)
     field(:image_url, :string)
+    field(:wheels, :string)
+    field(:tires, :string)
     field(:discord_user_id, Snowflake)
   end
 
   def changeset(carinfo, params \\ %{}) do
     carinfo
-    |> cast(params, [:year, :color, :color_code, :title, :image_url, :discord_user_id])
+    |> cast(params, [
+      :year,
+      :color,
+      :color_code,
+      :title,
+      :image_url,
+      :discord_user_id,
+      :wheels,
+      :tires
+    ])
     |> validate_inclusion(:year, 1989..2020)
     |> unique_constraint(:discord_user_id)
   end
