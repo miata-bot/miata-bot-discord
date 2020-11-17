@@ -22,7 +22,8 @@ defmodule MiataBotDiscord.Guild.Config do
     :offtopic_channel_id,
     :miata_fan_role_id,
     :looking_for_miata_role_id,
-    :admin_role_id
+    :admin_role_id,
+    :bot_spam_channel_id
   ]
 
   @doc false
