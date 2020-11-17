@@ -2,6 +2,23 @@ import Config
 
 config :nostrum,
   token: System.get_env("DISCORD_TOKEN") || "${DISCORD_TOKEN}",
+  gateway_intents: [
+    :guilds,
+    :guild_members,
+    :guild_bans,
+    :guild_emojis,
+    :guild_integrations,
+    :guild_webhooks,
+    :guild_invites,
+    :guild_voice_states,
+    :guild_presences,
+    :guild_messages,
+    :guild_message_reactions,
+    :guild_message_typing,
+    :direct_messages,
+    :direct_message_reactions,
+    :direct_message_typing
+  ],
   num_shards: :auto
 
 config :miata_bot, MiataBot.Discord.OAuth2,

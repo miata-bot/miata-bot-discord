@@ -12,7 +12,6 @@ defmodule MiataBot.Application do
       # Start the Ecto repository
       MiataBot.Repo,
       MiataBot.CopyPastaWorker,
-      MiataBot.LookingForMiataWorker,
       # Start the endpoint when the application starts
       {Phoenix.PubSub, [name: MiataBot.PubSub, adapter: Phoenix.PubSub.PG2]},
       MiataBotWeb.Endpoint,

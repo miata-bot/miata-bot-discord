@@ -21,11 +21,18 @@ defmodule MiataBot.LookingForMiataTimer do
     field(:joined_at, :utc_datetime)
     field(:refreshed_at, :utc_datetime, default: @enactment_date)
     field(:discord_user_id, Snowflake)
+    field(:discord_guild_id, Snowflake)
   end
 
   def changeset(looking_for_miata, params \\ %{}) do
     looking_for_miata
-    |> cast(params, [:joined_at, :refreshed_at, :discord_user_id])
-    |> unique_constraint(:discord_user_id)
+    |> cast(params, [
+      :joined_at,
+      :refreshed_at,
+      :discord_user_id,
+      :discord_guild_id
+    ])
+    # |> unique_constraint(:discord_user_id)
+    |> unique_constraint([:discord_guild_id, :discord_user_id])
   end
 end

@@ -33,9 +33,11 @@ defmodule MiataBotDiscord.NostrumConsumer do
 
     case MiataBotDiscord.GuildSupervisor.start_guild(guild, config, current_user) do
       {:ok, _pid} ->
+        MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:GUILD_AVAILABLE, guild})
         :ok
 
       {:error, {:already_started, _pid}} ->
+        MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:GUILD_AVAILABLE, guild})
         :ok
 
       error ->
@@ -47,9 +49,10 @@ defmodule MiataBotDiscord.NostrumConsumer do
     end
   end
 
-  def handle_event({:GUILD_MEMBER_UPDATE, {guild_id, _old, new} = payload, _ws_state}) do
+  def handle_event({:GUILD_MEMBER_UPDATE, {guild_id, old, new} = payload, _ws_state}) do
     Logger.info("guild member update: #{inspect(payload)}")
     MiataBotDiscord.GuildCache.upsert_guild_member(guild_id, new.user.id, new)
+    MiataBotDiscord.Guild.EventDispatcher.dispatch(guild_id, {:GUILD_MEMBER_UPDATE, old, new})
   end
 
   def handle_event({:READY, _ready, _ws_state}) do
@@ -175,7 +178,7 @@ defmodule MiataBotDiscord.NostrumConsumer do
   #    zlib_ctx: #Reference<0.667557440.280100868.41537>
   #  }}
 
-  def handle_event(_event) do
-    # Logger.error(["Unhandled event from Nostrum ", inspect(event, pretty: true)])
+  def handle_event(event) do
+    Logger.error(["Unhandled event from Nostrum ", inspect(event, pretty: true)])
   end
 end

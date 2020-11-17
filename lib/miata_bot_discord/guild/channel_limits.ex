@@ -1,4 +1,4 @@
-defmodule MiataBotDiscord.ChannelLimits do
+defmodule MiataBotDiscord.Guild.ChannelLimits do
   use GenServer
   alias Nostrum.Struct.Message
   import MiataBotDiscord.Guild.Registry, only: [via: 2]

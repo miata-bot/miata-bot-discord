@@ -3,7 +3,7 @@ defmodule MiataBotDiscord.Guild.ChannelLimitsConsumer do
   require Logger
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
   alias MiataBotDiscord.Guild.EventDispatcher
-  alias MiataBotDiscord.ChannelLimits
+  alias MiataBotDiscord.Guild.ChannelLimits
 
   alias Nostrum.Struct.Message
 

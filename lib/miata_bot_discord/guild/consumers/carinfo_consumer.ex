@@ -201,8 +201,6 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     end
   end
 
-  defp extract_year(_), do: nil
-
   defp get_user(%Message{mentions: [user | _]}) do
     {:ok, user}
   end
@@ -239,8 +237,8 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {_id, %Nostrum.Struct.Guild.Member{user: %{username: ^nick}}} ->
           true
 
-        {_id, %Nostrum.Struct.Guild.Member{} = member} ->
-          Logger.info("not match: #{inspect(member)}")
+        {_id, %Nostrum.Struct.Guild.Member{} = _member} ->
+          # Logger.info("not match: #{inspect(member)}")
           false
       end)
 

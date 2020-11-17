@@ -10,7 +10,8 @@ defmodule MiataBotDiscord.Guild do
     AutoreplyConsumer,
     CarinfoConsumer,
     ChannelLimitsConsumer,
-    LMGTFYConcumer
+    LMGTFYConcumer,
+    LookingForMiataConsumer
   }
 
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
@@ -39,10 +40,11 @@ defmodule MiataBotDiscord.Guild do
       {CarinfoConsumer, {guild, config, current_user}},
       {ChannelLimitsConsumer, {guild, config, current_user}},
       {LMGTFYConcumer, {guild, config, current_user}},
+      {LookingForMiataConsumer, {guild, config, current_user}},
 
       # Other shit
-      MiataBotDiscord.AnnoyingPingCache,
-      {MiataBotDiscord.ChannelLimits, {guild, config, current_user}},
+      {MiataBotDiscord.Guild.ChannelLimits, {guild, config, current_user}},
+      {MiataBotDiscord.Guild.LookingForMiataWorker, {guild, config, current_user}},
 
       # Responder
       {MiataBotDiscord.Guild.Responder,
@@ -51,7 +53,8 @@ defmodule MiataBotDiscord.Guild do
           via(guild, AutoreplyConsumer),
           via(guild, CarinfoConsumer),
           via(guild, ChannelLimitsConsumer),
-          via(guild, LMGTFYConcumer)
+          via(guild, LMGTFYConcumer),
+          via(guild, LookingForMiataConsumer)
         ]}}
     ]
 
