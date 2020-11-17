@@ -1,68 +1,52 @@
-  # uncomment to own Mark Sticken
-  # def handle_event({:MESSAGE_CREATE, {%{author: %{id: 362309360124428299}, channel_id: channel_id} = message}, _state}) do
-  #   Api.create_message(channel_id, "<@!362309360124428299> https://media.discordapp.net/attachments/322162421156282369/581557012593246209/13t5kz.jpg")
-  #   Api.delete_message(message)
-  # end
+defmodule MiataBotDiscord.Guild.AutoreplyConsumer do
+  @moduledoc """
+  Processes commands from users
+  """
 
-  # uncomment to own Syylo#2314
-  # def handle_event({:MESSAGE_CREATE, {%{author: %{id: 234461132881002498}, channel_id: channel_id} = message}, _state}) do
-  #   Nostrum.Api.modify_guild_member(322_080_266_761_797_633, 234461132881002498, [nick: "annoying shitlord"])
-  #   Api.create_message(channel_id, "<@!234461132881002498> stop being an annoying shitlord")
-  #   Api.delete_message(message)
-  # end
+  use GenStage
+  require Logger
+  import MiataBotDiscord.Guild.Registry, only: [via: 2]
+  alias MiataBotDiscord.Guild.EventDispatcher
 
-  # uncomment to own Syylo#2314
-  # def handle_event({:MESSAGE_CREATE, {%{author: %{id: 611072179991478272}, channel_id: channel_id} = message}, _state}) do
-  #   Nostrum.Api.modify_guild_member(322_080_266_761_797_633, 611072179991478272, [nick: "still an annoying shitlord"])
-  #   # Api.create_message(channel_id, "<@!611072179991478272> stop being an annoying shitlord")
-  #   Api.delete_message(message)
-  # end
+  import Nostrum.Struct.Message
 
-  # Uncomment to own Dey See Me Corollin
-  # @dey_see_me_corollin_user_id 234_361_846_092_660_738
-  # @general_miata_channel_id 322_080_266_761_797_633
-  # def handle_event(
-  #       {:MESSAGE_CREATE,
-  #        {%{author: %{id: @dey_see_me_corollin_user_id}, channel_id: @general_miata_channel_id} =
-  #           message}, _state}
-  #     ) do
-  #   Api.create_message(@general_miata_channel_id, "<@!#{@dey_see_me_corollin_user_id}> denied")
-  #   Api.delete_message(message)
-  # end
+  @doc false
+  def start_link({guild, config, current_user}) do
+    GenStage.start_link(__MODULE__, {guild, config, current_user}, name: via(guild, __MODULE__))
+  end
 
-  # def handle_event(
-  #       {:MESSAGE_CREATE, {%{author: %{id: @justin_user_id}, channel_id: channel_id} = message},
-  #        _state}
-  #     ) do
-  #   e = %Nostrum.Struct.Emoji{
-  #     animated: false,
-  #     id: 595_123_456_996_278_273,
-  #     managed: false,
-  #     name: "blackice",
-  #     require_colons: true,
-  #     roles: [],
-  #     user: nil
-  #   }
+  @impl GenStage
+  def init({guild, config, current_user}) do
+    {:producer_consumer, %{guild: guild, current_user: current_user, config: config},
+     subscribe_to: [via(guild, EventDispatcher)]}
+  end
 
-  #   Api.create_reaction(channel_id, message.id, e)
-  # end
+  @impl GenStage
+  def handle_events(events, _from, %{current_user: %{id: current_user_id}} = state) do
+    {actions, state} =
+      Enum.reduce(events, {[], state}, fn
+        # Ignore messages from self
+        {:MESSAGE_CREATE, %{author: %{id: author_id}}}, {actions, state}
+        when author_id == current_user_id ->
+          {actions, state}
 
-  # def handle_event(
-  #       {:MESSAGE_CREATE, {%{author: %{id: @easyy_user_id}, channel_id: channel_id} = message},
-  #        _state}
-  #     ) do
-  #   e = %Nostrum.Struct.Emoji{
-  #     animated: false,
-  #     id: 554_801_155_826_253_850,
-  #     managed: false,
-  #     name: "Raccy",
-  #     require_colons: true,
-  #     roles: [],
-  #     user: nil
-  #   }
+        {:MESSAGE_CREATE, message}, {actions, state} ->
+          handle_message(message, {actions, state})
 
-  #   Api.create_reaction(channel_id, message.id, e)
-  # end
+        _, {actions, state} ->
+          {actions, state}
+      end)
+
+    {:noreply, actions, state}
+  end
+
+  defmacro bang(match, reply) do
+    quote location: :keep do
+      def handle_message(%Message{content: unquote(match) <> _} = message, {actions, state}) do
+        {actions ++ [{:create_message!, [message.channel_id, unquote(reply)}], state}
+      end
+    end
+  end
 
   bang("ya rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A")
   bang("yeah rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A")
@@ -98,8 +82,6 @@
     "!fartbeard",
     "https://cdn.discordapp.com/attachments/322162421156282369/593854324891713546/image0.jpg"
   )
-
-  bang("!chicagoroast", "<@!#{@maysh_user_id}> Chicago sux lmao")
 
   bang(
     "!bmwroast",
@@ -177,3 +159,8 @@
     "!boogerwelds",
     "https://media.discordapp.net/attachments/500143495043088395/631212983875272754/MvLRsuarIkV9veiMwWjIOT3MMVSIiqAp-mYEYVJtSuXroGeOzp5CVWNZ8TZ8pcG13CiXpjIW823BjyZNL-ABnj4mC_sdNKETxtc9.png?width=494&height=659"
   )
+
+  def handle_message(_message, {actions, state}) do
+    {actions, state}
+  end
+end
