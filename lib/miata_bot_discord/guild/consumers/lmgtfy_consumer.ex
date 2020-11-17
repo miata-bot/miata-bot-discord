@@ -1,11 +1,14 @@
-defmodule MiataBotDiscord.Guild.ChannelLimitsConsumer do
+defmodule MiataBotDiscord.Guild.LMGTFYConcumer do
+  @moduledoc """
+  Processes commands from users
+  """
+
   use GenStage
   require Logger
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
   alias MiataBotDiscord.Guild.EventDispatcher
-  alias MiataBotDiscord.ChannelLimits
 
-  alias Nostrum.Struct.Message
+  alias Nostrum.Struct.{Message, Embed}
 
   @doc false
   def start_link({guild, config, current_user}) do
@@ -30,9 +33,6 @@ defmodule MiataBotDiscord.Guild.ChannelLimitsConsumer do
         {:MESSAGE_CREATE, message}, {actions, state} ->
           handle_message(message, {actions, state})
 
-        {:MESSAGE_UPDATE, message}, {actions, state} ->
-          handle_message(message, {actions, state})
-
         _, {actions, state} ->
           {actions, state}
       end)
@@ -41,18 +41,17 @@ defmodule MiataBotDiscord.Guild.ChannelLimitsConsumer do
   end
 
   def handle_message(
-        %Message{channel_id: general, member: %{} = member} = message,
-        {actions, %{config: %{general_channel_id: general, miata_fan_role_id: miata_fan}} = state}
+        %Message{content: "!google" <> search, channel_id: channel_id},
+        {actions, state}
       ) do
-    new_actions =
-      if miata_fan in member.roles do
-        Logger.info("doing channel limit for #{inspect(member)}")
-        ChannelLimits.process_activity(message)
-      else
-        []
-      end
+    q = URI.encode_query(%{q: search, iee: 1})
+    lmgtfy = "https://lmgtfy.com/?#{q}"
 
-    {actions ++ new_actions, state}
+    embed =
+      Embed.put_url(%Embed{}, lmgtfy)
+      |> Embed.put_title("let me google that for you")
+
+    {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
   end
 
   def handle_message(%Message{}, {actions, state}) do
