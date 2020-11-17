@@ -18,6 +18,7 @@
   "egd": {:git, "https://github.com/erlang/egd.git", "1cea959544de7dd40a3284ba571a58939de57616", []},
   "elixir_make": {:hex, :elixir_make, "0.6.1", "8faa29a5597faba999aeeb72bbb9c91694ef8068f0131192fb199f98d32994ef", [:mix], [], "hexpm", "35d33270680f8d839a4003c3e9f43afb595310a592405a00afc12de4c7f55a18"},
   "equivalex": {:hex, :equivalex, "1.0.2", "b9a9aaf79f2556288f514218653beaddb15afa2af407bfec37c5c4906e39f514", [:mix], [], "hexpm", "f7f8127c59be715ee6288f8c59fa8fc40e6428fb5c9bd2a001de2c9b1ff3f1c2"},
+  "extty": {:hex, :extty, "0.2.0", "65c233182d7cda0ea4f2e6069a08bc47379c8d38cd7cc9f30a4a380e72bf4148", [:mix], [], "hexpm", "bb47b4ff4eb0253d19a26818cfd4ebd759153aa67e7a43b8130ab8a930cce018"},
   "file_system": {:hex, :file_system, "0.2.9", "545b9c9d502e8bfa71a5315fac2a923bd060fd9acb797fe6595f54b0f975fd32", [:mix], [], "hexpm", "3cf87a377fe1d93043adeec4889feacf594957226b4f19d5897096d6f61345d8"},
   "gen_stage": {:hex, :gen_stage, "0.14.3", "d0c66f1c87faa301c1a85a809a3ee9097a4264b2edf7644bf5c123237ef732bf", [:mix], [], "hexpm", "8453e2289d94c3199396eb517d65d6715ef26bcae0ee83eb5ff7a84445458d76"},
   "gettext": {:hex, :gettext, "0.18.2", "7df3ea191bb56c0309c00a783334b288d08a879f53a7014341284635850a6e55", [:mix], [], "hexpm", "f9f537b13d4fdd30f3039d33cb80144c3aa1f8d9698e47d7bcbcc8df93b1f5c5"},

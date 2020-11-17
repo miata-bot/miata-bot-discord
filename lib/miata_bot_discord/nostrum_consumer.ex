@@ -26,6 +26,29 @@ defmodule MiataBotDiscord.NostrumConsumer do
     Logger.info("GUILD_UNAVAILABLE: #{inspect(unavailable)}")
   end
 
+  def handle_event({:GUILD_CREATE, {guild}, _ws_state}) do
+    Logger.info("GUILD_AVAILABLE: #{guild.name}")
+    {:ok, current_user} = Nostrum.Api.get_current_user()
+    config = get_or_create_config(guild)
+
+    case MiataBotDiscord.GuildSupervisor.start_guild(guild, config, current_user) do
+      {:ok, _pid} ->
+        MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:GUILD_AVAILABLE, guild})
+        :ok
+
+      {:error, {:already_started, _pid}} ->
+        MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:GUILD_AVAILABLE, guild})
+        :ok
+
+      error ->
+        Logger.error("Could not start guild: #{guild.name}: #{inspect(error)}")
+    end
+
+    for {member_id, m} <- guild.members do
+      true = MiataBotDiscord.GuildCache.upsert_guild_member(guild.id, member_id, m)
+    end
+  end
+
   def handle_event({:GUILD_AVAILABLE, {%Nostrum.Struct.Guild{} = guild}, _ws_state}) do
     Logger.info("GUILD_AVAILABLE: #{guild.name}")
     {:ok, current_user} = Nostrum.Api.get_current_user()

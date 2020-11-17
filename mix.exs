@@ -60,6 +60,7 @@ defmodule MiataBot.MixProject do
       {:tesla, "~> 1.3.0"},
       {:timex, "~> 3.6"},
       {:hackney, "~> 1.16"},
+      {:extty, "~> 0.2.0"},
       @nostrum
     ]
   end
