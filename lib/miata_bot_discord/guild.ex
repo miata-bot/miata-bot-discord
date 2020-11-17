@@ -7,6 +7,7 @@ defmodule MiataBotDiscord.Guild do
   use Supervisor
 
   alias MiataBotDiscord.Guild.{
+    BootmsgConsumer,
     AutoreplyConsumer,
     CarinfoConsumer,
     ChannelLimitsConsumer,
@@ -38,6 +39,7 @@ defmodule MiataBotDiscord.Guild do
       {MiataBotDiscord.Guild.EventDispatcher, guild},
 
       # consumers
+      {BootmsgConsumer, {guild, config, current_user}},
       {AutoreplyConsumer, {guild, config, current_user}},
       {CarinfoConsumer, {guild, config, current_user}},
       {ChannelLimitsConsumer, {guild, config, current_user}},
@@ -55,6 +57,7 @@ defmodule MiataBotDiscord.Guild do
       {MiataBotDiscord.Guild.Responder,
        {guild,
         [
+          via(guild, BootmsgConsumer),
           via(guild, AutoreplyConsumer),
           via(guild, CarinfoConsumer),
           via(guild, ChannelLimitsConsumer),

@@ -4,6 +4,7 @@ defmodule MiataBot.MixProject do
   def project do
     [
       app: :miata_bot,
+      commit: commit(),
       version: "0.2.1",
       elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -87,5 +88,12 @@ defmodule MiataBot.MixProject do
         steps: [:assemble, :tar]
       ]
     ]
+  end
+
+  defp commit do
+    System.get_env("MIATA_BOT_COMMIT") ||
+      System.cmd("git", ~w"rev-parse --verify HEAD", [])
+      |> elem(0)
+      |> String.trim()
   end
 end

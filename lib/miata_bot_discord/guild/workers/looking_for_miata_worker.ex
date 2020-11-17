@@ -70,7 +70,7 @@ defmodule MiataBotDiscord.Guild.LookingForMiataWorker do
   end
 
   def handle_continue([], state) do
-    Logger.info("checkup complete")
+    # Logger.info("checkup complete")
     Process.send_after(self(), :checkup, 300_000)
     {:noreply, state, :hibernate}
   end
