@@ -38,6 +38,30 @@ defmodule MiataBotDiscord.Guild.MemesChannelConsumer do
   end
 
   def handle_message(
+        %Message{content: "$copypasta add " <> content, member: member} = message,
+        {actions, state}
+      ) do
+    new_actions =
+      if state.config.admin_role_id in member.roles do
+        content = String.trim(content)
+
+        MiataBot.Repo.insert!(%MiataBot.CopyPasta{
+          content: content,
+          created_by_discord_id: message.author.id
+        })
+
+        [
+          {:create_message!,
+           [message.channel_id, "Added new copypasta. Your contribution is greatly appreciated."]}
+        ]
+      else
+        [{:create_message!, [message.channel_id, "You aren't an admin you frikin dongle"]}]
+      end
+
+    {actions ++ new_actions, state}
+  end
+
+  def handle_message(
         %Message{channel_id: channel} = message,
         {actions, %{config: %{memes_channel_id: channel}} = state}
       ) do

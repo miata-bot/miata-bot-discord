@@ -11,6 +11,7 @@ defmodule MiataBotDiscord.Guild.Config do
     field :miata_fan_role_id, Snowflake
     field :looking_for_miata_role_id, Snowflake
     field :bot_spam_channel_id, Snowflake
+    field :admin_role_id, Snowflake
   end
 
   @required_fields [
@@ -21,7 +22,7 @@ defmodule MiataBotDiscord.Guild.Config do
     :offtopic_channel_id,
     :miata_fan_role_id,
     :looking_for_miata_role_id,
-    :bot_spam_channel_id
+    :admin_role_id
   ]
 
   @doc false
