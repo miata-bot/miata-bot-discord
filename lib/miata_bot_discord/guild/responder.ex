@@ -27,7 +27,6 @@ defmodule MiataBotDiscord.Guild.Responder do
 
   @impl GenStage
   def handle_events(events, from, state) do
-    IO.inspect(events, label: "responder event")
     for event <- events, do: handle_event(event, from)
     {:noreply, [], state}
   end

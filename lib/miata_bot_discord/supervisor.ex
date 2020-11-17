@@ -20,8 +20,6 @@ defmodule MiataBotDiscord.Supervisor do
       MiataBotDiscord.GuildCache,
       # dynamic supervisor for each guild the bot is in
       MiataBotDiscord.GuildSupervisor,
-      {MiataBotDiscord.ChannelLimits, 322_080_266_761_797_633},
-      MiataBotDiscord.AnnoyingPingCache,
       # source of discord events
       @dispatch_source
     ]

@@ -165,7 +165,6 @@ defmodule MiataBotDiscord do
 
   def handle_command(command, message) do
     Logger.debug("unknown command #{command}: #{inspect(message, limit: :infinity)}")
-    IO.inspect(message, label: "unhandled command")
   end
 
   def e85_stations_to_embed(stations) do

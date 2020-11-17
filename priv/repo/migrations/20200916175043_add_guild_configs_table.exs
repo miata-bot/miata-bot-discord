@@ -6,6 +6,9 @@ defmodule MiataBot.Repo.Migrations.AddGuildConfigsTable do
       add :guild_id, :string
       add :verification_channel_id, :string
       add :memes_channel_id, :string
+      add :general_channel_id, :string
+      add :offtopic_channel_id, :string
+      add :miata_fan_role_id, :string
     end
   end
 end

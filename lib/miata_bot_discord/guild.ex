@@ -8,7 +8,8 @@ defmodule MiataBotDiscord.Guild do
 
   alias MiataBotDiscord.Guild.{
     AutoreplyConsumer,
-    CarinfoConsumer
+    CarinfoConsumer,
+    ChannelLimitsConsumer
   }
 
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
@@ -35,13 +36,19 @@ defmodule MiataBotDiscord.Guild do
       # consumers
       {AutoreplyConsumer, {guild, config, current_user}},
       {CarinfoConsumer, {guild, config, current_user}},
+      {ChannelLimitsConsumer, {guild, config, current_user}},
+
+      # Other shit
+      MiataBotDiscord.AnnoyingPingCache,
+      {MiataBotDiscord.ChannelLimits, {guild, config, current_user}},
 
       # Responder
       {MiataBotDiscord.Guild.Responder,
        {guild,
         [
           via(guild, AutoreplyConsumer),
-          via(guild, CarinfoConsumer)
+          via(guild, CarinfoConsumer),
+          via(guild, ChannelLimitsConsumer)
         ]}}
     ]
 

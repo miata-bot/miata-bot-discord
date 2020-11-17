@@ -78,7 +78,6 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   # end
 
   def handle_message(%Message{channel_id: channel_id, content: "$carinfo help"}, {actions, state}) do
-    IO.puts("HERE!!!!")
     {actions ++ [{:create_message!, [channel_id, [embed: @help_message]]}], state}
   end
 
@@ -158,7 +157,6 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   end
 
   def handle_message(_message, {actions, state}) do
-    # IO.inspect(_message, label: "unhandled")
     {actions, state}
   end
 
