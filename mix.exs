@@ -29,14 +29,11 @@ defmodule MiataBot.MixProject do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  # nostrum =
-  #   if Mix.env() == :prod && System.get_env("DISCORD_TOKEN") do
-  #     {:nostrum, github: "Kraigie/nostrum"}
-  #   else
-  #     {:nostrum, github: "Kraigie/nostrum", runtime: false}
-  #   end
-
-  @nostrum {:nostrum, github: "Kraigie/nostrum"}
+  if Mix.env() == :prod && System.get_env("DISCORD_TOKEN") do
+    @nostrum {:nostrum, github: "Kraigie/nostrum"}
+  else
+    @nostrum {:nostrum, github: "Kraigie/nostrum", runtime: false}
+  end
 
   # Specifies your project dependencies.
   #

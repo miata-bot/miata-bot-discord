@@ -3,11 +3,11 @@ defmodule MiataBotDiscord.Guild.Responder do
   use GenStage
   require Logger
 
-  # if Mix.env() == :prod do
-  @api Nostrum.Api
-  # else
-  #   @api MiataBotDiscord.FakeAPI
-  # end
+  if Mix.env() == :prod do
+    @api Nostrum.Api
+  else
+    @api MiataBotDiscord.FakeAPI
+  end
 
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
 
