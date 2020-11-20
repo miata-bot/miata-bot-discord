@@ -2,7 +2,7 @@ defmodule MiataBotDiscord.Guild.MemesChannelConsumer do
   use GenStage
   require Logger
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
-  alias MiataBotDiscord.Guild.EventDispatcher
+  alias MiataBotDiscord.Guild.{EventDispatcher, Responder}
   alias MiataBotDiscord.Guild.CopyPastaWorker
 
   alias Nostrum.Struct.Message
@@ -43,7 +43,8 @@ defmodule MiataBotDiscord.Guild.MemesChannelConsumer do
       ) do
     new_actions =
       if state.config.admin_role_id in member.roles do
-        content = String.trim(content)
+        content =
+          maybe_get_message_content_from_snowflake(content, message.channel_id, state.guild.id)
 
         MiataBot.Repo.insert!(%MiataBot.CopyPasta{
           content: content,
@@ -71,5 +72,16 @@ defmodule MiataBotDiscord.Guild.MemesChannelConsumer do
 
   def handle_message(%Message{}, {actions, state}) do
     {actions, state}
+  end
+
+  defp maybe_get_message_content_from_snowflake(content, channel_id, guild_id) do
+    with {:ok, message_id} <- Snowflake.cast(content),
+         {:ok, %{content: content}} <-
+           Responder.execute_action(guild_id, {:get_channel_message, [channel_id, content]}) do
+      content
+    else
+      _ ->
+        content
+    end
   end
 end
