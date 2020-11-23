@@ -50,7 +50,7 @@ defmodule MiataBotDiscord.Guild.GIFConsumer do
 
         [
           {:delete_message!, [message]},
-          {:message_create!, [message.channel_id, "Please no annoying gifs"]}
+          {:create_message!, [message.channel_id, "Please no annoying gifs"]}
         ]
       else
         []
