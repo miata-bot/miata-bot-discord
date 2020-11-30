@@ -14,8 +14,7 @@ defmodule MiataBotDiscord.Guild do
     LMGTFYConcumer,
     LookingForMiataConsumer,
     MemesChannelConsumer,
-    EvalConsumer,
-    GIFConsumer
+    EvalConsumer
   }
 
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
@@ -48,7 +47,6 @@ defmodule MiataBotDiscord.Guild do
       {LookingForMiataConsumer, {guild, config, current_user}},
       {MemesChannelConsumer, {guild, config, current_user}},
       {EvalConsumer, {guild, config, current_user}},
-      {GIFConsumer, {guild, config, current_user}},
 
       # Workers
       {MiataBotDiscord.Guild.ChannelLimitsWorker, {guild, config, current_user}},
@@ -66,8 +64,7 @@ defmodule MiataBotDiscord.Guild do
           via(guild, LMGTFYConcumer),
           via(guild, LookingForMiataConsumer),
           via(guild, MemesChannelConsumer),
-          via(guild, EvalConsumer),
-          via(guild, GIFConsumer)
+          via(guild, EvalConsumer)
         ]}}
     ]
 

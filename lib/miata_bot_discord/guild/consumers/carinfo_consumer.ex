@@ -39,6 +39,9 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
                 |> Embed.put_field("carinfo update tires <tire name>", """
                 Sets the author's carinfo tire
                 """)
+                |> Embed.put_field("carinfo update instagram <handle>", """
+                Sets the author's instagram handle
+                """)
 
   @doc false
   def start_link({guild, config, current_user}) do
@@ -183,6 +186,18 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{tires: tires, discord_user_id: author.id}
+    do_update(channel_id, author, params, {actions, state})
+  end
+
+  def handle_message(
+        %Message{
+          content: "$carinfo update instagram " <> instagram_handle,
+          channel_id: channel_id,
+          author: author
+        },
+        {actions, state}
+      ) do
+    params = %{instagram_handle: instagram_handle, discord_user_id: author.id}
     do_update(channel_id, author, params, {actions, state})
   end
 
