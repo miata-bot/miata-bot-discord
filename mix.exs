@@ -85,7 +85,7 @@ defmodule MiataBot.MixProject do
       miata_bot: [
         include_executables_for: [:unix],
         applications: [runtime_tools: :permanent],
-        steps: [:assemble, :tar]
+        steps: [:assemble]
       ]
     ]
   end

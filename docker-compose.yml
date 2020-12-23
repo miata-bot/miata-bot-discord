@@ -1,0 +1,21 @@
+version: '3.2'
+services:
+  db:
+    image: postgres
+    restart: always
+    volumes:
+      - ./pg-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  app:
+    build: .
+    image: "registry.sixtyeightplus.one/miata_bot"
+    depends_on:
+      - 'db'
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: "ecto://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/miata_bot"
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
