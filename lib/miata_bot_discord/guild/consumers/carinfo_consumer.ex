@@ -245,6 +245,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         |> Embed.put_image(info.image_url)
         |> maybe_add_wheels(info)
         |> maybe_add_tires(info)
+        |> maybe_add_instagram(info)
     end
   end
 
@@ -253,6 +254,11 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def maybe_add_tires(embed, %{tires: nil}), do: embed
   def maybe_add_tires(embed, %{tires: tires}), do: Embed.put_field(embed, "Tires", tires)
+
+  def maybe_add_instagram(embed, %{instagram_handle: nil}), do: embed
+
+  def maybe_add_instagram(embed, %{instagram_handle: "@" <> handle}),
+    do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
 
   defp get_user(%Message{mentions: [user | _]}) do
     {:ok, user}
