@@ -77,7 +77,7 @@ defmodule MiataBotDiscord.Guild.MemesChannelConsumer do
   defp maybe_get_message_content_from_snowflake(content, channel_id, guild_id) do
     with {:ok, message_id} <- Snowflake.cast(content),
          {:ok, %{content: content}} <-
-           Responder.execute_action(guild_id, {:get_channel_message, [channel_id, content]}) do
+           Responder.execute_action(guild_id, {:get_channel_message, [channel_id, message_id]}) do
       content
     else
       _ ->

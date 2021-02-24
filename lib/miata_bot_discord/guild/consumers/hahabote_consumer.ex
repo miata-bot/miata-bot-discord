@@ -39,8 +39,10 @@ defmodule MiataBotDiscord.Guild.HaHaBoteConsumer do
   end
 
   def handle_message(message, {actions, state}) do
-    if String.contains?(String.downcase(message.content), "bote") || String.contains?(String.downcase(message.content), "boat") do
+    if String.contains?(String.downcase(message.content), "bote") ||
+         String.contains?(String.downcase(message.content), "boat") do
       mention = Nostrum.Struct.User.mention(message.author)
+
       {actions ++
          [
            {:create_message!,

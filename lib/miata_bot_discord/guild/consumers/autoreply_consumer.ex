@@ -39,6 +39,11 @@ defmodule MiataBotDiscord.Guild.AutoreplyConsumer do
     {:noreply, actions, state}
   end
 
+  bang(
+    "!northstar",
+    "the developer of this bot has no idea what this means. sorry for the missed oppertunity."
+  )
+
   bang("ya rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A")
   bang("yeah rip", "https://www.youtube.com/watch?v=fKLmZNnMT0A")
 
