@@ -14,7 +14,8 @@ defmodule MiataBotDiscord.Guild do
     LMGTFYConcumer,
     LookingForMiataConsumer,
     MemesChannelConsumer,
-    EvalConsumer
+    EvalConsumer,
+    HaHaBoteConsumer
   }
 
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
@@ -52,6 +53,8 @@ defmodule MiataBotDiscord.Guild do
       {MiataBotDiscord.Guild.ChannelLimitsWorker, {guild, config, current_user}},
       {MiataBotDiscord.Guild.LookingForMiataWorker, {guild, config, current_user}},
       {MiataBotDiscord.Guild.CopyPastaWorker, {guild, config, current_user}},
+      {HaHaBoteConsumer, {guild, config, current_user}},
+
 
       # Responder
       {MiataBotDiscord.Guild.Responder,
@@ -64,7 +67,8 @@ defmodule MiataBotDiscord.Guild do
           via(guild, LMGTFYConcumer),
           via(guild, LookingForMiataConsumer),
           via(guild, MemesChannelConsumer),
-          via(guild, EvalConsumer)
+          via(guild, EvalConsumer),
+          via(guild, HaHaBoteConsumer)
         ]}}
     ]
 
