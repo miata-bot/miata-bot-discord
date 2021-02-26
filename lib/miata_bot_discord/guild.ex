@@ -15,7 +15,6 @@ defmodule MiataBotDiscord.Guild do
     LookingForMiataConsumer,
     MemesChannelConsumer,
     EvalConsumer,
-    HaHaBoteConsumer,
     HercConsumer
   }
 
@@ -69,7 +68,6 @@ defmodule MiataBotDiscord.Guild do
           via(guild, LookingForMiataConsumer),
           via(guild, MemesChannelConsumer),
           via(guild, EvalConsumer),
-          via(guild, HaHaBoteConsumer),
           via(guild, HercConsumer)
         ]}}
     ]
