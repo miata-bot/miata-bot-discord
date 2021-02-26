@@ -202,6 +202,6 @@ defmodule MiataBotDiscord.NostrumConsumer do
   #  }}
 
   def handle_event(event) do
-    Logger.error(["Unhandled event from Nostrum ", inspect(event, pretty: true)])
+    # Logger.error(["Unhandled event from Nostrum ", inspect(event, pretty: true)])
   end
 end

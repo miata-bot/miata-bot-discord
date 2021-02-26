@@ -39,6 +39,7 @@ defmodule MiataBotDiscord.Guild.HercConsumer do
   end
 
   def handle_message(message, {actions, state}) do
+    # just making some random change.....
     if(message.author.id == 226_052_366_745_600_000) do
       # if(message.author.id == 316_741_621_498_511_363) do
       handle_herc(message, actions, state)
@@ -68,6 +69,21 @@ defmodule MiataBotDiscord.Guild.HercConsumer do
       String.contains?(String.downcase(content), "mommytank") -> own_herc_action(message)
       String.contains?(String.downcase(content), "windscreen") -> own_herc_action(message)
       String.contains?(String.downcase(content), "flavour") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "bloody") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "twat") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "winge") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "carpark") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "theatre") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "petrol") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "motoring") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "bloke") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "lad") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "bollock") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "wanker") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "humour") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "flavour") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "labour") -> own_herc_action(message)
+      String.contains?(String.downcase(content), "neighbour") -> own_herc_action(message)
       true -> nil
     end
   end
@@ -80,7 +96,8 @@ defmodule MiataBotDiscord.Guild.HercConsumer do
         "You live in San Francisco. Stop.",
         "Hear that one on Top Gear?",
         "Hitler would be proud of that one",
-        "You kiss your *mum* with that mouth?"
+        "You kiss your *mum* with that mouth?",
+        "https://cdn.discordapp.com/attachments/643947340453118019/814250327019880448/edsy7kdy7yf61.jpg"
       ])
 
     {:ok, {:create_message!, [channel_id, "#{Nostrum.Struct.User.mention(author)} #{message}"]}}

@@ -14,10 +14,19 @@ defmodule MiataBotWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :mail do
+    plug :accepts, ["html", "json"]
+  end
+
   scope "/", MiataBotWeb do
     pipe_through :browser
 
     get "/", PageController, :index
+  end
+
+  scope "/", MiataBotWeb do
+    pipe_through :mail
+    post "/mail", MailController, :mail
   end
 
   # Other scopes may use custom stacks.
