@@ -48,7 +48,6 @@ defmodule MiataBotDiscord.Guild do
       {LookingForMiataConsumer, {guild, config, current_user}},
       {MemesChannelConsumer, {guild, config, current_user}},
       {EvalConsumer, {guild, config, current_user}},
-      {HaHaBoteConsumer, {guild, config, current_user}},
       {HercConsumer, {guild, config, current_user}},
 
       # Workers
