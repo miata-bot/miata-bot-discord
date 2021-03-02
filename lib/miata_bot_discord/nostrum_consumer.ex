@@ -49,7 +49,7 @@ defmodule MiataBotDiscord.NostrumConsumer do
     end
   end
 
-  def handle_event({:GUILD_AVAILABLE, {%Nostrum.Struct.Guild{} = guild}, _ws_state}) do
+  def handle_event({:GUILD_AVAILABLE, %Nostrum.Struct.Guild{} = guild, _ws_state}) do
     Logger.info("GUILD_AVAILABLE: #{guild.name}")
     {:ok, current_user} = Nostrum.Api.get_current_user()
     config = get_or_create_config(guild)
@@ -129,79 +129,7 @@ defmodule MiataBotDiscord.NostrumConsumer do
     MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:CHANNEL_DELETE, channel_delete})
   end
 
-  # {:CHANNEL_CREATE,
-  #  %Nostrum.Struct.Channel{
-  #    application_id: nil,
-  #    bitrate: nil,
-  #    guild_id: 643947339895013416,
-  #    icon: nil,
-  #    id: 768351674804076575,
-  #    last_message_id: nil,
-  #    last_pin_timestamp: nil,
-  #    name: "deleteme",
-  #    nsfw: false,
-  #    owner_id: nil,
-  #    parent_id: 644744557166329857,
-  #    permission_overwrites: [],
-  #    position: 53,
-  #    recipients: nil,
-  #    topic: nil,
-  #    type: 0,
-  #    user_limit: nil
-  #  },
-  #  %Nostrum.Struct.WSState{
-  #    conn: #PID<0.2033.0>,
-  #    conn_pid: #PID<0.2032.0>,
-  #    gateway: "gateway.discord.gg/?compress=zlib-stream&encoding=etf&v=6",
-  #    heartbeat_ack: true,
-  #    heartbeat_interval: 41250,
-  #    heartbeat_ref: {-576439422420696, #Reference<0.667557440.280231937.89149>},
-  #    last_heartbeat_ack: ~U[2020-10-21 05:55:02.927041Z],
-  #    last_heartbeat_send: ~U[2020-10-21 05:55:02.860815Z],
-  #    seq: 2523,
-  #    session: "8b0f39384eca5eda692b6869ad49e069",
-  #    shard_num: 0,
-  #    shard_pid: nil,
-  #    zlib_ctx: #Reference<0.667557440.280100868.41537>
-  #  }}
-
-  #  {:CHANNEL_DELETE,
-  #  %Nostrum.Struct.Channel{
-  #    application_id: nil,
-  #    bitrate: nil,
-  #    guild_id: 643947339895013416,
-  #    icon: nil,
-  #    id: 768351674804076575,
-  #    last_message_id: nil,
-  #    last_pin_timestamp: nil,
-  #    name: "deleteme",
-  #    nsfw: false,
-  #    owner_id: nil,
-  #    parent_id: 644744557166329857,
-  #    permission_overwrites: [],
-  #    position: 53,
-  #    recipients: nil,
-  #    topic: nil,
-  #    type: 0,
-  #    user_limit: nil
-  #  },
-  #  %Nostrum.Struct.WSState{
-  #    conn: #PID<0.2033.0>,
-  #    conn_pid: #PID<0.2032.0>,
-  #    gateway: "gateway.discord.gg/?compress=zlib-stream&encoding=etf&v=6",
-  #    heartbeat_ack: true,
-  #    heartbeat_interval: 41250,
-  #    heartbeat_ref: {-576439422420696, #Reference<0.667557440.280231937.89149>},
-  #    last_heartbeat_ack: ~U[2020-10-21 05:55:02.927041Z],
-  #    last_heartbeat_send: ~U[2020-10-21 05:55:02.860815Z],
-  #    seq: 2525,
-  #    session: "8b0f39384eca5eda692b6869ad49e069",
-  #    shard_num: 0,
-  #    shard_pid: nil,
-  #    zlib_ctx: #Reference<0.667557440.280100868.41537>
-  #  }}
-
   def handle_event(event) do
-    # Logger.error(["Unhandled event from Nostrum ", inspect(event, pretty: true)])
+    Logger.error(["Unhandled event from Nostrum ", inspect(event, pretty: true)])
   end
 end
