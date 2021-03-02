@@ -29,6 +29,10 @@ defmodule MiataBotDiscord.Guild.AutoreplyConsumer do
         when author_id == current_user_id ->
           {actions, state}
 
+        {:MESSAGE_CREATE, message = %{author: %{id: author_id}}}, {actions, state}
+        when author_id == 407_680_002_658_795_535 ->
+          handle_annoying_guy(message, {actions, state})
+
         {:MESSAGE_CREATE, message}, {actions, state} ->
           handle_message(message, {actions, state})
 
@@ -37,6 +41,17 @@ defmodule MiataBotDiscord.Guild.AutoreplyConsumer do
       end)
 
     {:noreply, actions, state}
+  end
+
+  def handle_annoying_guy(message, {actions, state}) do
+    actions =
+      actions ++
+        [
+          {:delete_message!, [message]}
+          # {:create_message!, [message.channel_id, "#{Nostrum.Struct.User.mention(message.author)} thought it wise to piss off an open source dev"]}
+        ]
+
+    {actions, state}
   end
 
   bang(

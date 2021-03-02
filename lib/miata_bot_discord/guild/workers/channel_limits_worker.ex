@@ -23,19 +23,30 @@ defmodule MiataBotDiscord.Guild.ChannelLimitsWorker do
     old_limits_for_user = state.limits[author_id] || []
     new_limits_for_user = [message | old_limits_for_user]
     new_limits = Map.put(state.limits, author_id, new_limits_for_user)
+    offtopic_channel = %Nostrum.Struct.Channel{id: state.config.offtopic_channel_id}
+    dm_channel = Nostrum.Api.create_dm!(author_id)
+
+    content = """
+    #{author} due to the increase in offtopic messages from miata fans in general miata,
+    the amount of messages they can send are limited. Please move to #{offtopic_channel}
+    """
 
     actions =
-      if length(new_limits_for_user) >= 5 do
-        offtopic_channel = %Nostrum.Struct.Channel{id: state.config.offtopic_channel_id}
+      cond do
+        length(new_limits_for_user) == 6 ->
+          [
+            {:create_message!, [message.channel_id, content]},
+            {:delete_message!, [message]}
+          ]
 
-        content = """
-        #{author} due to the increase in offtopic messages from miata fans in general miata,
-        the amount of messages they can send are limited. Please move to #{offtopic_channel}
-        """
+        length(new_limits_for_user) > 6 ->
+          [
+            {:create_message!, [dm_channel.id, content]},
+            {:delete_message!, [message]}
+          ]
 
-        [{:create_message!, [message.channel_id, content]}, {:delete_message!, [message]}]
-      else
-        []
+        true ->
+          []
       end
 
     {:reply, actions, %{state | limits: new_limits}}
