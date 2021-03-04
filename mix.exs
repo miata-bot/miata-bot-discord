@@ -1,9 +1,11 @@
 defmodule MiataBot.MixProject do
   use Mix.Project
 
+  @app :miata_bot
+
   def project do
     [
-      app: :miata_bot,
+      app: @app,
       commit: commit(),
       version: "0.2.1",
       elixir: "~> 1.10",
@@ -12,7 +14,7 @@ defmodule MiataBot.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      releases: releases()
+      releases: [{@app, release()}]
     ]
   end
 
@@ -80,18 +82,18 @@ defmodule MiataBot.MixProject do
     ]
   end
 
-  defp releases do
+  defp release do
     [
-      miata_bot: [
-        include_executables_for: [:unix],
-        applications: [runtime_tools: :permanent],
-        steps: [:assemble]
-      ]
+      include_executables_for: [:unix],
+      applications: [runtime_tools: :permanent],
+      steps: [:assemble],
+      strip_beams: [keep: ["Docs"]],
+      cookie: "aHR0cHM6Ly9kaXNjb3JkLmdnL25tOENFVDJNc1A="
     ]
   end
 
   defp commit do
-    System.get_env("MIATA_BOT_COMMIT") ||
+    System.get_env("COMMIT") ||
       System.cmd("git", ~w"rev-parse --verify HEAD", [])
       |> elem(0)
       |> String.trim()

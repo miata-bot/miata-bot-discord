@@ -8,6 +8,7 @@ defmodule MiataBot.Application do
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
+      {Webdriver, [name: Webdriver]},
       # Start the Ecto repository
       MiataBot.Repo,
 
