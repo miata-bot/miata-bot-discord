@@ -55,7 +55,8 @@ FROM alpine:latest AS app
 
 WORKDIR /app
 
-RUN apk add --no-cache openssl ncurses-libs bash
+RUN apk add --no-cache openssl ncurses-libs bash chromium-chromedriver chromium python3 python3-pip
+RUN pip3 install -U selenium
 
 COPY --from=compile --chown=nobody:nobody /app/_build/prod/rel/miata_bot ./
 RUN chown nobody:nobody /app
