@@ -40,8 +40,6 @@ ENV PORT=${PORT}
 ENV COMMIT=${COMMIT}
 
 COPY mix.exs mix.lock ./
-COPY config config
-
 RUN mix do deps.get, deps.compile
 
 FROM deps as assets

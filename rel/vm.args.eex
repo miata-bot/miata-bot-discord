@@ -1,5 +1,5 @@
 +C multi_time_warp
--kernel shell_history enabled
+-kernel shell_history enabled inet_dist_listen_min 4220 inet_dist_listen_max 4220
 -elixir ansi_enabled true
 -extra --no-halt
 --

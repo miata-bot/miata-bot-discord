@@ -3,6 +3,13 @@ defmodule MiataBot.MixProject do
 
   @app :miata_bot
 
+  defp commit do
+    System.get_env("COMMIT") ||
+      System.cmd("git", ~w"rev-parse --verify HEAD", [])
+      |> elem(0)
+      |> String.trim()
+  end
+
   def project do
     [
       app: @app,
@@ -90,12 +97,5 @@ defmodule MiataBot.MixProject do
       strip_beams: [keep: ["Docs"]],
       cookie: "aHR0cHM6Ly9kaXNjb3JkLmdnL25tOENFVDJNc1A="
     ]
-  end
-
-  defp commit do
-    System.get_env("COMMIT") ||
-      System.cmd("git", ~w"rev-parse --verify HEAD", [])
-      |> elem(0)
-      |> String.trim()
   end
 end
