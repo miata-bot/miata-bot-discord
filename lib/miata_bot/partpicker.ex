@@ -7,6 +7,14 @@ defmodule MiataBot.Partpicker do
   plug Tesla.Middleware.Headers, [{"authorization", "bearer #{@api_token}"}]
   plug Tesla.Middleware.JSON
 
+  defmodule User do
+    use Ecto.Schema
+    @primary_key {:discord_user_id, Snowflake, [autogenerate: false]}
+    embedded_schema do
+      field :instagram_handle, :string
+    end
+  end
+
   defmodule Build do
     use Ecto.Schema
     @primary_key {:uid, :string, [autogenerate: false]}
@@ -23,14 +31,26 @@ defmodule MiataBot.Partpicker do
         field :url, :string
       end
 
-      embeds_one :user, User, primary_key: false do
-        field :discord_user_id, Snowflake
-        field :instagram_handle, :string
-      end
-
+      embeds_one :user, User
       field :tires, :string
       field :wheels, :string
       field :year, :integer
+    end
+  end
+
+  def update_user(discord_user_id, params) do
+    case post!("/users/#{discord_user_id}", %{user: params}) do
+      %{status: 200, body: body} -> {:ok, parse_user(body)}
+      %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
+      %{status: _, body: %{"errors" => errors}} -> {:error, errors}
+    end
+  end
+
+  def update_build(discord_user_id, build_uid, params) do
+    case post!("/builds/#{discord_user_id}/#{build_uid}", %{build: params}) do
+      %{status: 200, body: body} -> {:ok, parse_build(body)}
+      %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
+      %{status: _, body: %{"errors" => errors}} -> {:error, errors}
     end
   end
 
@@ -42,6 +62,11 @@ defmodule MiataBot.Partpicker do
   def build(discord_user_id, build_uid) do
     %{body: body} = get!("/builds/#{discord_user_id}/#{build_uid}")
     parse_build(body)
+  end
+
+  def parse_user(attrs) do
+    user_changeset(%User{}, attrs)
+    |> Ecto.Changeset.apply_changes()
   end
 
   def parse_build(attrs) do

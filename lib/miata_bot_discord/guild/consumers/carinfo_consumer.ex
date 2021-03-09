@@ -5,10 +5,8 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   use GenStage
   require Logger
-  alias MiataBot.Repo
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
   alias MiataBotDiscord.Guild.{EventDispatcher, Responder}
-  alias MiataBot.Carinfo
   alias MiataBotDiscord.GuildCache
 
   alias Nostrum.Struct.{Message, Embed}
@@ -17,6 +15,9 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
                 |> Embed.put_title("Available commands")
                 |> Embed.put_field("carinfo", """
                 Shows the author's carinfo
+                """)
+                |> Embed.put_field("carinfo me", """
+                Shows *your* carinfo
                 """)
                 |> Embed.put_field("carinfo get <user>", """
                 Shows a users carinfo
@@ -126,7 +127,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{image_url: attachment.url, discord_user_id: author.id}
-    do_update(channel_id, author, params, {actions, state})
+    do_update_image(channel_id, author, params, {actions, state})
   end
 
   def handle_message(
@@ -143,13 +144,13 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def handle_message(
         %Message{
-          content: "$carinfo update color code " <> color_code,
+          content: "$carinfo update color code " <> color,
           channel_id: channel_id,
           author: author
         },
         {actions, state}
       ) do
-    params = %{color_code: color_code, discord_user_id: author.id}
+    params = %{color: color, discord_user_id: author.id}
     do_update(channel_id, author, params, {actions, state})
   end
 
@@ -161,7 +162,19 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         },
         {actions, state}
       ) do
-    params = %{title: title, discord_user_id: author.id}
+    params = %{description: title, discord_user_id: author.id}
+    do_update(channel_id, author, params, {actions, state})
+  end
+
+  def handle_message(
+        %Message{
+          content: "$carinfo update description " <> description,
+          channel_id: channel_id,
+          author: author
+        },
+        {actions, state}
+      ) do
+    params = %{description: description, discord_user_id: author.id}
     do_update(channel_id, author, params, {actions, state})
   end
 
@@ -198,38 +211,69 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{instagram_handle: instagram_handle, discord_user_id: author.id}
-    do_update(channel_id, author, params, {actions, state})
+    do_update_user(channel_id, author, params, {actions, state})
   end
 
   def handle_message(_message, {actions, state}) do
     {actions, state}
   end
 
-  def do_update(channel_id, _author, _params, {actions, state}) do
-    {actions ++ [{:create_message!, [channel_id, "cone is breaking the bot. try again later"]}],
-     state}
+  def do_update_user(channel_id, author, params, {actions, state}) do
+    case MiataBot.Partpicker.update_user(author.id, params) do
+      {:ok, _user} ->
+        embed = carinfo(author)
+        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
 
-    # # info = Repo.get_by(Carinfo, discord_user_id: author.id) || %Carinfo{}
-    # info = "cone u jackass"
-    # changeset = Carinfo.changeset(info, params)
+      {:error, reason} ->
+        embed =
+          %Embed{}
+          |> Embed.put_title("Error updating info")
+          |> Embed.put_color(0xFF0000)
+          |> put_errors(reason)
 
-    # embed =
-    #   case Repo.insert_or_update(changeset) do
-    #     {:ok, _} ->
-    #       carinfo(author)
-
-    #     {:error, changeset} ->
-    #       changeset_to_error_embed(changeset)
-    #   end
-
-    # {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+    end
   end
 
-  def changeset_to_error_embed(changeset) do
-    embed = Embed.put_title(%Embed{}, "Error performing action #{changeset.action}")
+  def do_update_image(channel_id, _author, _params, {actions, state}) do
+    {actions ++
+       [
+         {:create_message!,
+          [
+            channel_id,
+            "that doesn't work right now sorry. you can do that on the website: https://miatapartpicker.gay"
+          ]}
+       ], state}
+  end
 
-    Enum.reduce(changeset.errors, embed, fn {key, {msg, _opts}}, embed ->
-      Embed.put_field(embed, to_string(key), msg)
+  def do_update(channel_id, author, params, {actions, state}) do
+    with [info | _] <- MiataBot.Partpicker.builds(author.id),
+         {:ok, info} <- MiataBot.Partpicker.update_build(author.id, info.uid, params),
+         embed <- embed_from_info(author, info) do
+      {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+    else
+      [] ->
+        embed =
+          %Embed{}
+          |> Embed.put_title("#{author.username}'s Miata")
+          |> Embed.put_description("#{author.username} has not registered a vehicle.")
+
+        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+
+      {:error, reason} ->
+        embed =
+          %Embed{}
+          |> Embed.put_title("Error updating info")
+          |> Embed.put_color(0xFF0000)
+          |> put_errors(reason)
+
+        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+    end
+  end
+
+  def put_errors(embed, error) do
+    Enum.reduce(error, embed, fn {key, msg}, embed ->
+      Embed.put_field(embed, to_string(key), Enum.join(msg, " "))
     end)
   end
 
@@ -238,21 +282,28 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
       [] ->
         %Embed{}
         |> Embed.put_title("#{author.username}'s Miata")
-        |> Embed.put_description("#{author.username} has not registered a vehicle.")
+        |> Embed.put_url("https://miatapartpicker.gay/builds/new")
+        |> Embed.put_description(
+          "#{author.username} has not registered a vehicle. Visit the link to create one"
+        )
 
       [info | _] ->
-        %Embed{}
-        |> Embed.put_title("#{author.username}'s Miata")
-        |> Embed.put_color(0xD11A06)
-        |> Embed.put_field("Year", info.year || "unknown year")
-        |> Embed.put_field("Color Code", info.color || "unknown color code")
-        |> Embed.put_description(info.description)
-        |> Embed.put_url("https://miatapartpicker.gay/car/#{info.uid}")
-        |> maybe_add_image(info)
-        |> maybe_add_wheels(info)
-        |> maybe_add_tires(info)
-        |> maybe_add_instagram(info)
+        embed_from_info(author, info)
     end
+  end
+
+  def embed_from_info(author, info) do
+    %Embed{}
+    |> Embed.put_title("#{author.username}'s Miata")
+    |> Embed.put_color(0xD11A06)
+    |> Embed.put_field("Year", info.year || "unknown year")
+    |> Embed.put_field("Color Code", info.color || "unknown color code")
+    |> Embed.put_description(info.description)
+    |> Embed.put_url("https://miatapartpicker.gay/car/#{info.uid}")
+    |> maybe_add_image(info)
+    |> maybe_add_wheels(info)
+    |> maybe_add_tires(info)
+    |> maybe_add_instagram(info)
   end
 
   def maybe_add_image(embed, %{banner_photo_url: nil}), do: embed
