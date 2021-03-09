@@ -41,6 +41,7 @@ defmodule MiataBot.Partpicker do
   def update_user(discord_user_id, params) do
     case post!("/users/#{discord_user_id}", %{user: params}) do
       %{status: 200, body: body} -> {:ok, parse_user(body)}
+      %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
       %{status: _, body: %{"errors" => errors}} -> {:error, errors}
     end
@@ -49,19 +50,28 @@ defmodule MiataBot.Partpicker do
   def update_build(discord_user_id, build_uid, params) do
     case post!("/builds/#{discord_user_id}/#{build_uid}", %{build: params}) do
       %{status: 200, body: body} -> {:ok, parse_build(body)}
+      %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
       %{status: _, body: %{"errors" => errors}} -> {:error, errors}
     end
   end
 
   def builds(discord_user_id) do
-    %{body: body} = get!("/builds/#{discord_user_id}")
-    Enum.map(body, &parse_build/1)
+    case get!("/builds/#{discord_user_id}") do
+      %{status: 200, body: body} -> {:ok, Enum.map(body, &parse_build/1)}
+      %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
+      %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
+      %{status: _, body: %{"errors" => errors}} -> {:error, errors}
+    end
   end
 
   def build(discord_user_id, build_uid) do
-    %{body: body} = get!("/builds/#{discord_user_id}/#{build_uid}")
-    parse_build(body)
+    case get!("/builds/#{discord_user_id}/#{build_uid}") do
+      %{status: 200, body: body} when is_list(body) -> {:ok, Enum.map(body, &parse_build/1)}
+      %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
+      %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
+      %{status: _, body: %{"errors" => errors}} -> {:error, errors}
+    end
   end
 
   def parse_user(attrs) do

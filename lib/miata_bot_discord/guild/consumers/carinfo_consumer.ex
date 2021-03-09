@@ -247,12 +247,20 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   end
 
   def do_update(channel_id, author, params, {actions, state}) do
-    with [info | _] <- MiataBot.Partpicker.builds(author.id),
+    with {:ok, [info | _]} <- MiataBot.Partpicker.builds(author.id),
          {:ok, info} <- MiataBot.Partpicker.update_build(author.id, info.uid, params),
          embed <- embed_from_info(author, info) do
       {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
     else
       [] ->
+        embed =
+          %Embed{}
+          |> Embed.put_title("#{author.username}'s Miata")
+          |> Embed.put_description("#{author.username} has not registered a vehicle.")
+
+        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+
+      {:error, %{"error" => ["not found"]}} ->
         embed =
           %Embed{}
           |> Embed.put_title("#{author.username}'s Miata")
@@ -279,7 +287,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def carinfo(author) do
     case MiataBot.Partpicker.builds(author.id) do
-      [] ->
+      {:ok, []} ->
         %Embed{}
         |> Embed.put_title("#{author.username}'s Miata")
         |> Embed.put_url("https://miatapartpicker.gay/builds/new")
@@ -287,7 +295,15 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
           "#{author.username} has not registered a vehicle. Visit the link to create one"
         )
 
-      [info | _] ->
+      {:error, %{"error" => ["not found"]}} ->
+        %Embed{}
+        |> Embed.put_title("#{author.username}'s Miata")
+        |> Embed.put_url("https://miatapartpicker.gay/builds/new")
+        |> Embed.put_description(
+          "#{author.username} has not registered a vehicle. Visit the link to create one"
+        )
+
+      {:ok, [info | _]} ->
         embed_from_info(author, info)
     end
   end
