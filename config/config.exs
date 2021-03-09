@@ -26,6 +26,8 @@ config :miata_bot, MiataBot.Discord.OAuth2,
   client_secret: System.get_env("DISCORD_CLIENT_SECRET"),
   redirect_uri: System.get_env("DISCORD_REDIRECT_URI")
 
+config :miata_bot, MiataBot.Partpicker, api_token: System.get_env("PARTPICKER_API_TOKEN")
+
 config :miata_bot, MiataBotWeb.PageController, auth_url: System.get_env("DISCORD_AUTH_URL")
 
 config :miata_bot, Nrel, api_key: System.get_env("NREL_API_KEY")

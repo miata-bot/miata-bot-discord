@@ -205,20 +205,24 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     {actions, state}
   end
 
-  def do_update(channel_id, author, params, {actions, state}) do
-    info = Repo.get_by(Carinfo, discord_user_id: author.id) || %Carinfo{}
-    changeset = Carinfo.changeset(info, params)
+  def do_update(channel_id, _author, _params, {actions, state}) do
+    {actions ++ [{:create_message!, [channel_id, "cone is breaking the bot. try again later"]}],
+     state}
 
-    embed =
-      case Repo.insert_or_update(changeset) do
-        {:ok, _} ->
-          carinfo(author)
+    # # info = Repo.get_by(Carinfo, discord_user_id: author.id) || %Carinfo{}
+    # info = "cone u jackass"
+    # changeset = Carinfo.changeset(info, params)
 
-        {:error, changeset} ->
-          changeset_to_error_embed(changeset)
-      end
+    # embed =
+    #   case Repo.insert_or_update(changeset) do
+    #     {:ok, _} ->
+    #       carinfo(author)
 
-    {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+    #     {:error, changeset} ->
+    #       changeset_to_error_embed(changeset)
+    #   end
+
+    # {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
   end
 
   def changeset_to_error_embed(changeset) do
@@ -230,24 +234,29 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   end
 
   def carinfo(author) do
-    case Repo.get_by(Carinfo, discord_user_id: author.id) do
-      nil ->
+    case MiataBot.Partpicker.builds(author.id) do
+      [] ->
         %Embed{}
         |> Embed.put_title("#{author.username}'s Miata")
         |> Embed.put_description("#{author.username} has not registered a vehicle.")
 
-      %Carinfo{} = info ->
+      [info | _] ->
         %Embed{}
-        |> Embed.put_title(info.title || "#{author.username}'s Miata")
-        |> Embed.put_color(info.color || 0xD11A06)
+        |> Embed.put_title("#{author.username}'s Miata")
+        |> Embed.put_color(0xD11A06)
         |> Embed.put_field("Year", info.year || "unknown year")
-        |> Embed.put_field("Color Code", info.color_code || "unknown color code")
-        |> Embed.put_image(info.image_url)
+        |> Embed.put_field("Color Code", info.color || "unknown color code")
+        |> Embed.put_description(info.description)
+        |> Embed.put_url("https://miatapartpicker.gay/car/#{info.uid}")
+        |> maybe_add_image(info)
         |> maybe_add_wheels(info)
         |> maybe_add_tires(info)
         |> maybe_add_instagram(info)
     end
   end
+
+  def maybe_add_image(embed, %{banner_photo_url: nil}), do: embed
+  def maybe_add_image(embed, %{banner_photo_url: url}), do: Embed.put_image(embed, url)
 
   def maybe_add_wheels(embed, %{wheels: nil}), do: embed
   def maybe_add_wheels(embed, %{wheels: wheels}), do: Embed.put_field(embed, "Wheels", wheels)
@@ -255,9 +264,9 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   def maybe_add_tires(embed, %{tires: nil}), do: embed
   def maybe_add_tires(embed, %{tires: tires}), do: Embed.put_field(embed, "Tires", tires)
 
-  def maybe_add_instagram(embed, %{instagram_handle: nil}), do: embed
+  def maybe_add_instagram(embed, %{user: %{instagram_handle: nil}}), do: embed
 
-  def maybe_add_instagram(embed, %{instagram_handle: "@" <> handle}),
+  def maybe_add_instagram(embed, %{user: %{instagram_handle: "@" <> handle}}),
     do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
 
   defp get_user(%Message{mentions: [user | _]}) do

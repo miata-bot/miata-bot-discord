@@ -70,7 +70,7 @@ defmodule MiataBotDiscord.Guild do
           {via(guild, MemesChannelConsumer), []},
           {via(guild, EvalConsumer), []},
           {via(guild, HercConsumer), []},
-          {via(guild, FreedomUnitConsumer), []},
+          {via(guild, FreedomUnitConsumer), []}
         ]}}
     ]
 

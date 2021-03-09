@@ -19,8 +19,5 @@ services:
       - "4220:4220"
     hostname: "miata-bot.sixtyeightplus.one"
     environment:
-      DATABASE_URL: "ecto://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/miata_bot"
-      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-      DISCORD_TOKEN: ${DISCORD_TOKEN}
       RELEASE_DISTRIBUTION: "name"
       RELEASE_NODE: "miata_bot@miata-bot.sixtyeightplus.one"
