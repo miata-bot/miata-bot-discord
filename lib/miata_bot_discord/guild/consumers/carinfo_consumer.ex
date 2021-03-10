@@ -178,6 +178,18 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def handle_message(
         %Message{
+          content: "$carinfo update vin " <> vin,
+          channel_id: channel_id,
+          author: author
+        },
+        {actions, state}
+      ) do
+    params = %{vin: vin, discord_user_id: author.id}
+    handle_update_build(channel_id, author, params, {actions, state})
+  end
+
+  def handle_message(
+        %Message{
           content: "$carinfo update color code " <> color,
           channel_id: channel_id,
           author: author
@@ -361,6 +373,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     |> maybe_add_image(info)
     |> maybe_add_wheels(info)
     |> maybe_add_tires(info)
+    |> maybe_add_vin(info)
     |> maybe_add_instagram(info)
   end
 
@@ -373,9 +386,15 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   def maybe_add_tires(embed, %{tires: nil}), do: embed
   def maybe_add_tires(embed, %{tires: tires}), do: Embed.put_field(embed, "Tires", tires)
 
+  def maybe_add_vin(embed, %{vin: nil}), do: embed
+  def maybe_add_vin(embed, %{vin: vin}), do: Embed.put_field(embed, "VIN", vin)
+
   def maybe_add_instagram(embed, %{user: %{instagram_handle: nil}}), do: embed
 
   def maybe_add_instagram(embed, %{user: %{instagram_handle: "@" <> handle}}),
+    do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
+
+  def maybe_add_instagram(embed, %{user: %{instagram_handle: handle}}),
     do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
 
   defp get_user(%Message{mentions: [user | _]}) do

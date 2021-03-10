@@ -25,6 +25,7 @@ defmodule MiataBot.Partpicker do
       field :description, :string
       field :make, :string
       field :model, :string
+      field :vin, :string
 
       embeds_many :photos, Photo, primary_key: {:uuid, :binary_id, [autogenerate: false]} do
         field :filename, :string
@@ -107,7 +108,8 @@ defmodule MiataBot.Partpicker do
       :tires,
       :uid,
       :wheels,
-      :year
+      :year,
+      :vin
     ])
     |> Ecto.Changeset.cast_embed(:photos, with: &photo_changeset/2)
     |> Ecto.Changeset.cast_embed(:user, with: &user_changeset/2)
