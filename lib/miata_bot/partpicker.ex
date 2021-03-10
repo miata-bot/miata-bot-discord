@@ -47,6 +47,15 @@ defmodule MiataBot.Partpicker do
     end
   end
 
+  def create_build(discord_user_id, params) do
+    case post!("/builds/#{discord_user_id}/", %{build: params}) do
+      %{status: 200, body: body} -> {:ok, parse_build(body)}
+      %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
+      %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
+      %{status: _, body: %{"errors" => errors}} -> {:error, errors}
+    end
+  end
+
   def update_build(discord_user_id, build_uid, params) do
     case post!("/builds/#{discord_user_id}/#{build_uid}", %{build: params}) do
       %{status: 200, body: body} -> {:ok, parse_build(body)}

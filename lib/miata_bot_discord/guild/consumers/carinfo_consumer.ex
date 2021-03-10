@@ -80,7 +80,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   #     [%{url: url} | _rest] ->
   #       year = extract_year(message.content)
   #       params = %{image_url: url, discord_user_id: message.author.id, year: year}
-  #       do_update(verification_channel_id, message.author, params, {actions, state})
+  #       handle_update_build(verification_channel_id, message.author, params, {actions, state})
 
   #     _ ->
   #       {actions, state}
@@ -99,7 +99,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         %Message{channel_id: channel_id, author: author, content: "$carinfo me" <> _},
         {actions, state}
       ) do
-    embed = carinfo(author)
+    embed = fetch_or_create_build(author)
     {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
   end
 
@@ -109,7 +109,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
       ) do
     case get_user(message) do
       {:ok, user} ->
-        embed = carinfo(user)
+        embed = fetch_or_create_build(user)
         {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
 
       {:error, _} ->
@@ -139,7 +139,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{year: year, discord_user_id: author.id}
-    do_update(channel_id, author, params, {actions, state})
+    handle_update_build(channel_id, author, params, {actions, state})
   end
 
   def handle_message(
@@ -151,7 +151,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{color: color, discord_user_id: author.id}
-    do_update(channel_id, author, params, {actions, state})
+    handle_update_build(channel_id, author, params, {actions, state})
   end
 
   def handle_message(
@@ -163,7 +163,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{description: title, discord_user_id: author.id}
-    do_update(channel_id, author, params, {actions, state})
+    handle_update_build(channel_id, author, params, {actions, state})
   end
 
   def handle_message(
@@ -175,7 +175,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{description: description, discord_user_id: author.id}
-    do_update(channel_id, author, params, {actions, state})
+    handle_update_build(channel_id, author, params, {actions, state})
   end
 
   def handle_message(
@@ -187,7 +187,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{wheels: wheels, discord_user_id: author.id}
-    do_update(channel_id, author, params, {actions, state})
+    handle_update_build(channel_id, author, params, {actions, state})
   end
 
   def handle_message(
@@ -199,7 +199,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{tires: tires, discord_user_id: author.id}
-    do_update(channel_id, author, params, {actions, state})
+    handle_update_build(channel_id, author, params, {actions, state})
   end
 
   def handle_message(
@@ -221,7 +221,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   def do_update_user(channel_id, author, params, {actions, state}) do
     case MiataBot.Partpicker.update_user(author.id, params) do
       {:ok, _user} ->
-        embed = carinfo(author)
+        embed = fetch_or_create_build(author)
         {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
 
       {:error, reason} ->
@@ -246,28 +246,19 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
        ], state}
   end
 
-  def do_update(channel_id, author, params, {actions, state}) do
-    with {:ok, [info | _]} <- MiataBot.Partpicker.builds(author.id),
-         {:ok, info} <- MiataBot.Partpicker.update_build(author.id, info.uid, params),
+  def handle_update_build(channel_id, author, params, {actions, state}) do
+    case do_update_build(author, params) do
+      {:ok, embed} ->
+        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+    end
+  end
+
+  defp do_update_build(author, params) do
+    with {:ok, info} <- fetch_or_create_build(author),
+         {:ok, info} <- update_build(author, info, params),
          embed <- embed_from_info(author, info) do
-      {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+      {:ok, embed}
     else
-      [] ->
-        embed =
-          %Embed{}
-          |> Embed.put_title("#{author.username}'s Miata")
-          |> Embed.put_description("#{author.username} has not registered a vehicle.")
-
-        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
-
-      {:error, %{"error" => ["not found"]}} ->
-        embed =
-          %Embed{}
-          |> Embed.put_title("#{author.username}'s Miata")
-          |> Embed.put_description("#{author.username} has not registered a vehicle.")
-
-        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
-
       {:error, reason} ->
         embed =
           %Embed{}
@@ -275,7 +266,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
           |> Embed.put_color(0xFF0000)
           |> put_errors(reason)
 
-        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+        {:ok, embed}
     end
   end
 
@@ -285,26 +276,23 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     end)
   end
 
-  def carinfo(author) do
+  def fetch_or_create_build(author) do
     case MiataBot.Partpicker.builds(author.id) do
-      {:ok, []} ->
-        %Embed{}
-        |> Embed.put_title("#{author.username}'s Miata")
-        |> Embed.put_url("https://miatapartpicker.gay/builds/new")
-        |> Embed.put_description(
-          "#{author.username} has not registered a vehicle. Visit the link to create one"
-        )
+      {:ok, []} -> create_build(author)
+      {:error, %{"error" => ["not found"]}} -> create_build(author)
+      {:ok, [info | _]} -> {:ok, info}
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
-      {:error, %{"error" => ["not found"]}} ->
-        %Embed{}
-        |> Embed.put_title("#{author.username}'s Miata")
-        |> Embed.put_url("https://miatapartpicker.gay/builds/new")
-        |> Embed.put_description(
-          "#{author.username} has not registered a vehicle. Visit the link to create one"
-        )
+  def update_build(author, info, params) do
+    MiataBot.Partpicker.update_build(author.id, info, params)
+  end
 
-      {:ok, [info | _]} ->
-        embed_from_info(author, info)
+  def create_build(author) do
+    case MiataBot.Partpicker.create_build(author.id, %{discord_user_id: author.id}) do
+      {:ok, info} -> {:ok, info}
+      {:error, reason} -> {:error, reason}
     end
   end
 
