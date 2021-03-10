@@ -78,15 +78,8 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   end
 
   def handle_member_add(new, {actions, state}) do
-    with {:ok, build} = fetch_or_create_build(new.user),
-         {:ok, channel} <- MiataBotDiscord.api().create_dm(new.user.id),
-         embed <- embed_from_info(new.user, build) do
-      {actions ++ [{:create_message!, [channel.id, [embed: embed]]}], state}
-    else
-      error ->
-        Logger.error("Error creating build for new user: #{inspect(error)}")
-        {actions, state}
-    end
+    _ = fetch_or_create_build(new.user)
+    {actions, state}
   end
 
   # this blocks all other patterns from matching in the verification channel. IDK what to do about it
