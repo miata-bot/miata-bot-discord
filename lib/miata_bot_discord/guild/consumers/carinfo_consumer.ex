@@ -64,6 +64,9 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         when author_id == current_user_id ->
           {actions, state}
 
+        {:GUILD_MEMBER_ADD, new}, {actions, state} ->
+          handle_member_add(new, {actions, state})
+
         {:MESSAGE_CREATE, message}, {actions, state} ->
           handle_message(message, {actions, state})
 
@@ -72,6 +75,18 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
       end)
 
     {:noreply, actions, state}
+  end
+
+  def handle_member_add(new, {actions, state}) do
+    with {:ok, build} = fetch_or_create_build(new.user),
+         {:ok, channel} <- MiataBotDiscord.api().create_dm(new.user.id),
+         embed <- embed_from_info(new.user, build) do
+      {actions ++ [{:create_message!, [channel.id, [embed: embed]]}], state}
+    else
+      error ->
+        Logger.error("Error creating build for new user: #{inspect(error)}")
+        {actions, state}
+    end
   end
 
   # this blocks all other patterns from matching in the verification channel. IDK what to do about it
@@ -127,7 +142,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{image_url: attachment.url, discord_user_id: author.id}
-    do_update_image(channel_id, author, params, {actions, state})
+    handle_update_image(channel_id, author, params, {actions, state})
   end
 
   def handle_message(
@@ -211,14 +226,14 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{instagram_handle: instagram_handle, discord_user_id: author.id}
-    do_update_user(channel_id, author, params, {actions, state})
+    handle_update_user(channel_id, author, params, {actions, state})
   end
 
   def handle_message(_message, {actions, state}) do
     {actions, state}
   end
 
-  def do_update_user(channel_id, author, params, {actions, state}) do
+  def handle_update_user(channel_id, author, params, {actions, state}) do
     case MiataBot.Partpicker.update_user(author.id, params) do
       {:ok, _user} ->
         embed = fetch_or_create_build(author)
@@ -235,7 +250,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     end
   end
 
-  def do_update_image(channel_id, _author, _params, {actions, state}) do
+  def handle_update_image(channel_id, _author, _params, {actions, state}) do
     {actions ++
        [
          {:create_message!,

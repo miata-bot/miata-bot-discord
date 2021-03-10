@@ -78,6 +78,12 @@ defmodule MiataBotDiscord.NostrumConsumer do
     MiataBotDiscord.Guild.EventDispatcher.dispatch(guild_id, {:GUILD_MEMBER_UPDATE, old, new})
   end
 
+  def handle_event({:GUILD_MEMBER_ADD, {guild_id, new} = payload, _ws_state}) do
+    Logger.info("guild member add: #{inspect(payload)}")
+    MiataBotDiscord.GuildCache.upsert_guild_member(guild_id, new.user.id, new)
+    MiataBotDiscord.Guild.EventDispatcher.dispatch(guild_id, {:GUILD_MEMBER_ADD, new})
+  end
+
   def handle_event({:READY, _ready, _ws_state}) do
     :noop
   end
