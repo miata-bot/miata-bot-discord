@@ -96,6 +96,11 @@ defmodule MiataBotDiscord.NostrumConsumer do
     MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:MESSAGE_CREATE, message})
   end
 
+  def handle_event({:MESSAGE_REACTION_ADD, %{guild_id: guild_id} = reaction, _ws_state}) do
+    guild = %Nostrum.Struct.Guild{id: guild_id}
+    MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:MESSAGE_REACTION_ADD, reaction})
+  end
+
   def handle_event(
         {:MESSAGE_UPDATE, %Nostrum.Struct.Message{guild_id: guild_id} = message, _ws_state}
       ) do
@@ -108,9 +113,10 @@ defmodule MiataBotDiscord.NostrumConsumer do
     MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:PRESENCE_UPDATE, {old, new}})
   end
 
-  def handle_event({:TYPING_START, %{guild_id: guild_id} = typing_start, _ws_state}) do
-    guild = %Nostrum.Struct.Guild{id: guild_id}
-    MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:TYPING_START, typing_start})
+  def handle_event({:TYPING_START, %{channel_id: _channel_id} = _typing_start, _ws_state}) do
+    # guild = %Nostrum.Struct.Guild{id: guild_id}
+    # MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:TYPING_START, typing_start})
+    :noop
   end
 
   def handle_event({:CHANNEL_CREATE, %{guild_id: guild_id} = channel_create, _ws_state}) do
@@ -133,6 +139,13 @@ defmodule MiataBotDiscord.NostrumConsumer do
   def handle_event({:CHANNEL_DELETE, %{guild_id: guild_id} = channel_delete, _ws_state}) do
     guild = %Nostrum.Struct.Guild{id: guild_id}
     MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:CHANNEL_DELETE, channel_delete})
+  end
+
+  def handle_event(
+        {:USER_UPDATE, {%{guild_id: guild_id} = old, %{guild_id: guild_id} = new}, _ws_state}
+      ) do
+    guild = %Nostrum.Struct.Guild{id: guild_id}
+    MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:USER_UPDATE, {old, new}})
   end
 
   def handle_event(event) do

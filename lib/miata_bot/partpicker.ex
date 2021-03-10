@@ -83,6 +83,15 @@ defmodule MiataBot.Partpicker do
     end
   end
 
+  def update_banner(discord_user_id, build_uid, params) do
+    case post!("/builds/#{discord_user_id}/#{build_uid}/banner", %{photo: params}) do
+      %{status: 200, body: body} -> {:ok, parse_build(body)}
+      %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
+      %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
+      %{status: _, body: %{"errors" => errors}} -> {:error, errors}
+    end
+  end
+
   def parse_user(attrs) do
     user_changeset(%User{}, attrs)
     |> Ecto.Changeset.apply_changes()
@@ -103,6 +112,11 @@ defmodule MiataBot.Partpicker do
     |> Ecto.Changeset.cast_embed(:photos, with: &photo_changeset/2)
     |> Ecto.Changeset.cast_embed(:user, with: &user_changeset/2)
     |> put_photo_url(:banner_photo_url, :banner_photo_id)
+    |> Ecto.Changeset.apply_changes()
+  end
+
+  def parse_photo(attrs) do
+    photo_changeset(%Build.Photo{}, attrs)
     |> Ecto.Changeset.apply_changes()
   end
 

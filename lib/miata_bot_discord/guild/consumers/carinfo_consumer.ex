@@ -94,7 +94,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   #   case message.attachments do
   #     [%{url: url} | _rest] ->
   #       year = extract_year(message.content)
-  #       params = %{image_url: url, discord_user_id: message.author.id, year: year}
+  #       params = %{attachment_url: url, discord_user_id: message.author.id, year: year}
   #       handle_update_build(verification_channel_id, message.author, params, {actions, state})
 
   #     _ ->
@@ -114,19 +114,25 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         %Message{channel_id: channel_id, author: author, content: "$carinfo me" <> _},
         {actions, state}
       ) do
-    embed = fetch_or_create_build(author)
-    {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+    case fetch_or_create_build(author) do
+      {:ok, build} ->
+        embed = embed_from_info(author, build)
+        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+
+      {:error, _} ->
+        {actions ++ [{:create_message!, [channel_id, "Could not find build. ping cone"]}], state}
+    end
   end
 
   def handle_message(
         %Message{channel_id: channel_id, content: "$carinfo get" <> user} = message,
         {actions, state}
       ) do
-    case get_user(message) do
-      {:ok, user} ->
-        embed = fetch_or_create_build(user)
-        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
-
+    with {:ok, user} <- get_user(message),
+         {:ok, build} <- fetch_or_create_build(user),
+         embed <- embed_from_info(user, build) do
+      {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+    else
       {:error, _} ->
         {actions ++ [{:create_message!, [channel_id, "Could not find user: #{user}"]}], state}
     end
@@ -141,7 +147,20 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         },
         {actions, state}
       ) do
-    params = %{image_url: attachment.url, discord_user_id: author.id}
+    params = %{attachment_url: attachment.url, discord_user_id: author.id}
+    handle_update_image(channel_id, author, params, {actions, state})
+  end
+
+  def handle_message(
+        %Message{
+          content: "$carinfo update photo" <> _,
+          channel_id: channel_id,
+          author: author,
+          attachments: [attachment | _]
+        },
+        {actions, state}
+      ) do
+    params = %{attachment_url: attachment.url, discord_user_id: author.id}
     handle_update_image(channel_id, author, params, {actions, state})
   end
 
@@ -250,15 +269,11 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     end
   end
 
-  def handle_update_image(channel_id, _author, _params, {actions, state}) do
-    {actions ++
-       [
-         {:create_message!,
-          [
-            channel_id,
-            "that doesn't work right now sorry. you can do that on the website: https://miatapartpicker.gay"
-          ]}
-       ], state}
+  def handle_update_image(channel_id, author, params, {actions, state}) do
+    case do_update_image(author, params) do
+      {:ok, embed} ->
+        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+    end
   end
 
   def handle_update_build(channel_id, author, params, {actions, state}) do
@@ -282,6 +297,29 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
           |> put_errors(reason)
 
         {:ok, embed}
+
+      unknown ->
+        raise "unknown error #{inspect(unknown)}"
+    end
+  end
+
+  def do_update_image(author, params) do
+    with {:ok, info} <- fetch_or_create_build(author),
+         {:ok, info} <- update_image(author, info, params),
+         embed <- embed_from_info(author, info) do
+      {:ok, embed}
+    else
+      {:error, reason} ->
+        embed =
+          %Embed{}
+          |> Embed.put_title("Error updating info")
+          |> Embed.put_color(0xFF0000)
+          |> put_errors(reason)
+
+        {:ok, embed}
+
+      unknown ->
+        raise "unknown error #{inspect(unknown)}"
     end
   end
 
@@ -301,14 +339,15 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   end
 
   def update_build(author, info, params) do
-    MiataBot.Partpicker.update_build(author.id, info, params)
+    MiataBot.Partpicker.update_build(author.id, info.uid, params)
   end
 
   def create_build(author) do
-    case MiataBot.Partpicker.create_build(author.id, %{discord_user_id: author.id}) do
-      {:ok, info} -> {:ok, info}
-      {:error, reason} -> {:error, reason}
-    end
+    MiataBot.Partpicker.create_build(author.id, %{discord_user_id: author.id})
+  end
+
+  def update_image(author, info, params) do
+    MiataBot.Partpicker.update_banner(author.id, info.uid, params)
   end
 
   def embed_from_info(author, info) do
