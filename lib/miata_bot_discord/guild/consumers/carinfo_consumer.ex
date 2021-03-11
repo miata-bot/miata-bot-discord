@@ -34,6 +34,9 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
                 |> Embed.put_field("carinfo update color code <color>", """
                 Sets the author's carinfo color code
                 """)
+                |> Embed.put_field("carinfo update mileage <mileage>", """
+                Sets the author's carinfo mileage
+                """)
                 |> Embed.put_field("carinfo update wheels <wheel name>", """
                 Sets the author's carinfo wheels
                 """)
@@ -178,6 +181,18 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {actions, state}
       ) do
     params = %{vin: vin, discord_user_id: author.id}
+    handle_update_build(channel_id, author, params, {actions, state})
+  end
+
+  def handle_message(
+        %Message{
+          content: "$carinfo update mileage " <> mileage,
+          channel_id: channel_id,
+          author: author
+        },
+        {actions, state}
+      ) do
+    params = %{mileage: mileage, discord_user_id: author.id}
     handle_update_build(channel_id, author, params, {actions, state})
   end
 
@@ -358,29 +373,39 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   def embed_from_info(author, info) do
     %Embed{}
     |> Embed.put_title("#{author.username}'s Miata")
-    |> Embed.put_color(0xD11A06)
-    |> Embed.put_field("Year", info.year || "unknown year")
-    |> Embed.put_field("Color Code", info.color || "unknown color code")
-    |> Embed.put_description(info.description)
     |> Embed.put_url("https://miatapartpicker.gay/car/#{info.uid}")
+    |> Embed.put_description(info.description)
+    |> maybe_add_year(info)
+    |> maybe_add_color(info)
     |> maybe_add_image(info)
     |> maybe_add_wheels(info)
     |> maybe_add_tires(info)
+    |> maybe_add_mileage(info)
     |> maybe_add_vin(info)
     |> maybe_add_instagram(info)
   end
+
+  def maybe_add_year(embed, %{year: nil}), do: embed
+  def maybe_add_year(embed, %{year: year}), do: Embed.put_field(embed, "Year", year, true)
 
   def maybe_add_image(embed, %{banner_photo_url: nil}), do: embed
   def maybe_add_image(embed, %{banner_photo_url: url}), do: Embed.put_image(embed, url)
 
   def maybe_add_wheels(embed, %{wheels: nil}), do: embed
-  def maybe_add_wheels(embed, %{wheels: wheels}), do: Embed.put_field(embed, "Wheels", wheels)
+
+  def maybe_add_wheels(embed, %{wheels: wheels}),
+    do: Embed.put_field(embed, "Wheels", wheels, true)
 
   def maybe_add_tires(embed, %{tires: nil}), do: embed
-  def maybe_add_tires(embed, %{tires: tires}), do: Embed.put_field(embed, "Tires", tires)
+  def maybe_add_tires(embed, %{tires: tires}), do: Embed.put_field(embed, "Tires", tires, true)
 
   def maybe_add_vin(embed, %{vin: nil}), do: embed
-  def maybe_add_vin(embed, %{vin: vin}), do: Embed.put_field(embed, "VIN", vin)
+  def maybe_add_vin(embed, %{vin: vin}), do: Embed.put_field(embed, "VIN", vin, true)
+
+  def maybe_add_mileage(embed, %{mileage: nil}), do: embed
+
+  def maybe_add_mileage(embed, %{mileage: mileage}),
+    do: Embed.put_field(embed, "Mileage", mileage, true)
 
   def maybe_add_instagram(embed, %{user: %{instagram_handle: nil}}), do: embed
 
@@ -389,6 +414,22 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def maybe_add_instagram(embed, %{user: %{instagram_handle: handle}}),
     do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
+
+  def maybe_add_color(embed, %{color: nil}), do: embed
+
+  def maybe_add_color(embed, %{color: color}) do
+    embed = Embed.put_field(embed, "Color", color, true)
+    color = String.downcase(color)
+
+    cond do
+      String.contains?(color, "red") -> Embed.put_color(embed, 0xD11A06)
+      String.contains?(color, "green") -> Embed.put_color(embed, 0x00FF00)
+      String.contains?(color, "blue") -> Embed.put_color(embed, 0x0000FF)
+      String.contains?(color, "white") -> Embed.put_color(embed, 0xFFFFFF)
+      String.contains?(color, "black") -> Embed.put_color(embed, 0x000000)
+      true -> embed
+    end
+  end
 
   defp get_user(%Message{mentions: [user | _]}) do
     {:ok, user}
