@@ -99,6 +99,11 @@ defmodule MiataBotDiscord.NostrumConsumer do
     MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:MESSAGE_REACTION_ADD, reaction})
   end
 
+  def handle_event({:MESSAGE_REACTION_REMOVE, %{guild_id: guild_id} = reaction, _ws_state}) do
+    guild = %Nostrum.Struct.Guild{id: guild_id}
+    MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:MESSAGE_REACTION_REMOVE, reaction})
+  end
+
   def handle_event(
         {:MESSAGE_UPDATE, %Nostrum.Struct.Message{guild_id: guild_id} = message, _ws_state}
       ) do
