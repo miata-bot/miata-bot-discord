@@ -68,7 +68,8 @@ defmodule MiataBotDiscord.Guild.MuteConsumer do
 
       _ ->
         true = :ets.insert(state.table, {message.id, message.author.id})
-        {actions, state}
+        new_actions = maybe_auto_react(message)
+        {actions ++ new_actions, state}
     end
   end
 
@@ -228,24 +229,20 @@ defmodule MiataBotDiscord.Guild.MuteConsumer do
     end
   end
 
-  %{
-    channel_id: 322_080_266_761_797_633,
-    emoji: %{id: 819_288_827_419_033_601, name: "okbritish"},
-    guild_id: 322_080_266_761_797_633,
-    member: %{
-      deaf: false,
-      hoisted_role: nil,
-      joined_at: "2021-01-05T00:53:33.869000+00:00",
-      mute: false,
-      roles: [322_082_252_320_145_408, 416_661_775_182_856_192],
-      user: %{
-        avatar: "0cdb78097d100d3348e87cf5fa3f4072",
-        discriminator: "6334",
-        id: 406_270_698_776_952_843,
-        username: "CodeineCommando"
-      }
-    },
-    message_id: 819_699_510_887_317_524,
-    user_id: 406_270_698_776_952_843
-  }
+  def maybe_auto_react(%{content: nil}), do: []
+
+  def maybe_auto_react(message) do
+    cond do
+      String.match?(message.content, ~r/porsche/) -> [auto_react_action(message)]
+      String.match?(message.content, ~r/porch/) -> [auto_react_action(message)]
+      String.match?(message.content, ~r/proletariat/) -> [auto_react_action(message)]
+      String.match?(message.content, ~r/poorsche/) -> [auto_react_action(message)]
+      true ->
+        []
+    end
+  end
+
+  def auto_react_action(%{id: message_id, channel_id: channel_id}) do
+    {:create_reaction, [channel_id, message_id, %Nostrum.Struct.Emoji{name: "🔇"}]}
+  end
 end
