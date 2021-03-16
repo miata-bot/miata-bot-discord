@@ -7,6 +7,8 @@ defmodule MiataBotDiscord.Guild.MuteConsumer do
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
   alias MiataBotDiscord.Guild.EventDispatcher
 
+  @safe_users [226_052_366_745_600_000, 316_741_621_498_511_363]
+
   @doc false
   def start_link({guild, config, current_user}) do
     GenStage.start_link(__MODULE__, {guild, config, current_user}, name: via(guild, __MODULE__))
@@ -167,7 +169,7 @@ defmodule MiataBotDiscord.Guild.MuteConsumer do
 
   def handle_mute(author_id, channel_id, {actions, state}) do
     case state.muted[author_id] do
-      {3, _} ->
+      {3, nil} ->
         Logger.info("Muting #{author_id} in #{channel_id}")
         # user is now muted
         actions =
@@ -191,6 +193,10 @@ defmodule MiataBotDiscord.Guild.MuteConsumer do
         Logger.info("Not muting #{author_id} (for now) #{count}")
         {actions, state}
     end
+  end
+
+  def mute(author_id, channel_id, pid, ms, {actions, state}) when author_id in @safe_users do
+    {actions, state}
   end
 
   def mute(author_id, channel_id, pid, ms, {actions, state}) do
@@ -230,13 +236,33 @@ defmodule MiataBotDiscord.Guild.MuteConsumer do
   end
 
   def maybe_auto_react(%{content: nil}), do: []
+  def maybe_auto_react(%{author: %{id: author_id}}) when author_id in @safe_users, do: []
 
   def maybe_auto_react(message) do
+    content = message.content |> String.downcase() |> String.trim()
+
     cond do
-      String.match?(message.content, ~r/porsche/) -> [auto_react_action(message)]
-      String.match?(message.content, ~r/porch/) -> [auto_react_action(message)]
-      String.match?(message.content, ~r/proletariat/) -> [auto_react_action(message)]
-      String.match?(message.content, ~r/poorsche/) -> [auto_react_action(message)]
+      String.match?(content, ~r/porsche/) ->
+        [auto_react_action(message)]
+
+      String.match?(content, ~r/porch/) ->
+        [auto_react_action(message)]
+
+      String.match?(content, ~r/proletariat/) ->
+        [auto_react_action(message)]
+
+      String.match?(content, ~r/poorsche/) ->
+        [auto_react_action(message)]
+
+      String.match?(content, ~r/bmw/) ->
+        [auto_react_action(message)]
+
+      String.match?(content, ~r/beemer/) ->
+        [auto_react_action(message)]
+
+      String.match?(content, ~r/beamer/) ->
+        [auto_react_action(message)]
+
       true ->
         []
     end
