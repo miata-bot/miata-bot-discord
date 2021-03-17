@@ -12,6 +12,7 @@ defmodule MiataBot.Partpicker do
     @primary_key {:discord_user_id, Snowflake, [autogenerate: false]}
     embedded_schema do
       field :instagram_handle, :string
+      field :prefered_unit, Ecto.Enum, values: [:km, :miles]
     end
   end
 
@@ -140,6 +141,6 @@ defmodule MiataBot.Partpicker do
 
   def user_changeset(user, attrs) do
     user
-    |> Ecto.Changeset.cast(attrs, [:discord_user_id, :instagram_handle])
+    |> Ecto.Changeset.cast(attrs, [:discord_user_id, :instagram_handle, :prefered_unit])
   end
 end

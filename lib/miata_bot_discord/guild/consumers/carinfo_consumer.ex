@@ -35,7 +35,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
                 Sets the author's carinfo color code
                 """)
                 |> Embed.put_field("carinfo update mileage <mileage>", """
-                Sets the author's carinfo mileage
+                Sets the author's carinfo mileage (add `km` to convert)
                 """)
                 |> Embed.put_field("carinfo update wheels <wheel name>", """
                 Sets the author's carinfo wheels
@@ -404,8 +404,11 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def maybe_add_mileage(embed, %{mileage: nil}), do: embed
 
-  def maybe_add_mileage(embed, %{mileage: mileage}),
-    do: Embed.put_field(embed, "Mileage", mileage, true)
+  def maybe_add_mileage(embed, %{mileage: mileage, user: %{prefered_unit: :miles}}),
+    do: Embed.put_field(embed, "Mileage", "#{mileage} miles", true)
+
+  def maybe_add_mileage(embed, %{mileage: mileage, user: %{prefered_unit: :km}}),
+    do: Embed.put_field(embed, "Mileage", "#{mileage} km", true)
 
   def maybe_add_instagram(embed, %{user: %{instagram_handle: nil}}), do: embed
 
