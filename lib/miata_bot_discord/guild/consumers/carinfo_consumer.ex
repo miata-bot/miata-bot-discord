@@ -11,41 +11,41 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   alias Nostrum.Struct.{Message, Embed}
 
-  @help_message %Embed{}
-                |> Embed.put_title("Available commands")
-                |> Embed.put_field("carinfo", """
-                Shows the author's carinfo
-                """)
-                |> Embed.put_field("carinfo me", """
-                Shows *your* carinfo
-                """)
-                |> Embed.put_field("carinfo get <user>", """
-                Shows a users carinfo
-                """)
-                |> Embed.put_field("carinfo update title", """
-                Sets the author's carinfo title
-                """)
-                |> Embed.put_field("carinfo update image", """
-                Updates the author's carinfo from an attached photo
-                """)
-                |> Embed.put_field("carinfo update year <year>", """
-                Sets the author's carinfo year
-                """)
-                |> Embed.put_field("carinfo update color code <color>", """
-                Sets the author's carinfo color code
-                """)
-                |> Embed.put_field("carinfo update mileage <mileage>", """
-                Sets the author's carinfo mileage (add `km` to convert)
-                """)
-                |> Embed.put_field("carinfo update wheels <wheel name>", """
-                Sets the author's carinfo wheels
-                """)
-                |> Embed.put_field("carinfo update tires <tire name>", """
-                Sets the author's carinfo tire
-                """)
-                |> Embed.put_field("carinfo update instagram <handle>", """
-                Sets the author's instagram handle
-                """)
+  @help_embed %Embed{}
+              |> Embed.put_title("Available commands")
+              |> Embed.put_field("carinfo", """
+              Shows the author's carinfo
+              """)
+              |> Embed.put_field("carinfo me", """
+              Shows *your* carinfo
+              """)
+              |> Embed.put_field("carinfo get <user>", """
+              Shows a users carinfo
+              """)
+              |> Embed.put_field("carinfo update title", """
+              Sets the author's carinfo title
+              """)
+              |> Embed.put_field("carinfo update image", """
+              Updates the author's carinfo from an attached photo
+              """)
+              |> Embed.put_field("carinfo update year <year>", """
+              Sets the author's carinfo year
+              """)
+              |> Embed.put_field("carinfo update color code <color>", """
+              Sets the author's carinfo color code
+              """)
+              |> Embed.put_field("carinfo update mileage <mileage>", """
+              Sets the author's carinfo mileage (add `km` to convert)
+              """)
+              |> Embed.put_field("carinfo update wheels <wheel name>", """
+              Sets the author's carinfo wheels
+              """)
+              |> Embed.put_field("carinfo update tires <tire name>", """
+              Sets the author's carinfo tire
+              """)
+              |> Embed.put_field("carinfo update instagram <handle>", """
+              Sets the author's instagram handle
+              """)
 
   @doc false
   def start_link({guild, config, current_user}) do
@@ -85,27 +85,6 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     {actions, state}
   end
 
-  # this blocks all other patterns from matching in the verification channel. IDK what to do about it
-  # def handle_message(%Message{channel_id: verification_channel_id} = message, {actions, %{config: %{verification_channel_id: verification_channel_id}} = state}) do
-  #   case message.attachments do
-  #     [%{url: url} | _rest] ->
-  #       year = extract_year(message.content)
-  #       params = %{attachment_url: url, discord_user_id: message.author.id, year: year}
-  #       handle_update_build(verification_channel_id, message.author, params, {actions, state})
-
-  #     _ ->
-  #       {actions, state}
-  #   end
-  # end
-
-  def handle_message(%Message{channel_id: channel_id, content: "$carinfo help"}, {actions, state}) do
-    {actions ++ [{:create_message!, [channel_id, [embed: @help_message]]}], state}
-  end
-
-  def handle_message(%Message{channel_id: channel_id, content: "$carinfo"}, {actions, state}) do
-    {actions ++ [{:create_message!, [channel_id, [embed: @help_message]]}], state}
-  end
-
   def handle_message(
         %Message{channel_id: channel_id, author: author, content: "$carinfo me" <> _},
         {actions, state}
@@ -132,6 +111,25 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
       {:error, _} ->
         {actions ++ [{:create_message!, [channel_id, "Could not find user: #{user}"]}], state}
     end
+  end
+
+  def handle_message(%Message{channel_id: channel_id, content: "$carinfo help"}, {actions, state}) do
+    {actions ++ [{:create_message!, [channel_id, [embed: build_help_embed(@help_embed, state)]]}],
+     state}
+  end
+
+  def handle_message(%Message{channel_id: channel_id, content: "$carinfo"}, {actions, state}) do
+    {actions ++ [{:create_message!, [channel_id, [embed: build_help_embed(@help_embed, state)]]}],
+     state}
+  end
+
+  # haz requested that carinfo spam be limited to the carinfo channel
+  def handle_message(
+        %Message{channel_id: channel_id},
+        {actions, %{config: %{carinfo_channel_id: carinfo_channel_id}} = state}
+      )
+      when channel_id != carinfo_channel_id do
+    {actions, state}
   end
 
   def handle_message(
@@ -199,6 +197,18 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   def handle_message(
         %Message{
           content: "$carinfo update color code " <> color,
+          channel_id: channel_id,
+          author: author
+        },
+        {actions, state}
+      ) do
+    params = %{color: color, discord_user_id: author.id}
+    handle_update_build(channel_id, author, params, {actions, state})
+  end
+
+  def handle_message(
+        %Message{
+          content: "$carinfo update color " <> color,
           channel_id: channel_id,
           author: author
         },
@@ -482,5 +492,12 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
       nil ->
         {:error, "unable to match: #{nick}"}
     end
+  end
+
+  def build_help_embed(embed, %{config: %{carinfo_channel_id: carinfo_channel_id}}) do
+    channel = %Nostrum.Struct.Channel{id: carinfo_channel_id}
+
+    embed
+    |> Embed.put_description("The following commands only work in the #{channel} channel")
   end
 end

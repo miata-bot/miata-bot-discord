@@ -15,6 +15,7 @@
   verification_channel_id: 778_325_814_986_014_731,
   memes_channel_id: 778_325_951_989_284_894,
   general_channel_id: 778_334_280_337_719_357,
+  carinfo_channel_id: 822_114_165_841_068_102,
   offtopic_channel_id: 778_334_306_002_927_646,
   miata_fan_role_id: 778_337_478_578_405_387,
   looking_for_miata_role_id: 778_340_553_460_285_461,

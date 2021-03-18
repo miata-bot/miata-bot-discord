@@ -12,6 +12,7 @@ defmodule MiataBotDiscord.Guild.Config do
     field :looking_for_miata_role_id, Snowflake
     field :bot_spam_channel_id, Snowflake
     field :admin_role_id, Snowflake
+    field :carinfo_channel_id, Snowflake
   end
 
   @required_fields [
@@ -26,10 +27,14 @@ defmodule MiataBotDiscord.Guild.Config do
     :bot_spam_channel_id
   ]
 
+  @optional_fields [
+    :carinfo_channel_id
+  ]
+
   @doc false
   def changeset(guild_config, attrs \\ %{}) do
     guild_config
-    |> cast(attrs, @required_fields)
+    |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
   end
 end
