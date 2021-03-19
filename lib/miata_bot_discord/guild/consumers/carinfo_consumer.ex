@@ -81,7 +81,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   end
 
   def handle_member_add(new, {actions, state}) do
-    _ = fetch_or_create_build(new.user)
+    _ = fetch_or_create_featured_build(new.user)
     {actions, state}
   end
 
@@ -89,27 +89,29 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         %Message{channel_id: channel_id, author: author, content: "$carinfo me" <> _},
         {actions, state}
       ) do
-    case fetch_or_create_build(author) do
-      {:ok, build} ->
-        embed = embed_from_info(author, build)
-        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
-
+    with {:ok, user} <- fetch_or_create_user(author),
+         {:ok, build} <- fetch_or_create_featured_build(user) do
+      embed = embed_from_info(author, user, build)
+      {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+    else
       {:error, _} ->
-        {actions ++ [{:create_message!, [channel_id, "Could not find build. ping cone"]}], state}
+        {actions ++ [{:create_message!, [channel_id, "something broke sorry. ping cone"]}], state}
     end
   end
 
   def handle_message(
-        %Message{channel_id: channel_id, content: "$carinfo get" <> user} = message,
+        %Message{channel_id: channel_id, content: "$carinfo get" <> user_to_lookup} = message,
         {actions, state}
       ) do
-    with {:ok, user} <- get_user(message),
-         {:ok, build} <- fetch_or_create_build(user),
-         embed <- embed_from_info(user, build) do
+    with {:ok, discord_user} <- get_discord_user(message),
+         {:ok, user} <- fetch_or_create_user(discord_user),
+         {:ok, build} <- fetch_or_create_featured_build(user),
+         embed <- embed_from_info(discord_user, user, build) do
       {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
     else
       {:error, _} ->
-        {actions ++ [{:create_message!, [channel_id, "Could not find user: #{user}"]}], state}
+        {actions ++ [{:create_message!, [channel_id, "Could not find user: #{user_to_lookup}"]}],
+         state}
     end
   end
 
@@ -284,8 +286,8 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def handle_update_user(channel_id, author, params, {actions, state}) do
     case MiataBot.Partpicker.update_user(author.id, params) do
-      {:ok, _user} ->
-        embed = fetch_or_create_build(author)
+      {:ok, user} ->
+        embed = fetch_or_create_featured_build(user)
         {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
 
       {:error, reason} ->
@@ -314,9 +316,10 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   end
 
   defp do_update_build(author, params) do
-    with {:ok, info} <- fetch_or_create_build(author),
-         {:ok, info} <- update_build(author, info, params),
-         embed <- embed_from_info(author, info) do
+    with {:ok, user} <- fetch_or_create_user(author),
+         {:ok, build} <- fetch_or_create_featured_build(user),
+         {:ok, build} <- update_build(author, build, params),
+         embed <- embed_from_info(author, user, build) do
       {:ok, embed}
     else
       {:error, reason} ->
@@ -334,9 +337,10 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   end
 
   def do_update_image(author, params) do
-    with {:ok, info} <- fetch_or_create_build(author),
-         {:ok, info} <- update_image(author, info, params),
-         embed <- embed_from_info(author, info) do
+    with {:ok, user} <- fetch_or_create_user(author),
+         {:ok, build} <- fetch_or_create_featured_build(user),
+         {:ok, build} <- update_image(author, build, params),
+         embed <- embed_from_info(author, user, build) do
       {:ok, embed}
     else
       {:error, reason} ->
@@ -359,40 +363,64 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     end)
   end
 
-  def fetch_or_create_build(author) do
-    case MiataBot.Partpicker.builds(author.id) do
-      {:ok, []} -> create_build(author)
-      {:error, %{"error" => ["not found"]}} -> create_build(author)
-      {:ok, [info | _]} -> {:ok, info}
+  def fetch_or_create_featured_build(%MiataBot.Partpicker.User{featured_build: nil} = user) do
+    create_featured_build(user.discord_user_id, %{})
+  end
+
+  def fetch_or_create_featured_build(%MiataBot.Partpicker.User{featured_build: build}) do
+    {:ok, build}
+  end
+
+  def create_featured_build(discord_user_id, attrs) do
+    case MiataBot.Partpicker.create_build(discord_user_id, attrs) do
+      {:ok, build} ->
+        case MiataBot.Partpicker.update_user_featured_build(discord_user_id, build.uid) do
+          {:ok, %{featured_build: build}} -> {:ok, build}
+          {:error, reason} -> {:error, reason}
+        end
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  def fetch_or_create_user(author) do
+    case MiataBot.Partpicker.user(author.id) do
+      {:ok, user} -> {:ok, user}
+      {:error, %{"error" => ["not found"]}} -> create_user(author)
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  def create_user(author) do
+    MiataBot.Partpicker.create_user(author.id)
   end
 
   def update_build(author, info, params) do
     MiataBot.Partpicker.update_build(author.id, info.uid, params)
   end
 
-  def create_build(author) do
-    MiataBot.Partpicker.create_build(author.id, %{discord_user_id: author.id})
-  end
-
   def update_image(author, info, params) do
     MiataBot.Partpicker.update_banner(author.id, info.uid, params)
   end
 
-  def embed_from_info(author, info) do
+  def embed_from_info(
+        %Nostrum.Struct.User{} = discord_user,
+        %MiataBot.Partpicker.User{} = user,
+        %MiataBot.Partpicker.Build{} = build
+      ) do
     %Embed{}
-    |> Embed.put_title("#{author.username}'s Miata")
-    |> Embed.put_url("https://miatapartpicker.gay/car/#{info.uid}")
-    |> Embed.put_description(info.description)
-    |> maybe_add_year(info)
-    |> maybe_add_color(info)
-    |> maybe_add_image(info)
-    |> maybe_add_wheels(info)
-    |> maybe_add_tires(info)
-    |> maybe_add_mileage(info)
-    |> maybe_add_vin(info)
-    |> maybe_add_instagram(info)
+    |> Embed.put_title("#{discord_user.username}'s Miata")
+    |> Embed.put_url("https://miatapartpicker.gay/car/#{build.uid}")
+    |> Embed.put_description(build.description)
+    |> maybe_add_year(build)
+    |> maybe_add_color(build)
+    |> maybe_add_image(build)
+    |> maybe_add_wheels(build)
+    |> maybe_add_tires(build)
+    |> maybe_add_mileage(build, user)
+    |> maybe_add_vin(build)
+    |> maybe_add_instagram(user)
   end
 
   def maybe_add_year(embed, %{year: nil}), do: embed
@@ -414,18 +442,18 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def maybe_add_mileage(embed, %{mileage: nil}), do: embed
 
-  def maybe_add_mileage(embed, %{mileage: mileage, user: %{prefered_unit: :miles}}),
+  def maybe_add_mileage(embed, %{mileage: mileage}, %{prefered_unit: :miles}),
     do: Embed.put_field(embed, "Mileage", "#{mileage} miles", true)
 
-  def maybe_add_mileage(embed, %{mileage: mileage, user: %{prefered_unit: :km}}),
+  def maybe_add_mileage(embed, %{mileage: mileage}, %{prefered_unit: :km}),
     do: Embed.put_field(embed, "Mileage", "#{mileage} km", true)
 
-  def maybe_add_instagram(embed, %{user: %{instagram_handle: nil}}), do: embed
+  def maybe_add_instagram(embed, %{instagram_handle: nil}), do: embed
 
-  def maybe_add_instagram(embed, %{user: %{instagram_handle: "@" <> handle}}),
+  def maybe_add_instagram(embed, %{instagram_handle: "@" <> handle}),
     do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
 
-  def maybe_add_instagram(embed, %{user: %{instagram_handle: handle}}),
+  def maybe_add_instagram(embed, %{instagram_handle: handle}),
     do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
 
   def maybe_add_color(embed, %{color: nil}), do: embed
@@ -444,11 +472,11 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     end
   end
 
-  defp get_user(%Message{mentions: [user | _]}) do
+  defp get_discord_user(%Message{mentions: [user | _]}) do
     {:ok, user}
   end
 
-  defp get_user(%Message{content: "$carinfo get" <> identifier} = message) do
+  defp get_discord_user(%Message{content: "$carinfo get" <> identifier} = message) do
     case String.trim(identifier) do
       "me" ->
         {:ok, message.author}
@@ -464,12 +492,12 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
           :error ->
             Logger.info("using nick: #{str}")
-            get_user_by_nick(str, message)
+            get_discord_user_by_nick(str, message)
         end
     end
   end
 
-  defp get_user_by_nick(nick, %Message{guild_id: guild_id} = _message) do
+  defp get_discord_user_by_nick(nick, %Message{guild_id: guild_id} = _message) do
     Logger.info("looking up by nick: #{nick}")
 
     maybe_member =

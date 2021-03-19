@@ -4,17 +4,10 @@ defmodule MiataBot.Partpicker do
 
   use Tesla
   plug Tesla.Middleware.BaseUrl, "https://miatapartpicker.gay/api"
-  plug Tesla.Middleware.Headers, [{"authorization", "bearer #{@api_token}"}]
-  plug Tesla.Middleware.JSON
+  # plug Tesla.Middleware.BaseUrl, "http://localhost:4000/api"
 
-  defmodule User do
-    use Ecto.Schema
-    @primary_key {:discord_user_id, Snowflake, [autogenerate: false]}
-    embedded_schema do
-      field :instagram_handle, :string
-      field :prefered_unit, Ecto.Enum, values: [:km, :miles]
-    end
-  end
+  plug Tesla.Middleware.Headers, [{"authorization", "Bearer #{@api_token}"}]
+  plug Tesla.Middleware.JSON
 
   defmodule Build do
     use Ecto.Schema
@@ -34,16 +27,49 @@ defmodule MiataBot.Partpicker do
         field :url, :string
       end
 
-      embeds_one :user, User
       field :tires, :string
       field :wheels, :string
       field :year, :integer
     end
   end
 
-  def update_user(discord_user_id, params) do
-    case post!("/users/#{discord_user_id}", %{user: params}) do
+  defmodule User do
+    use Ecto.Schema
+    @primary_key {:discord_user_id, Snowflake, [autogenerate: false]}
+    embedded_schema do
+      field :instagram_handle, :string
+      field :prefered_unit, Ecto.Enum, values: [:km, :miles]
+      embeds_many :builds, Build
+      embeds_one :featured_build, Build
+    end
+  end
+
+  def user(discord_user_id) do
+    case get!("/users/#{discord_user_id}") do
       %{status: 200, body: body} -> {:ok, parse_user(body)}
+      %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
+    end
+  end
+
+  def create_user(discord_user_id) do
+    case post!("/users/", %{user: %{discord_user_id: discord_user_id}}) do
+      %{status: 201, body: body} -> {:ok, parse_user(body)}
+      %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
+    end
+  end
+
+  def update_user_featured_build(discord_user_id, featured_build_uid) do
+    attrs = %{featured_build_id: featured_build_uid}
+
+    case put!("/users/#{discord_user_id}/featured_build", attrs) do
+      %{status: 202, body: body} -> {:ok, parse_user(body)}
+      %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
+    end
+  end
+
+  def update_user(discord_user_id, params) do
+    case put!("/users/#{discord_user_id}", %{user: params}) do
+      %{status: 202, body: body} -> {:ok, parse_user(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
       %{status: _, body: %{"errors" => errors}} -> {:error, errors}
@@ -51,8 +77,8 @@ defmodule MiataBot.Partpicker do
   end
 
   def create_build(discord_user_id, params) do
-    case post!("/builds/#{discord_user_id}/", %{build: params}) do
-      %{status: 200, body: body} -> {:ok, parse_build(body)}
+    case post!("/users/#{discord_user_id}/builds/", %{build: params}) do
+      %{status: 201, body: body} -> {:ok, parse_build(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
       %{status: _, body: %{"errors" => errors}} -> {:error, errors}
@@ -60,8 +86,8 @@ defmodule MiataBot.Partpicker do
   end
 
   def update_build(discord_user_id, build_uid, params) do
-    case post!("/builds/#{discord_user_id}/#{build_uid}", %{build: params}) do
-      %{status: 200, body: body} -> {:ok, parse_build(body)}
+    case put!("/users/#{discord_user_id}/builds/#{build_uid}", %{build: params}) do
+      %{status: 202, body: body} -> {:ok, parse_build(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
       %{status: _, body: %{"errors" => errors}} -> {:error, errors}
@@ -69,7 +95,7 @@ defmodule MiataBot.Partpicker do
   end
 
   def builds(discord_user_id) do
-    case get!("/builds/#{discord_user_id}") do
+    case get!("/users/#{discord_user_id}/builds/") do
       %{status: 200, body: body} -> {:ok, Enum.map(body, &parse_build/1)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
@@ -78,7 +104,7 @@ defmodule MiataBot.Partpicker do
   end
 
   def build(discord_user_id, build_uid) do
-    case get!("/builds/#{discord_user_id}/#{build_uid}") do
+    case get!("/users/#{discord_user_id}/builds/#{build_uid}") do
       %{status: 200, body: body} when is_list(body) -> {:ok, Enum.map(body, &parse_build/1)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
@@ -87,8 +113,8 @@ defmodule MiataBot.Partpicker do
   end
 
   def update_banner(discord_user_id, build_uid, params) do
-    case post!("/builds/#{discord_user_id}/#{build_uid}/banner", %{photo: params}) do
-      %{status: 200, body: body} -> {:ok, parse_build(body)}
+    case post!("/users/#{discord_user_id}/builds/#{build_uid}/banner", %{photo: params}) do
+      %{status: 202, body: body} -> {:ok, parse_build(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
       %{status: _, body: %{"errors" => errors}} -> {:error, errors}
@@ -97,26 +123,12 @@ defmodule MiataBot.Partpicker do
 
   def parse_user(attrs) do
     user_changeset(%User{}, attrs)
+    |> Ecto.Changeset.cast_embed(:builds, with: &build_changeset/2)
     |> Ecto.Changeset.apply_changes()
   end
 
   def parse_build(attrs) do
-    Ecto.Changeset.cast(%Build{}, attrs, [
-      :banner_photo_id,
-      :color,
-      :description,
-      :make,
-      :model,
-      :tires,
-      :uid,
-      :wheels,
-      :year,
-      :mileage,
-      :vin
-    ])
-    |> Ecto.Changeset.cast_embed(:photos, with: &photo_changeset/2)
-    |> Ecto.Changeset.cast_embed(:user, with: &user_changeset/2)
-    |> put_photo_url(:banner_photo_url, :banner_photo_id)
+    build_changeset(%Build{}, attrs)
     |> Ecto.Changeset.apply_changes()
   end
 
@@ -142,5 +154,24 @@ defmodule MiataBot.Partpicker do
   def user_changeset(user, attrs) do
     user
     |> Ecto.Changeset.cast(attrs, [:discord_user_id, :instagram_handle, :prefered_unit])
+    |> Ecto.Changeset.cast_embed(:featured_build, with: &build_changeset/2)
+  end
+
+  def build_changeset(build, attrs) do
+    Ecto.Changeset.cast(build, attrs, [
+      :banner_photo_id,
+      :color,
+      :description,
+      :make,
+      :model,
+      :tires,
+      :uid,
+      :wheels,
+      :year,
+      :mileage,
+      :vin
+    ])
+    |> Ecto.Changeset.cast_embed(:photos, with: &photo_changeset/2)
+    |> put_photo_url(:banner_photo_url, :banner_photo_id)
   end
 end
