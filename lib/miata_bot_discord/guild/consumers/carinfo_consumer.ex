@@ -420,6 +420,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     |> maybe_add_tires(build)
     |> maybe_add_mileage(build, user)
     |> maybe_add_vin(build)
+    |> maybe_add_hand_size(user)
     |> maybe_add_instagram(user)
   end
 
@@ -452,6 +453,12 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def maybe_add_instagram(embed, %{instagram_handle: "@" <> handle}),
     do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
+
+  def maybe_add_hand_size(embed, %{hand_size: nil}), do: embed
+  def maybe_add_hand_size(embed, %{hand_size: inches}), do:
+  embed
+  |> Embed.put_field("Hand Size", "#{inches} inches")
+
 
   def maybe_add_instagram(embed, %{instagram_handle: handle}),
     do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
