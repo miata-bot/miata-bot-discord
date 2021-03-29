@@ -1,7 +1,7 @@
 # prepare release image
 FROM alpine:latest AS app_base
 WORKDIR /app
-RUN apk add --no-cache openssl ncurses-libs bash chromium-chromedriver chromium python3 py3-pip
+RUN apk add --no-cache openssl ncurses-libs bash chromium-chromedriver chromium python3 py3-pip imagemagick
 RUN pip3 install -U selenium
 RUN pip3 install -U erlang-py
 

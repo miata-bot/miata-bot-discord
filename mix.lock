@@ -31,7 +31,7 @@
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], [], "hexpm", "69b09adddc4f74a40716ae54d140f93beb0fb8978d8636eaded0c31b6f099f16"},
   "mime": {:hex, :mime, "1.5.0", "203ef35ef3389aae6d361918bf3f952fa17a09e8e43b5aa592b93eba05d0fb8d", [:mix], [], "hexpm", "55a94c0f552249fc1a3dd9cd2d3ab9de9d3c89b559c2bd01121f824834f24746"},
   "mimerl": {:hex, :mimerl, "1.2.0", "67e2d3f571088d5cfd3e550c383094b47159f3eee8ffa08e64106cdf5e981be3", [:rebar3], [], "hexpm", "f278585650aa581986264638ebf698f8bb19df297f66ad91b18910dfc6e19323"},
-  "mogrify": {:hex, :mogrify, "0.7.4", "9b2496dde44b1ce12676f85d7dc531900939e6367bc537c7243a1b089435b32d", [:mix], [], "hexpm", "50d79e337fba6bc95bfbef918058c90f50b17eed9537771e61d4619488f099c3"},
+  "mogrify": {:hex, :mogrify, "0.8.0", "3506f3ca3f7b95a155f3b4ef803b5db176f5a0633723e3fe85e0d6399e3b11c8", [:mix], [], "hexpm", "2278d245f07056ea3b586e98801e933695147066fa4cf563f552c1b4f0ff8ad9"},
   "nostrum": {:git, "https://github.com/Kraigie/nostrum.git", "c0c872e880f3af360167179f66df72695c1f051e", []},
   "oauth2": {:hex, :oauth2, "2.0.0", "338382079fe16c514420fa218b0903f8ad2d4bfc0ad0c9f988867dfa246731b0", [:mix], [{:hackney, "~> 1.13", [hex: :hackney, repo: "hexpm", optional: false]}], "hexpm", "881b8364ac7385f9fddc7949379cbe3f7081da37233a1aa7aab844670a91e7e7"},
   "parse_trans": {:hex, :parse_trans, "3.3.1", "16328ab840cc09919bd10dab29e431da3af9e9e7e7e6f0089dd5a2d2820011d8", [:rebar3], [], "hexpm", "07cd9577885f56362d414e8c4c4e6bdf10d43a8767abb92d24cbe8b24c54888b"},
