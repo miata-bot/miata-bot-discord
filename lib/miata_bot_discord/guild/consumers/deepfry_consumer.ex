@@ -51,6 +51,66 @@ defmodule MiataBotDiscord.Guild.DeepfryConsumer do
     {actions ++ [action], state}
   end
 
+  def handle_message(
+        %Message{
+          attachments: [attachment | _],
+          content: "!deepfry" <> _
+        } = message,
+        {actions, state}
+      ) do
+    action = generate_action(message, attachment)
+
+    {actions ++ [action], state}
+  end
+
+  def handle_message(
+        %Message{
+          embeds: [%Nostrum.Struct.Embed{image: embed_image} | _],
+          content: "!deepfry" <> _
+        } = message,
+        {actions, state}
+      ) do
+    action = generate_action(message, embed_image)
+
+    {actions ++ [action], state}
+  end
+
+  def handle_message(
+        %Message{
+          referenced_message: %Message{attachments: [attachment | _]},
+          channel_id: 826_548_854_945_611_786
+        } = message,
+        {actions, state}
+      ) do
+    action = generate_action(message, attachment)
+
+    {actions ++ [action], state}
+  end
+
+  def handle_message(
+        %Message{
+          attachments: [attachment | _],
+          channel_id: 826_548_854_945_611_786
+        } = message,
+        {actions, state}
+      ) do
+    action = generate_action(message, attachment)
+
+    {actions ++ [action], state}
+  end
+
+  def handle_message(
+        %Message{
+          embeds: [%Nostrum.Struct.Embed{image: embed_image} | _],
+          channel_id: 826_548_854_945_611_786
+        } = message,
+        {actions, state}
+      ) do
+    action = generate_action(message, embed_image)
+
+    {actions ++ [action], state}
+  end
+
   def handle_message(_message, {actions, state}) do
     {actions, state}
   end
@@ -59,31 +119,32 @@ defmodule MiataBotDiscord.Guild.DeepfryConsumer do
     %{body: image} = Tesla.get!(attachment.url)
     File.write!("/tmp/#{attachment.filename}", image)
 
-    mog_image =
-      Mogrify.open("/tmp/#{attachment.filename}")
-      |> Mogrify.format("jpg")
-      |> Mogrify.quality("1%")
-      |> Mogrify.save()
-
-    mog_image =
-      Mogrify.open(mog_image.path)
-      |> Mogrify.resize("50%")
-      |> Mogrify.format("png")
-      |> Mogrify.save()
-
-    mog_image =
-      Mogrify.open(mog_image.path)
-      |> Mogrify.format("jpg")
-      |> Mogrify.resize("200%")
-      |> Mogrify.quality("1%")
-      |> Mogrify.save()
+    script = Application.app_dir(:miata_bot, ["/priv/bin/fry.sh"])
+    {_, 0} = System.cmd(script, ["/tmp/#{attachment.filename}", "/tmp/fried.jpg"])
 
     {:create_message!,
      [
        message.channel_id,
        [
          content: "#{message.author}",
-         file: %{body: File.read!(mog_image.path), name: "deepfry.jpg"}
+         file: "/tmp/fried.jpg"
+       ]
+     ]}
+  end
+
+  def generate_action(message, %Nostrum.Struct.Embed.Image{url: url}) do
+    %{body: image} = Tesla.get!(url)
+    File.write!("/tmp/image0", image)
+
+    script = Application.app_dir(:miata_bot, ["/priv/bin/fry.sh"])
+    {_, 0} = System.cmd(script, ["/tmp/image0", "/tmp/fried.jpg"])
+
+    {:create_message!,
+     [
+       message.channel_id,
+       [
+         content: "#{message.author}",
+         file: "/tmp/fried.jpg"
        ]
      ]}
   end

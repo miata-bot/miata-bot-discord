@@ -455,10 +455,11 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
 
   def maybe_add_hand_size(embed, %{hand_size: nil}), do: embed
-  def maybe_add_hand_size(embed, %{hand_size: inches}), do:
-  embed
-  |> Embed.put_field("Hand Size", "#{inches} inches")
 
+  def maybe_add_hand_size(embed, %{hand_size: inches}),
+    do:
+      embed
+      |> Embed.put_field("Hand Size", "#{inches} inches")
 
   def maybe_add_instagram(embed, %{instagram_handle: handle}),
     do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")

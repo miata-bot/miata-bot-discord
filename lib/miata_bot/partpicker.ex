@@ -154,7 +154,12 @@ defmodule MiataBot.Partpicker do
 
   def user_changeset(user, attrs) do
     user
-    |> Ecto.Changeset.cast(attrs, [:discord_user_id, :instagram_handle, :prefered_unit, :hand_size])
+    |> Ecto.Changeset.cast(attrs, [
+      :discord_user_id,
+      :instagram_handle,
+      :prefered_unit,
+      :hand_size
+    ])
     |> Ecto.Changeset.cast_embed(:featured_build, with: &build_changeset/2)
   end
 
