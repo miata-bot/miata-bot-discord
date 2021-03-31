@@ -2,8 +2,7 @@
 FROM alpine:latest AS app_base
 WORKDIR /app
 RUN apk add --no-cache openssl ncurses-libs bash chromium-chromedriver chromium python3 py3-pip imagemagick
-RUN pip3 install -U selenium
-RUN pip3 install -U erlang-py
+RUN pip3 install -U selenium erlang-py markovify
 
 FROM erlang:23.2.7-alpine as build
 ENV ELIXIR_VERSION="v1.11.1-otp-23"

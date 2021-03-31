@@ -29,8 +29,9 @@ defmodule MiataBotDiscord.Guild.DeepfryConsumer do
         when author_id == current_user_id ->
           {actions, state}
 
-        {:MESSAGE_CREATE, message}, {actions, state} ->
-          handle_message(message, {actions, state})
+        # https://discord.com/channels/322080266761797633/322089883135115264/826914116890394645
+        # {:MESSAGE_CREATE, message}, {actions, state} ->
+        #   handle_message(message, {actions, state})
 
         _, {actions, state} ->
           {actions, state}
