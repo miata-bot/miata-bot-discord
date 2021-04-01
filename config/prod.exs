@@ -37,3 +37,17 @@ config :miata_bot, MiataBotWeb.Endpoint,
   server: true,
   http: [:inet6, port: String.to_integer(System.get_env("PORT") || "4000")],
   secret_key_base: secret_key_base
+
+freenode_password =
+  System.get_env("FREENODE_PASSWORD") ||
+    raise """
+    environment variable FREENODE_PASSWORD is missing.
+    """
+
+config :miata_bot, MiataBotIRC,
+  host: "chat.freenode.net",
+  port: 6667,
+  nick: "MiataBot",
+  user: "MiataBot",
+  name: "MiataBot",
+  pass: freenode_password

@@ -72,6 +72,7 @@ defmodule MiataBot.MixProject do
       {:hackney, "~> 1.16"},
       {:extty, "~> 0.2.0"},
       {:mogrify, "~> 0.8.0"},
+      {:exirc, "~> 2.0"},
       @nostrum
     ]
   end

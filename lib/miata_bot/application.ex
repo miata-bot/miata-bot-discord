@@ -18,7 +18,8 @@ defmodule MiataBot.Application do
       MiataBotWeb.HerokuTask,
 
       # Start the discord subsystem
-      MiataBotDiscord.Supervisor
+      MiataBotDiscord.Supervisor,
+      MiataBotIRC
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

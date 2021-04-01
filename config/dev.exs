@@ -75,3 +75,15 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+freenode_password = System.get_env("FREENODE_PASSWORD")
+
+if freenode_password do
+  config :miata_bot, MiataBotIRC,
+    host: "chat.freenode.net",
+    port: 6667,
+    nick: "MiataBot",
+    user: "MiataBot",
+    name: "MiataBot",
+    pass: freenode_password
+end
