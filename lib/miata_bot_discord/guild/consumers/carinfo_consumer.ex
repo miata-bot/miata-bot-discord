@@ -270,6 +270,18 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def handle_message(
         %Message{
+          content: "$carinfo update coilovers " <> coilovers,
+          channel_id: channel_id,
+          author: author
+        },
+        {actions, state}
+      ) do
+    params = %{coilovers: coilovers, discord_user_id: author.id}
+    handle_update_build(channel_id, author, params, {actions, state})
+  end
+
+  def handle_message(
+        %Message{
           content: "$carinfo update instagram " <> instagram_handle,
           channel_id: channel_id,
           author: author
@@ -418,6 +430,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     |> maybe_add_image(build)
     |> maybe_add_wheels(build)
     |> maybe_add_tires(build)
+    |> maybe_add_coilovers(build)
     |> maybe_add_mileage(build, user)
     |> maybe_add_vin(build)
     |> maybe_add_hand_size(user)
@@ -437,6 +450,11 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def maybe_add_tires(embed, %{tires: nil}), do: embed
   def maybe_add_tires(embed, %{tires: tires}), do: Embed.put_field(embed, "Tires", tires, true)
+
+  def maybe_add_coilovers(embed, %{coilovers: nil}), do: embed
+
+  def maybe_add_coilovers(embed, %{coilovers: coilovers}),
+    do: Embed.put_field(embed, "Coilovers", coilovers, true)
 
   def maybe_add_vin(embed, %{vin: nil}), do: embed
   def maybe_add_vin(embed, %{vin: vin}), do: Embed.put_field(embed, "VIN", vin, true)

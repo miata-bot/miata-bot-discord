@@ -30,6 +30,7 @@ defmodule MiataBot.Partpicker do
       field :tires, :string
       field :wheels, :string
       field :year, :integer
+      field :coilovers, :string
     end
   end
 
@@ -175,7 +176,8 @@ defmodule MiataBot.Partpicker do
       :wheels,
       :year,
       :mileage,
-      :vin
+      :vin,
+      :coilovers
     ])
     |> Ecto.Changeset.cast_embed(:photos, with: &photo_changeset/2)
     |> put_photo_url(:banner_photo_url, :banner_photo_id)
