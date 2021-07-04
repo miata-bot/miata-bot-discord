@@ -3,7 +3,7 @@ defmodule MiataBotDiscord.Interactions do
   alias MiataBot.Repo
 
   def install_interactions(%Config{guild_id: guild_id} = config) do
-    with {:ok, carinfo_command} =
+    with {:ok, carinfo_command} <-
            Nostrum.Api.create_guild_application_command(guild_id, carinfo()),
          {:ok, config} <-
            Repo.update(

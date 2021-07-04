@@ -124,168 +124,52 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   # haz requested that carinfo spam be limited to the carinfo channel
   # update 07-03-21: too lazy after interactions update. Maybe no one will notice.
 
-  # TODO: image can't work
-  # def handle_interaction(
-  #       iaction = %Interaction{
-  #         content: "$carinfo update image" <> _,
-  #         channel_id: channel_id,
-  #         author: author,
-  #         attachments: [attachment | _]
-  #       },
-  #       {actions, state}
-  #     ) do
-  #   params = %{attachment_url: attachment.url, discord_user_id: author.id}
-  #   handle_update_image(channel_id, author, params, {actions, state})
-  # end
-
-  # def handle_interaction(
-  #       %Message{
-  #         content: "$carinfo update photo" <> _,
-  #         channel_id: channel_id,
-  #         author: author,
-  #         attachments: [attachment | _]
-  #       },
-  #       {actions, state}
-  #     ) do
-  #   params = %{attachment_url: attachment.url, discord_user_id: author.id}
-  #   handle_update_image(channel_id, author, params, {actions, state})
-  # end
-
-  # todo: refactor this
-  # def handle_interaction(
-  #       iaction = %Interaction{
-  #         name: "carinfo"
-  #         member: member,
-  #         data: %{
-  #           name: "update",
-  #           options: options
-  #         }
-  #         channel_id: channel_id,
-  #       },
-  #       {actions, state}
-  #     ) do
-  #   params = %{year: year, discord_user_id: author.id}
-  #   handle_update_build(channel_id, author, params, {actions, state})
-  # end
-
   def handle_interaction(
-        %Message{
-          content: "$carinfo update vin " <> vin,
-          channel_id: channel_id,
-          author: author
+        iaction = %Interaction{
+          member: member,
+          data: %{
+            name: "carinfo",
+            options: [%{name: "update", options: options}]
+          }
         },
         {actions, state}
       ) do
-    params = %{vin: vin, discord_user_id: author.id}
-    handle_update_build(channel_id, author, params, {actions, state})
+    {car_params, user_params} =
+      Map.new(options, fn %{name: name, value: value} -> {name, value} end)
+      |> Map.split([
+        "year",
+        "vin",
+        "mileage",
+        "color",
+        "title",
+        "description",
+        "wheels",
+        "tires",
+        "coilovers"
+      ])
+
+    with {:ok, build_embed} <- do_update_build(member.user, car_params),
+         {:ok, _} <- MiataBot.Partpicker.update_user(member.user.id, user_params) do
+      response = %{type: 4, data: %{embeds: [build_embed]}}
+      {actions ++ [{:create_interaction_response, [iaction, response]}], state}
+    else
+      error ->
+        response = %{type: 4, data: %{content: "Something went wrong: #{inspect(error)}"}}
+        {actions ++ [{:create_interaction_response, [iaction, response]}], state}
+    end
   end
 
   def handle_interaction(
-        %Message{
-          content: "$carinfo update mileage " <> mileage,
-          channel_id: channel_id,
-          author: author
+        iaction = %Interaction{
+          data: %{
+            name: "carinfo",
+            options: [%{name: "update"}]
+          }
         },
         {actions, state}
       ) do
-    params = %{mileage: mileage, discord_user_id: author.id}
-    handle_update_build(channel_id, author, params, {actions, state})
-  end
-
-  def handle_interaction(
-        %Message{
-          content: "$carinfo update color code " <> color,
-          channel_id: channel_id,
-          author: author
-        },
-        {actions, state}
-      ) do
-    params = %{color: color, discord_user_id: author.id}
-    handle_update_build(channel_id, author, params, {actions, state})
-  end
-
-  def handle_interaction(
-        %Message{
-          content: "$carinfo update color " <> color,
-          channel_id: channel_id,
-          author: author
-        },
-        {actions, state}
-      ) do
-    params = %{color: color, discord_user_id: author.id}
-    handle_update_build(channel_id, author, params, {actions, state})
-  end
-
-  def handle_interaction(
-        %Message{
-          content: "$carinfo update title " <> title,
-          channel_id: channel_id,
-          author: author
-        },
-        {actions, state}
-      ) do
-    params = %{description: title, discord_user_id: author.id}
-    handle_update_build(channel_id, author, params, {actions, state})
-  end
-
-  def handle_interaction(
-        %Message{
-          content: "$carinfo update description " <> description,
-          channel_id: channel_id,
-          author: author
-        },
-        {actions, state}
-      ) do
-    params = %{description: description, discord_user_id: author.id}
-    handle_update_build(channel_id, author, params, {actions, state})
-  end
-
-  def handle_interaction(
-        %Message{
-          content: "$carinfo update wheels " <> wheels,
-          channel_id: channel_id,
-          author: author
-        },
-        {actions, state}
-      ) do
-    params = %{wheels: wheels, discord_user_id: author.id}
-    handle_update_build(channel_id, author, params, {actions, state})
-  end
-
-  def handle_interaction(
-        %Message{
-          content: "$carinfo update tires " <> tires,
-          channel_id: channel_id,
-          author: author
-        },
-        {actions, state}
-      ) do
-    params = %{tires: tires, discord_user_id: author.id}
-    handle_update_build(channel_id, author, params, {actions, state})
-  end
-
-  def handle_interaction(
-        %Message{
-          content: "$carinfo update coilovers " <> coilovers,
-          channel_id: channel_id,
-          author: author
-        },
-        {actions, state}
-      ) do
-    params = %{coilovers: coilovers, discord_user_id: author.id}
-    handle_update_build(channel_id, author, params, {actions, state})
-  end
-
-  def handle_interaction(
-        %Message{
-          content: "$carinfo update instagram " <> instagram_handle,
-          channel_id: channel_id,
-          author: author
-        },
-        {actions, state}
-      ) do
-    params = %{instagram_handle: instagram_handle, discord_user_id: author.id}
-    handle_update_user(channel_id, author, params, {actions, state})
+    response = %{type: 4, data: %{content: "No options supplied."}}
+    {actions ++ [{:create_interaction_response, [iaction, response]}], state}
   end
 
   def handle_interaction(interaction, {actions, state}) do
@@ -293,62 +177,10 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     {actions, state}
   end
 
-  def handle_update_user(channel_id, author, params, {actions, state}) do
-    case MiataBot.Partpicker.update_user(author.id, params) do
-      {:ok, user} ->
-        embed = fetch_or_create_featured_build(user)
-        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
-
-      {:error, reason} ->
-        embed =
-          %Embed{}
-          |> Embed.put_title("Error updating info")
-          |> Embed.put_color(0xFF0000)
-          |> put_errors(reason)
-
-        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
-    end
-  end
-
-  def handle_update_image(channel_id, author, params, {actions, state}) do
-    case do_update_image(author, params) do
-      {:ok, embed} ->
-        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
-    end
-  end
-
-  def handle_update_build(channel_id, author, params, {actions, state}) do
-    case do_update_build(author, params) do
-      {:ok, embed} ->
-        {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
-    end
-  end
-
   defp do_update_build(author, params) do
     with {:ok, user} <- fetch_or_create_user(author),
          {:ok, build} <- fetch_or_create_featured_build(user),
          {:ok, build} <- update_build(author, build, params),
-         embed <- embed_from_info(author, user, build) do
-      {:ok, embed}
-    else
-      {:error, reason} ->
-        embed =
-          %Embed{}
-          |> Embed.put_title("Error updating info")
-          |> Embed.put_color(0xFF0000)
-          |> put_errors(reason)
-
-        {:ok, embed}
-
-      unknown ->
-        raise "unknown error #{inspect(unknown)}"
-    end
-  end
-
-  def do_update_image(author, params) do
-    with {:ok, user} <- fetch_or_create_user(author),
-         {:ok, build} <- fetch_or_create_featured_build(user),
-         {:ok, build} <- update_image(author, build, params),
          embed <- embed_from_info(author, user, build) do
       {:ok, embed}
     else
