@@ -37,7 +37,8 @@ defmodule MiataBotDiscord.Interactions do
             %{description: "update car wheels", name: "wheels", type: 3},
             %{description: "update car tires", name: "tires", type: 3},
             %{description: "update car coilovers", name: "coilovers", type: 3},
-            %{description: "update car instagram", name: "instagram", type: 3}
+            %{description: "update car instagram", name: "instagram", type: 3},
+            %{description: "update car image", name: "image", type: 3}
           ],
           type: 1
         }

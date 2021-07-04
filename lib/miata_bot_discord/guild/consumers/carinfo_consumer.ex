@@ -56,17 +56,15 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
       ) do
     content = """
     The carinfo command is now a discord interaction.
-    All commands are now prefixed with `/`.s
+    All commands are now prefixed with `/`
     """
 
-    {actions ++ [{:create_message!, [channel_id, [content]]}], state}
+    {actions ++ [{:create_message!, [channel_id, content]}], state}
   end
 
   def handle_message(_message, {actions, state}) do
     {actions, state}
   end
-
-  require Logger
 
   def handle_interaction(
         iaction = %Interaction{
@@ -88,9 +86,13 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
       response = %{type: 4, data: %{embeds: [embed]}}
       {actions ++ [{:create_interaction_response, [iaction, response]}], state}
     else
-      {:error, reason} ->
-        Logger.error("iaction failed: #{inspect(reason)}")
-        {actions ++ [{:create_message!, [channel_id, "something broke sorry. ping cone"]}], state}
+      error ->
+        response = %{type: 4, data: %{content: "Unknown error happened: #{inspect(error)}"}}
+
+        {actions ++
+           [
+             {:create_interaction_response, [iaction, response]}
+           ], state}
     end
   end
 
@@ -115,13 +117,16 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
            {:create_interaction_response, [iaction, response]}
          ], state}
     else
-      {:error, reason} ->
-        Logger.error("iaction failed: #{inspect(reason)}")
-        {actions ++ [{:create_message!, [channel_id, "something broke sorry. ping cone"]}], state}
+      error ->
+        response = %{type: 4, data: %{content: "Unknown error happened: #{inspect(error)}"}}
+
+        {actions ++
+           [
+             {:create_interaction_response, [iaction, response]}
+           ], state}
     end
   end
 
-  # haz requested that carinfo spam be limited to the carinfo channel
   # update 07-03-21: too lazy after interactions update. Maybe no one will notice.
 
   def handle_interaction(
@@ -344,12 +349,5 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
       :error ->
         {:error, "unknown data: #{inspect(data)}"}
     end
-  end
-
-  def build_help_embed(embed, %{config: %{carinfo_channel_id: carinfo_channel_id}}) do
-    channel = %Nostrum.Struct.Channel{id: carinfo_channel_id}
-
-    embed
-    |> Embed.put_description("The following commands only work in the #{channel} channel")
   end
 end
