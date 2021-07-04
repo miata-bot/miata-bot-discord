@@ -122,51 +122,51 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   end
 
   # haz requested that carinfo spam be limited to the carinfo channel
-  def handle_interaction(
-        %Message{channel_id: channel_id},
-        {actions, %{config: %{carinfo_channel_id: carinfo_channel_id}} = state}
-      )
-      when channel_id != carinfo_channel_id do
-    {actions, state}
-  end
+  # update 07-03-21: too lazy after interactions update. Maybe no one will notice.
 
-  def handle_interaction(
-        %Message{
-          content: "$carinfo update image" <> _,
-          channel_id: channel_id,
-          author: author,
-          attachments: [attachment | _]
-        },
-        {actions, state}
-      ) do
-    params = %{attachment_url: attachment.url, discord_user_id: author.id}
-    handle_update_image(channel_id, author, params, {actions, state})
-  end
+  # TODO: image can't work
+  # def handle_interaction(
+  #       iaction = %Interaction{
+  #         content: "$carinfo update image" <> _,
+  #         channel_id: channel_id,
+  #         author: author,
+  #         attachments: [attachment | _]
+  #       },
+  #       {actions, state}
+  #     ) do
+  #   params = %{attachment_url: attachment.url, discord_user_id: author.id}
+  #   handle_update_image(channel_id, author, params, {actions, state})
+  # end
 
-  def handle_interaction(
-        %Message{
-          content: "$carinfo update photo" <> _,
-          channel_id: channel_id,
-          author: author,
-          attachments: [attachment | _]
-        },
-        {actions, state}
-      ) do
-    params = %{attachment_url: attachment.url, discord_user_id: author.id}
-    handle_update_image(channel_id, author, params, {actions, state})
-  end
+  # def handle_interaction(
+  #       %Message{
+  #         content: "$carinfo update photo" <> _,
+  #         channel_id: channel_id,
+  #         author: author,
+  #         attachments: [attachment | _]
+  #       },
+  #       {actions, state}
+  #     ) do
+  #   params = %{attachment_url: attachment.url, discord_user_id: author.id}
+  #   handle_update_image(channel_id, author, params, {actions, state})
+  # end
 
-  def handle_interaction(
-        %Message{
-          content: "$carinfo update year " <> year,
-          channel_id: channel_id,
-          author: author
-        },
-        {actions, state}
-      ) do
-    params = %{year: year, discord_user_id: author.id}
-    handle_update_build(channel_id, author, params, {actions, state})
-  end
+  # todo: refactor this
+  # def handle_interaction(
+  #       iaction = %Interaction{
+  #         name: "carinfo"
+  #         member: member,
+  #         data: %{
+  #           name: "update",
+  #           options: options
+  #         }
+  #         channel_id: channel_id,
+  #       },
+  #       {actions, state}
+  #     ) do
+  #   params = %{year: year, discord_user_id: author.id}
+  #   handle_update_build(channel_id, author, params, {actions, state})
+  # end
 
   def handle_interaction(
         %Message{
