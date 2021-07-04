@@ -7,45 +7,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   require Logger
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
   alias MiataBotDiscord.Guild.{EventDispatcher, Responder}
-  alias MiataBotDiscord.GuildCache
-
-  alias Nostrum.Struct.{Message, Embed}
-
-  @help_embed %Embed{}
-              |> Embed.put_title("Available commands")
-              |> Embed.put_field("carinfo", """
-              Shows the author's carinfo
-              """)
-              |> Embed.put_field("carinfo me", """
-              Shows *your* carinfo
-              """)
-              |> Embed.put_field("carinfo get <user>", """
-              Shows a users carinfo
-              """)
-              |> Embed.put_field("carinfo update title", """
-              Sets the author's carinfo title
-              """)
-              |> Embed.put_field("carinfo update image", """
-              Updates the author's carinfo from an attached photo
-              """)
-              |> Embed.put_field("carinfo update year <year>", """
-              Sets the author's carinfo year
-              """)
-              |> Embed.put_field("carinfo update color code <color>", """
-              Sets the author's carinfo color code
-              """)
-              |> Embed.put_field("carinfo update mileage <mileage>", """
-              Sets the author's carinfo mileage (add `km` to convert)
-              """)
-              |> Embed.put_field("carinfo update wheels <wheel name>", """
-              Sets the author's carinfo wheels
-              """)
-              |> Embed.put_field("carinfo update tires <tire name>", """
-              Sets the author's carinfo tire
-              """)
-              |> Embed.put_field("carinfo update instagram <handle>", """
-              Sets the author's instagram handle
-              """)
+  alias Nostrum.Struct.{Embed, Interaction, Message}
 
   @doc false
   def start_link({guild, config, current_user}) do
@@ -73,6 +35,9 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         {:MESSAGE_CREATE, message}, {actions, state} ->
           handle_message(message, {actions, state})
 
+        {:INTERACTION_CREATE, interaction}, {actions, state} ->
+          handle_interaction(interaction, {actions, state})
+
         _, {actions, state} ->
           {actions, state}
       end)
@@ -86,47 +51,78 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   end
 
   def handle_message(
-        %Message{channel_id: channel_id, author: author, content: "$carinfo me" <> _},
+        %Message{channel_id: channel_id, content: "$carinfo" <> _},
         {actions, state}
       ) do
-    with {:ok, user} <- fetch_or_create_user(author),
-         {:ok, build} <- fetch_or_create_featured_build(user) do
-      embed = embed_from_info(author, user, build)
-      {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+    content = """
+    The carinfo command is now a discord interaction.
+    All commands are now prefixed with `/`.s
+    """
+
+    {actions ++ [{:create_message!, [channel_id, [content]]}], state}
+  end
+
+  def handle_message(_message, {actions, state}) do
+    {actions, state}
+  end
+
+  require Logger
+
+  def handle_interaction(
+        iaction = %Interaction{
+          guild_id: guild_id,
+          channel_id: channel_id,
+          data: %{
+            name: "carinfo",
+            options: [
+              %{name: "get", type: 1, options: [%{name: "user", type: 6, value: user_discord_id}]}
+            ]
+          }
+        },
+        {actions, state}
+      ) do
+    with {:ok, discord_user} <- get_discord_user(user_discord_id, guild_id),
+         {:ok, user} <- fetch_or_create_user(discord_user),
+         {:ok, build} <- fetch_or_create_featured_build(user),
+         embed <- embed_from_info(discord_user, user, build) do
+      response = %{type: 4, data: %{embeds: [embed]}}
+      {actions ++ [{:create_interaction_response, [iaction, response]}], state}
     else
-      {:error, _} ->
+      {:error, reason} ->
+        Logger.error("iaction failed: #{inspect(reason)}")
         {actions ++ [{:create_message!, [channel_id, "something broke sorry. ping cone"]}], state}
     end
   end
 
-  def handle_message(
-        %Message{channel_id: channel_id, content: "$carinfo get" <> user_to_lookup} = message,
+  def handle_interaction(
+        iaction = %Interaction{
+          channel_id: channel_id,
+          member: member,
+          data: %{
+            name: "carinfo",
+            options: [%{name: "get", type: 1}]
+          }
+        },
         {actions, state}
       ) do
-    with {:ok, discord_user} <- get_discord_user(message),
-         {:ok, user} <- fetch_or_create_user(discord_user),
-         {:ok, build} <- fetch_or_create_featured_build(user),
-         embed <- embed_from_info(discord_user, user, build) do
-      {actions ++ [{:create_message!, [channel_id, [embed: embed]]}], state}
+    with {:ok, user} <- fetch_or_create_user(member),
+         {:ok, build} <- fetch_or_create_featured_build(user) do
+      embed = embed_from_info(member, user, build)
+      response = %{type: 4, data: %{embeds: [embed]}}
+
+      {actions ++
+         [
+           {:create_interaction_response, [iaction, response]}
+         ], state}
     else
-      {:error, _} ->
-        {actions ++ [{:create_message!, [channel_id, "Could not find user: #{user_to_lookup}"]}],
-         state}
+      {:error, reason} ->
+        Logger.error("iaction failed: #{inspect(reason)}")
+        {actions ++ [{:create_message!, [channel_id, "something broke sorry. ping cone"]}], state}
     end
   end
 
-  def handle_message(%Message{channel_id: channel_id, content: "$carinfo help"}, {actions, state}) do
-    {actions ++ [{:create_message!, [channel_id, [embed: build_help_embed(@help_embed, state)]]}],
-     state}
-  end
-
-  def handle_message(%Message{channel_id: channel_id, content: "$carinfo"}, {actions, state}) do
-    {actions ++ [{:create_message!, [channel_id, [embed: build_help_embed(@help_embed, state)]]}],
-     state}
-  end
-
   # haz requested that carinfo spam be limited to the carinfo channel
-  def handle_message(
+  def handle_interaction(
         %Message{channel_id: channel_id},
         {actions, %{config: %{carinfo_channel_id: carinfo_channel_id}} = state}
       )
@@ -134,7 +130,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     {actions, state}
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update image" <> _,
           channel_id: channel_id,
@@ -147,7 +143,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_image(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update photo" <> _,
           channel_id: channel_id,
@@ -160,7 +156,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_image(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update year " <> year,
           channel_id: channel_id,
@@ -172,7 +168,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_build(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update vin " <> vin,
           channel_id: channel_id,
@@ -184,7 +180,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_build(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update mileage " <> mileage,
           channel_id: channel_id,
@@ -196,7 +192,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_build(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update color code " <> color,
           channel_id: channel_id,
@@ -208,7 +204,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_build(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update color " <> color,
           channel_id: channel_id,
@@ -220,7 +216,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_build(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update title " <> title,
           channel_id: channel_id,
@@ -232,7 +228,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_build(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update description " <> description,
           channel_id: channel_id,
@@ -244,7 +240,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_build(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update wheels " <> wheels,
           channel_id: channel_id,
@@ -256,7 +252,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_build(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update tires " <> tires,
           channel_id: channel_id,
@@ -268,7 +264,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_build(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update coilovers " <> coilovers,
           channel_id: channel_id,
@@ -280,7 +276,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_build(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(
+  def handle_interaction(
         %Message{
           content: "$carinfo update instagram " <> instagram_handle,
           channel_id: channel_id,
@@ -292,7 +288,8 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     handle_update_user(channel_id, author, params, {actions, state})
   end
 
-  def handle_message(_message, {actions, state}) do
+  def handle_interaction(interaction, {actions, state}) do
+    Logger.warn("unhandled interaction: #{inspect(interaction)}")
     {actions, state}
   end
 
@@ -396,6 +393,10 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     end
   end
 
+  def fetch_or_create_user(%Nostrum.Struct.Guild.Member{user: user}) do
+    fetch_or_create_user(user)
+  end
+
   def fetch_or_create_user(author) do
     case MiataBot.Partpicker.user(author.id) do
       {:ok, user} -> {:ok, user}
@@ -414,6 +415,10 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
 
   def update_image(author, info, params) do
     MiataBot.Partpicker.update_banner(author.id, info.uid, params)
+  end
+
+  def embed_from_info(%Nostrum.Struct.Guild.Member{user: discord_user}, user, build) do
+    embed_from_info(discord_user, user, build)
   end
 
   def embed_from_info(
@@ -472,15 +477,15 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   def maybe_add_instagram(embed, %{instagram_handle: "@" <> handle}),
     do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
 
+  def maybe_add_instagram(embed, %{instagram_handle: handle}),
+    do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
+
   def maybe_add_hand_size(embed, %{hand_size: nil}), do: embed
 
   def maybe_add_hand_size(embed, %{hand_size: inches}),
     do:
       embed
       |> Embed.put_field("Hand Size", "#{inches} inches")
-
-  def maybe_add_instagram(embed, %{instagram_handle: handle}),
-    do: Embed.put_field(embed, "Instagram", "https://instagram.com/#{handle}")
 
   def maybe_add_color(embed, %{color: nil}), do: embed
 
@@ -498,53 +503,14 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     end
   end
 
-  defp get_discord_user(%Message{mentions: [user | _]}) do
-    {:ok, user}
-  end
+  defp get_discord_user(data, guild_id) do
+    case Snowflake.cast(to_string(data)) do
+      {:ok, snowflake} ->
+        Logger.info("using snowflake: #{to_string(data)}")
+        Responder.execute_action(guild_id, {:get_user, [snowflake]})
 
-  defp get_discord_user(%Message{content: "$carinfo get" <> identifier} = message) do
-    case String.trim(identifier) do
-      "me" ->
-        {:ok, message.author}
-
-      "" ->
-        {:ok, message.author}
-
-      str ->
-        case Snowflake.cast(str) do
-          {:ok, snowflake} ->
-            Logger.info("using snowflake: #{str}")
-            Responder.execute_action(message.guild_id, {:get_user, [snowflake]})
-
-          :error ->
-            Logger.info("using nick: #{str}")
-            get_discord_user_by_nick(str, message)
-        end
-    end
-  end
-
-  defp get_discord_user_by_nick(nick, %Message{guild_id: guild_id} = _message) do
-    Logger.info("looking up by nick: #{nick}")
-
-    maybe_member =
-      Enum.find(GuildCache.list_guild_members(guild_id), fn
-        {_id, %Nostrum.Struct.Guild.Member{nick: ^nick}} ->
-          true
-
-        {_id, %Nostrum.Struct.Guild.Member{user: %{username: ^nick}}} ->
-          true
-
-        {_id, %Nostrum.Struct.Guild.Member{} = _member} ->
-          # Logger.info("not match: #{inspect(member)}")
-          false
-      end)
-
-    case maybe_member do
-      {id, _member} ->
-        Responder.execute_action(guild_id, {:get_user, [id]})
-
-      nil ->
-        {:error, "unable to match: #{nick}"}
+      :error ->
+        {:error, "unknown data: #{inspect(data)}"}
     end
   end
 

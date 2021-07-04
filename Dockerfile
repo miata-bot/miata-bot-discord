@@ -1,11 +1,10 @@
 # prepare release image
-FROM alpine:latest AS app_base
+FROM alpine:3.14 AS app_base
 WORKDIR /app
-RUN apk add --no-cache openssl ncurses-libs bash chromium-chromedriver chromium python3 py3-pip imagemagick
-RUN pip3 install -U selenium erlang-py markovify
+RUN apk add --no-cache libstdc++ openssl ncurses-libs bash 
 
-FROM erlang:23.2.7-alpine as build
-ENV ELIXIR_VERSION="v1.11.1-otp-23"
+FROM erlang:24.0.3-alpine as build
+ENV ELIXIR_VERSION="v1.12.2-otp-24"
 
 # # install elixir
 RUN wget https://repo.hex.pm/builds/elixir/$ELIXIR_VERSION.zip && \
@@ -13,7 +12,7 @@ RUN wget https://repo.hex.pm/builds/elixir/$ELIXIR_VERSION.zip && \
   unzip -q -d /usr/local/elixir $ELIXIR_VERSION.zip
 ENV PATH=/usr/local/elixir/bin:$PATH
 
-RUN apk add bash npm make alpine-sdk
+RUN apk add libstdc++ bash make alpine-sdk
 
 RUN mix do local.hex --force, local.rebar --force
 
@@ -40,19 +39,10 @@ ENV DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
 ENV PARTPICKER_API_TOKEN=${PARTPICKER_API_TOKEN}
 ENV PORT=${PORT}
 ENV COMMIT=${COMMIT}
-ENV FREENODE_PASSWORD=${FREENODE_PASSWORD}
 
 COPY mix.exs mix.lock ./
 COPY config config
 RUN mix do deps.get, deps.compile
-
-FROM deps as assets
-# build assets
-COPY assets/package.json assets/package-lock.json ./assets/
-RUN npm --prefix ./assets install --progress=false --no-audit --loglevel=error
-
-COPY assets assets
-RUN npm run --prefix ./assets deploy
 
 FROM deps as compile
 
@@ -65,8 +55,6 @@ RUN mix compile
 
 FROM compile as release
 
-COPY --from=assets /app/priv/static ./priv/static
-RUN mix phx.digest
 RUN mix release --overwrite
 
 FROM app_base as app

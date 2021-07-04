@@ -3,11 +3,12 @@ defmodule MiataBot.Partpicker do
   # @api_token || Mix.raise("missing api token")
 
   use Tesla
-  plug Tesla.Middleware.BaseUrl, "https://miatapartpicker.gay/api"
+  plug(Tesla.Middleware.BaseUrl, "https://miatapartpicker.gay/api")
+
   # plug Tesla.Middleware.BaseUrl, "http://localhost:4000/api"
 
-  plug Tesla.Middleware.Headers, [{"authorization", "Bearer #{@api_token}"}]
-  plug Tesla.Middleware.JSON
+  plug(Tesla.Middleware.Headers, [{"authorization", "Bearer #{@api_token}"}])
+  plug(Tesla.Middleware.JSON)
 
   defmodule Build do
     use Ecto.Schema

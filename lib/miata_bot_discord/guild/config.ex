@@ -13,6 +13,7 @@ defmodule MiataBotDiscord.Guild.Config do
     field :bot_spam_channel_id, Snowflake
     field :admin_role_id, Snowflake
     field :carinfo_channel_id, Snowflake
+    field :interactions, {:array, :map}
   end
 
   @required_fields [
@@ -28,7 +29,8 @@ defmodule MiataBotDiscord.Guild.Config do
   ]
 
   @optional_fields [
-    :carinfo_channel_id
+    :carinfo_channel_id,
+    :interactions
   ]
 
   @doc false

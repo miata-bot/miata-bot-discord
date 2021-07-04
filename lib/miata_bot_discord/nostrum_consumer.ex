@@ -151,6 +151,11 @@ defmodule MiataBotDiscord.NostrumConsumer do
     MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:USER_UPDATE, {old, new}})
   end
 
+  def handle_event({:INTERACTION_CREATE, %{guild_id: guild_id} = interaction, _ws_state}) do
+    guild = %Nostrum.Struct.Guild{id: guild_id}
+    MiataBotDiscord.Guild.EventDispatcher.dispatch(guild, {:INTERACTION_CREATE, interaction})
+  end
+
   def handle_event(event) do
     Logger.error(["Unhandled event from Nostrum ", inspect(event, pretty: true)])
   end

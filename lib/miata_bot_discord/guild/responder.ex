@@ -3,11 +3,11 @@ defmodule MiataBotDiscord.Guild.Responder do
   use GenStage
   require Logger
 
-  if Mix.env() == :prod do
-    @api Nostrum.Api
-  else
-    @api MiataBotDiscord.FakeAPI
-  end
+  # if Mix.env() == :prod do
+  @api Nostrum.Api
+  # else
+  #   @api MiataBotDiscord.FakeAPI
+  # end
 
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
 
@@ -48,7 +48,9 @@ defmodule MiataBotDiscord.Guild.Responder do
   end
 
   def handle_event({function, args}, _from) when is_atom(function) and is_list(args) do
-    apply(@api, function, args)
+    r = apply(@api, function, args)
+    Logger.info("nostrum response: #{inspect(r)}")
+    r
   catch
     error, reason ->
       args = Enum.map(args, &inspect/1) |> Enum.join(" ")

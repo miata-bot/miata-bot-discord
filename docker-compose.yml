@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-  app:
+  miata-bot:
     build: .
     image: "registry.sixtyeightplus.one/miata_bot"
     depends_on:

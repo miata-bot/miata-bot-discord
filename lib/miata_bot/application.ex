@@ -8,30 +8,17 @@ defmodule MiataBot.Application do
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
-      {Webdriver, [name: Webdriver]},
       # Start the Ecto repository
       MiataBot.Repo,
-
       # Start the endpoint when the application starts
       {Phoenix.PubSub, [name: MiataBot.PubSub, adapter: Phoenix.PubSub.PG2]},
-      MiataBotWeb.Endpoint,
-      MiataBotWeb.HerokuTask,
-
       # Start the discord subsystem
-      MiataBotDiscord.Supervisor,
-      MiataBotIRC
+      MiataBotDiscord.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: MiataBot.Supervisor]
     Supervisor.start_link(children, opts)
-  end
-
-  # Tell Phoenix to update the endpoint configuration
-  # whenever the application is updated.
-  def config_change(changed, _new, removed) do
-    MiataBotWeb.Endpoint.config_change(changed, removed)
-    :ok
   end
 end
