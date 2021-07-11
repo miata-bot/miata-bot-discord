@@ -3,6 +3,8 @@ defmodule MiataBotDiscord.Guild do
   Root level supervisor for every guild.
   Don't start manually - The Event source should use
   the dynamic supervisor to start this supervisor.
+
+  connor - what does this even mean?
   """
   use Supervisor
 
@@ -10,6 +12,8 @@ defmodule MiataBotDiscord.Guild do
     BootmsgConsumer,
     AutoreplyConsumer,
     CarinfoConsumer,
+    Carinfo.AttachmentConsumer,
+    Carinfo.AttachmentCahe,
     ChannelLimitsConsumer,
     LookingForMiataConsumer,
     MemesChannelConsumer
@@ -40,6 +44,7 @@ defmodule MiataBotDiscord.Guild do
       {BootmsgConsumer, {guild, config, current_user}},
       {AutoreplyConsumer, {guild, config, current_user}},
       {CarinfoConsumer, {guild, config, current_user}},
+      {CarinfoConsumer, {guild, config, current_user}},
       {ChannelLimitsConsumer, {guild, config, current_user}},
       {LookingForMiataConsumer, {guild, config, current_user}},
       {MemesChannelConsumer, {guild, config, current_user}},
@@ -48,6 +53,7 @@ defmodule MiataBotDiscord.Guild do
       {MiataBotDiscord.Guild.ChannelLimitsWorker, {guild, config, current_user}},
       {MiataBotDiscord.Guild.LookingForMiataWorker, {guild, config, current_user}},
       {MiataBotDiscord.Guild.CopyPastaWorker, {guild, config, current_user}},
+      {MiataBotDiscord.Guild.Carinfo.AttachmentCache, {guild, config, current_user}},
 
       # Responder
       {MiataBotDiscord.Guild.Responder,
@@ -56,6 +62,7 @@ defmodule MiataBotDiscord.Guild do
           {via(guild, BootmsgConsumer), []},
           {via(guild, AutoreplyConsumer), []},
           {via(guild, CarinfoConsumer), []},
+          {via(guild, Carinfo.AttachmentConsumer), []},
           {via(guild, ChannelLimitsConsumer), []},
           {via(guild, LookingForMiataConsumer), []},
           {via(guild, MemesChannelConsumer), []}
