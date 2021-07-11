@@ -70,7 +70,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
   def handle_interaction(
         iaction = %Interaction{
           guild_id: guild_id,
-          channel_id: channel_id,
+          channel_id: _channel_id,
           data: %{
             name: "carinfo",
             options: [

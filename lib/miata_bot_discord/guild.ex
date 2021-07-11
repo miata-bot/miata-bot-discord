@@ -44,7 +44,7 @@ defmodule MiataBotDiscord.Guild do
       {BootmsgConsumer, {guild, config, current_user}},
       {AutoreplyConsumer, {guild, config, current_user}},
       {CarinfoConsumer, {guild, config, current_user}},
-      {CarinfoConsumer, {guild, config, current_user}},
+      {MiataBotDiscord.Guild.Carinfo.AttachmentConsumer, {guild, config, current_user}},
       {ChannelLimitsConsumer, {guild, config, current_user}},
       {LookingForMiataConsumer, {guild, config, current_user}},
       {MemesChannelConsumer, {guild, config, current_user}},
@@ -62,7 +62,7 @@ defmodule MiataBotDiscord.Guild do
           {via(guild, BootmsgConsumer), []},
           {via(guild, AutoreplyConsumer), []},
           {via(guild, CarinfoConsumer), []},
-          {via(guild, Carinfo.AttachmentConsumer), []},
+          {via(guild, MiataBotDiscord.Guild.Carinfo.AttachmentConsumer), []},
           {via(guild, ChannelLimitsConsumer), []},
           {via(guild, LookingForMiataConsumer), []},
           {via(guild, MemesChannelConsumer), []}

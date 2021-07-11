@@ -3,6 +3,7 @@ defmodule MiataBotDiscord.Guild.Carinfo.AttachmentCache do
   Handles caching attachments for the carinfo command
   """
   import MiataBotDiscord.Guild.Registry, only: [via: 2]
+  require Logger
 
   alias Nostrum.Struct.Message.Attachment
   defstruct []
@@ -13,8 +14,11 @@ defmodule MiataBotDiscord.Guild.Carinfo.AttachmentCache do
   end
 
   @doc "Cache an attachment for a user"
-  def cache_attachment(guild, discord_user_id, %Attachment{} = attachment) do
-    GenServer.cast(via(guild, __MODULE__), {:cache_attachment, discord_user_id, attachment})
+  def cache_attachment(guild, discord_user_id, message_id, %Attachment{} = attachment) do
+    GenServer.cast(
+      via(guild, __MODULE__),
+      {:cache_attachment, discord_user_id, message_id, attachment}
+    )
   end
 
   def fetch_attachment(guild, discord_user_id) do
@@ -23,11 +27,12 @@ defmodule MiataBotDiscord.Guild.Carinfo.AttachmentCache do
 
   @impl GenServer
   def init({_guild, _config, _current_user}) do
+    # Logger.info "starting attachment cache for #{inspect(guild)}"
     table =
       :ets.new(Module.concat(__MODULE__, :__attachment_cache__), [
-        :named_table,
-        {:write_concurency, true},
-        {:read_concurency, false},
+        # :named_table,
+        # {:write_concurency, true},
+        # {:read_concurency, false},
         :ordered_set
       ])
 
@@ -35,16 +40,21 @@ defmodule MiataBotDiscord.Guild.Carinfo.AttachmentCache do
   end
 
   @impl GenServer
-  def handle_cast({:cache_attachment, discord_user_id, attachment}, state) do
-    true = :ets.insert(state.table, {discord_user_id, attachment})
+  def handle_cast({:cache_attachment, discord_user_id, message_id, attachment}, state) do
+    Logger.info("caching attachment")
+    true = :ets.insert(state.table, {discord_user_id, message_id, attachment})
     {:noreply, state}
   end
 
   @impl GenServer
   def handle_call({:fetch_attachment, discord_user_id}, _from, state) do
     case :ets.lookup(state.table, discord_user_id) do
-      [attachment] -> {:reply, attachment, state}
-      [] -> {:reply, nil, state}
+      [{_discord_user_id, message_id, attachment}] ->
+        true = :ets.delete(state.table, discord_user_id)
+        {:reply, {message_id, attachment}, state}
+
+      [] ->
+        {:reply, nil, state}
     end
   end
 end

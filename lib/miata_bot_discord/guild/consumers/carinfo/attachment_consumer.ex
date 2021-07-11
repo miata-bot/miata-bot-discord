@@ -45,12 +45,19 @@ defmodule MiataBotDiscord.Guild.Carinfo.AttachmentConsumer do
   end
 
   def handle_message(
-        %Message{channel_id: channel_id, attachments: [attachment | _]} = message,
+        %Message{id: message_id, channel_id: channel_id, attachments: attachments} = message,
         {actions, %{config: %{carinfo_channel_id: channel_id}} = state}
       ) do
-    Logger.info("Caching attachment: #{inspect(attachment)}")
-    AttachmentCache.cache_attachment(state.guild, message.author.id, state.guild)
-    {actions, state}
+    case Enum.count(attachments) do
+      0 ->
+        {actions, state}
+
+      _ ->
+        attachment = List.last(attachments)
+        Logger.info("Caching attachment: #{inspect(attachment)}")
+        AttachmentCache.cache_attachment(state.guild, message.author.id, message.id, attachment)
+        {actions ++ [{:create_reaction!, [channel_id, message_id, "👀"]}], state}
+    end
   end
 
   def handle_message(_message, {actions, state}) do
@@ -60,7 +67,7 @@ defmodule MiataBotDiscord.Guild.Carinfo.AttachmentConsumer do
   def handle_interaction(
         iaction = %Interaction{
           guild_id: _guild_id,
-          channel_id: _channel_id,
+          channel_id: channel_id,
           member: member = %{user: %{id: user_discord_id}},
           data: %{
             name: "carinfo",
@@ -71,14 +78,23 @@ defmodule MiataBotDiscord.Guild.Carinfo.AttachmentConsumer do
         },
         {actions, state}
       ) do
-    with {:ok, %Attachment{} = attachment} <- fetch_attachment(user_discord_id, state),
+    Logger.info("Handling attachment interaction")
+
+    with {:ok, {attachment_message_id, %Attachment{} = attachment}} <-
+           fetch_attachment(user_discord_id, state),
          {:ok, embed} <-
            do_update_image(member.user, %{
              attachment_url: attachment.url,
              discord_user_id: user_discord_id
            }) do
+      Logger.info("Updated carinfo: #{inspect(embed)}")
       response = %{type: 4, data: %{embeds: [embed]}}
-      {actions ++ [{:create_interaction_response, [iaction, response]}], state}
+
+      {actions ++
+         [
+           {:create_interaction_response, [iaction, response]},
+           {:delete_message, [channel_id, attachment_message_id]}
+         ], state}
     else
       {:ok, embed} ->
         response = %{type: 4, data: %{embeds: [embed]}}
@@ -122,8 +138,8 @@ defmodule MiataBotDiscord.Guild.Carinfo.AttachmentConsumer do
 
   defp fetch_attachment(discord_user_id, state) do
     case AttachmentCache.fetch_attachment(state.guild, discord_user_id) do
-      %Attachment{} = attachment ->
-        {:ok, attachment}
+      {message_id, %Attachment{} = attachment} ->
+        {:ok, {message_id, attachment}}
 
       nil ->
         embed =
