@@ -22,6 +22,7 @@ defmodule MiataBot.Partpicker do
       field :model, :string
       field :vin, :string
       field :mileage, :integer
+      field :ride_height, :float
 
       embeds_many :photos, Photo, primary_key: {:uuid, :binary_id, [autogenerate: false]} do
         field :filename, :string
@@ -178,7 +179,8 @@ defmodule MiataBot.Partpicker do
       :year,
       :mileage,
       :vin,
-      :coilovers
+      :coilovers,
+      :ride_height
     ])
     |> Ecto.Changeset.cast_embed(:photos, with: &photo_changeset/2)
     |> put_photo_url(:banner_photo_url, :banner_photo_id)

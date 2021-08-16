@@ -159,7 +159,8 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
         "description",
         "wheels",
         "tires",
-        "coilovers"
+        "coilovers",
+        "ride_height"
       ])
 
     with {:ok, build_embed} <- do_update_build(member.user, car_params),
