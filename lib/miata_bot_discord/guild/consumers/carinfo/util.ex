@@ -102,6 +102,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer.Util do
     |> maybe_add_mileage(build, user)
     |> maybe_add_vin(build)
     |> maybe_add_hand_size(user)
+    |> maybe_add_foot_size(user)
     |> maybe_add_instagram(user)
   end
 
@@ -154,6 +155,13 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer.Util do
     do:
       embed
       |> Embed.put_field("Hand Size", "#{inches} inches")
+
+  def maybe_add_foot_size(embed, %{foot_size: nil}), do: embed
+
+  def maybe_add_foot_size(embed, %{foot_size: inches}),
+    do:
+      embed
+      |> Embed.put_field("Foot Size", "#{inches} inches")
 
   def maybe_add_color(embed, %{color: nil}), do: embed
 
