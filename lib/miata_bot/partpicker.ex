@@ -36,6 +36,14 @@ defmodule MiataBot.Partpicker do
     end
   end
 
+  defmodule Card do
+    use Ecto.Schema
+    @primary_key {:id, :string, [autogenerate: false]}
+    embedded_schema do
+      field :asset_url, :string
+    end
+  end
+
   defmodule User do
     use Ecto.Schema
     @primary_key {:discord_user_id, Snowflake, [autogenerate: false]}
@@ -45,6 +53,7 @@ defmodule MiataBot.Partpicker do
       field :hand_size, :float
       field :foot_size, :float
       embeds_many :builds, Build
+      embeds_many :cards, Card
       embeds_one :featured_build, Build
     end
   end
@@ -129,6 +138,7 @@ defmodule MiataBot.Partpicker do
   def parse_user(attrs) do
     user_changeset(%User{}, attrs)
     |> Ecto.Changeset.cast_embed(:builds, with: &build_changeset/2)
+    |> Ecto.Changeset.cast_embed(:cards, with: &card_changeset/2)
     |> Ecto.Changeset.apply_changes()
   end
 
@@ -186,5 +196,12 @@ defmodule MiataBot.Partpicker do
     ])
     |> Ecto.Changeset.cast_embed(:photos, with: &photo_changeset/2)
     |> put_photo_url(:banner_photo_url, :banner_photo_id)
+  end
+
+  def card_changeset(card, attrs) do
+    Ecto.Changeset.cast(card, attrs, [
+      :id,
+      :asset_url
+    ])
   end
 end

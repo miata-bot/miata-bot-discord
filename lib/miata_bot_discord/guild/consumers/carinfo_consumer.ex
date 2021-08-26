@@ -191,8 +191,8 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer do
     {actions ++ [{:create_interaction_response, [iaction, response]}], state}
   end
 
-  def handle_interaction(interaction, {actions, state}) do
-    Logger.warn("unhandled interaction: #{inspect(interaction)}")
+  def handle_interaction(_interaction, {actions, state}) do
+    # Logger.warn("unhandled interaction: #{inspect(interaction)}")
     {actions, state}
   end
 end
