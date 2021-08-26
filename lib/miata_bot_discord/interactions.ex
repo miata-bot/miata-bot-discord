@@ -5,9 +5,14 @@ defmodule MiataBotDiscord.Interactions do
   def install_interactions(%Config{guild_id: guild_id} = config) do
     with {:ok, carinfo_command} <-
            Nostrum.Api.create_guild_application_command(guild_id, carinfo()),
+         {:ok, trade_command} <- Nostrum.Api.create_guild_application_command(guild_id, trade()),
+         {:ok, inventory_command} <-
+           Nostrum.Api.create_guild_application_command(guild_id, inventory()),
          {:ok, config} <-
            Repo.update(
-             Ecto.Changeset.cast(config, %{interactions: [carinfo_command]}, [:interactions])
+             Ecto.Changeset.cast(config, %{interactions: [carinfo_command, trade_command]}, [
+               :interactions
+             ])
            ) do
       {:ok, config}
     end
@@ -47,6 +52,34 @@ defmodule MiataBotDiscord.Interactions do
           options: [],
           type: 1
         }
+      ]
+    }
+  end
+
+  def trade() do
+    %{
+      name: "trade",
+      description: "Manage trades",
+      options: [
+        %{
+          description: "Offer your own card in exchange for another",
+          name: "offer",
+          type: 1,
+          options: [
+            %{description: "offered card id", name: "offer_uuid", type: 3, required: true},
+            %{description: "trade card id", name: "trade_uuid", type: 3, required: true}
+          ]
+        }
+      ]
+    }
+  end
+
+  def inventory() do
+    %{
+      name: "inventory",
+      description: "Manage inventory",
+      options: [
+        %{description: "See what's in a users inventory", name: "user", type: 6}
       ]
     }
   end

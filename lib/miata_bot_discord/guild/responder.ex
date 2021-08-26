@@ -27,7 +27,13 @@ defmodule MiataBotDiscord.Guild.Responder do
 
   @impl GenStage
   def handle_events(events, from, state) do
-    for event <- events, do: handle_event(event, from)
+    Enum.reduce(events, nil, fn
+      {{_function, _args}, _caller} = event, _last_result -> handle_event(event, from)
+      {_function, _args} = event, _last_result -> handle_event(event, from)
+      :noop = event, _last_result -> handle_event(event, from)
+      fun, last_result when is_function(fun, 1) -> fun.(last_result)
+    end)
+
     {:noreply, [], state}
   end
 
@@ -49,7 +55,7 @@ defmodule MiataBotDiscord.Guild.Responder do
 
   def handle_event({function, args}, _from) when is_atom(function) and is_list(args) do
     r = apply(@api, function, args)
-    Logger.info("nostrum response: #{inspect(r)}")
+    Logger.info("#{function}/#{Enum.count(args)}: #{inspect(r)}")
     r
   catch
     error, reason ->
