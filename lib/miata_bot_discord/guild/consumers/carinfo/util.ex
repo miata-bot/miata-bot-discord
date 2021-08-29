@@ -128,7 +128,7 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer.Util do
   def maybe_add_ride_height(embed, %{ride_height: nil}), do: embed
 
   def maybe_add_ride_height(embed, %{ride_height: ride_height}),
-    do: Embed.put_field(embed, "Ride Height", ride_height, true)
+    do: Embed.put_field(embed, "Ride Height", "#{to_string(ride_height)} height units", true)
 
   def maybe_add_vin(embed, %{vin: nil}), do: embed
   def maybe_add_vin(embed, %{vin: vin}), do: Embed.put_field(embed, "VIN", vin, true)
