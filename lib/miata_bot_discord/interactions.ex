@@ -1,21 +1,6 @@
 defmodule MiataBotDiscord.Interactions do
-  alias MiataBotDiscord.Guild.Config
-  alias MiataBot.Repo
-
-  def install_interactions(%Config{guild_id: guild_id} = config) do
-    with {:ok, carinfo_command} <-
-           Nostrum.Api.create_guild_application_command(guild_id, carinfo()),
-         {:ok, trade_command} <- Nostrum.Api.create_guild_application_command(guild_id, trade()),
-         {:ok, inventory_command} <-
-           Nostrum.Api.create_guild_application_command(guild_id, inventory()),
-         {:ok, config} <-
-           Repo.update(
-             Ecto.Changeset.cast(config, %{interactions: [carinfo_command, trade_command]}, [
-               :interactions
-             ])
-           ) do
-      {:ok, config}
-    end
+  def interactions do
+    [carinfo(), trade(), inventory()]
   end
 
   def carinfo do
