@@ -16,6 +16,8 @@ defmodule MiataBotDiscord.Guild.TradeConsumer do
 
   @impl GenStage
   def init({guild, config, current_user}) do
+    Phoenix.PubSub.subscribe(MiataBot.PubSub, "tcg")
+
     {:producer_consumer, %{guild: guild, current_user: current_user, config: config},
      subscribe_to: [via(guild, EventDispatcher)]}
   end
@@ -70,5 +72,32 @@ defmodule MiataBotDiscord.Guild.TradeConsumer do
   def handle_message(_message, {actions, state}) do
     # Logger.info("message=#{inspect(message)}")
     {actions, state}
+  end
+
+  def handle_info(["CREATE_TRADE_REQUEST", payload], state) do
+    %{
+      "inserted_at" => "2021-08-28T19:01:30",
+      "offer" => %{
+        "asset_url" => "http://localhost:4000/images/haz-tcg.png",
+        "uuid" => "4CBE795D"
+      },
+      "receiver" => 98_531_152_708_534_272,
+      "sender" => 316_741_621_498_511_363,
+      "status" => "pending",
+      "trade" => %{
+        "asset_url" => "http://localhost:4000/images/cone-tcg.png",
+        "uuid" => "8085B37E"
+      },
+      "updated_at" => "2021-08-28T19:01:30"
+    }
+
+    embed =
+      %Embed{}
+      |> Embed.put_title("New Trade Request")
+      |> Embed.put_url("https://miatapartpicker.gay/cards")
+      |> Embed.put_image(payload["offer"]["asset_url"])
+
+    Nostrum.Api.create_message(879_977_381_035_659_324, embed: embed)
+    {:noreply, [], state}
   end
 end
