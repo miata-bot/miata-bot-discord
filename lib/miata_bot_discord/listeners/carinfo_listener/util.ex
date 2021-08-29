@@ -1,7 +1,7 @@
-defmodule MiataBotDiscord.Guild.CarinfoConsumer.Util do
+defmodule MiataBotDiscord.CarinfoListener.Util do
   alias Nostrum.Struct.Embed
+  import Nostrum.Api
   require Logger
-  alias MiataBotDiscord.Guild.Responder
 
   def do_update_build(author, params) do
     with {:ok, user} <- fetch_or_create_user(author),
@@ -179,11 +179,11 @@ defmodule MiataBotDiscord.Guild.CarinfoConsumer.Util do
     end
   end
 
-  def get_discord_user(data, guild_id) do
+  def get_discord_user(data, _guild_id) do
     case Snowflake.cast(to_string(data)) do
       {:ok, snowflake} ->
         Logger.info("using snowflake: #{to_string(data)}")
-        Responder.execute_action(guild_id, {:get_user, [snowflake]})
+        get_user(snowflake)
 
       :error ->
         {:error, "unknown data: #{inspect(data)}"}

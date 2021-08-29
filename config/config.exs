@@ -2,33 +2,28 @@ import Config
 
 config :nostrum,
   token: System.get_env("DISCORD_TOKEN") || "${DISCORD_TOKEN}",
-  gateway_intents: [
-    :guilds,
-    :guild_members,
-    :guild_bans,
-    :guild_emojis,
-    :guild_integrations,
-    :guild_webhooks,
-    :guild_invites,
-    :guild_voice_states,
-    :guild_presences,
-    :guild_messages,
-    :guild_message_reactions,
-    :guild_message_typing,
-    :direct_messages,
-    :direct_message_reactions,
-    :direct_message_typing
-  ],
+  gateway_intents: :all,
   num_shards: :auto
 
 config :miata_bot, MiataBot.Partpicker, api_token: System.get_env("PARTPICKER_API_TOKEN")
 
-config :miata_bot, MiataBotWeb.PageController, auth_url: System.get_env("DISCORD_AUTH_URL")
-
-config :miata_bot, Nrel, api_key: System.get_env("NREL_API_KEY")
-
 config :miata_bot,
-  ecto_repos: [MiataBot.Repo]
+  ecto_repos: [MiataBot.Repo, Quarrel.Repo]
+
+# The values are defaulted in the code as well
+config :quarrel, Quarrel.Application, dispatch: Quarrel.NostrumConsumer
+config :quarrel, Quarrel.Listener, api: Nostrum.Api
+
+config :quarrel, Quarrel.GuildSupervisor,
+  children: [
+    MiataBotDiscord.SettingsListener,
+    MiataBotDiscord.AutoreplyListener,
+    MiataBotDiscord.CarinfoListener,
+    MiataBotDiscord.CarinfoAttachmentListener,
+    MiataBotDiscord.ChannelLimitsListener,
+    MiataBotDiscord.LookingForMiataListener,
+    MiataBotDiscord.MemesChannelListener
+  ]
 
 config :logger, backends: [:console, RingLogger]
 

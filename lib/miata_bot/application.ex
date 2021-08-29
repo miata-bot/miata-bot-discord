@@ -11,9 +11,7 @@ defmodule MiataBot.Application do
       # Start the Ecto repository
       MiataBot.Repo,
       # Start the endpoint when the application starts
-      {Phoenix.PubSub, [name: MiataBot.PubSub, adapter: Phoenix.PubSub.PG2]},
-      # Start the discord subsystem
-      MiataBotDiscord.Supervisor
+      {Phoenix.PubSub, [name: MiataBot.PubSub, adapter: Phoenix.PubSub.PG2]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
