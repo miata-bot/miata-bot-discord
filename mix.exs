@@ -38,30 +38,25 @@ defmodule MiataBot.MixProject do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  if Mix.env() == :prod && System.get_env("DISCORD_TOKEN") do
-    @nostrum {:nostrum, github: "Kraigie/nostrum"}
-  else
-    @nostrum {:nostrum, github: "Kraigie/nostrum", runtime: false}
-  end
-
   # Specifies your project dependencies.
   #
   # Type `mix help deps` for examples and options.
   defp deps do
     [
       {:cowlib, "~> 2.11", override: true},
-      {:ecto_sql, "~> 3.6"},
       {:gun, "~> 1.3", override: true},
+      {:ecto_sql, "~> 3.7"},
+      {:postgrex, "~> 0.15"},
       {:hackney, "~> 1.17"},
       {:jason, "~> 1.0"},
-      {:phoenix_pubsub, "~> 2.0"},
-      {:postgrex, "~> 0.15"},
       {:ring_logger, "~> 0.8"},
-      {:telemetry_metrics, "~> 0.6"},
-      {:telemetry_poller, "~> 0.5"},
       {:tesla, "~> 1.4"},
       {:timex, "~> 3.7"},
-      @nostrum
+      {:phoenix_pubsub, "~> 2.0"},
+      {:nostrum,
+       github: "kraigie/nostrum", ref: "c0c872e880f3af360167179f66df72695c1f051e", override: true},
+      # {:quarrel, path: "../quarrel"}
+      {:quarrel, "~> 0.1"}
     ]
   end
 

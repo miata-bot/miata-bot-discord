@@ -1,10 +1,8 @@
-defmodule MiataBotDiscord.Guild.LookingForMiataWorker do
-  use GenServer
+defmodule MiataBotDiscord.LookingForMiataListener do
   require Logger
-  alias Nostrum.Struct.{Embed, Guild.Member}
+
+  use Quarrel.Listener
   alias MiataBot.{Repo, LookingForMiataTimer}
-  alias MiataBotDiscord.GuildCache
-  import MiataBotDiscord.Guild.Registry, only: [via: 2]
   import Ecto.Query
 
   def debug_expire_timer(timer, refreshed_at \\ nil) do
@@ -29,21 +27,20 @@ defmodule MiataBotDiscord.Guild.LookingForMiataWorker do
     |> Repo.update!()
   end
 
-  def start_link({guild, config, current_user}) do
-    GenServer.start_link(__MODULE__, {guild, config, current_user}, name: via(guild, __MODULE__))
-  end
-
-  def init({guild, config, _current_user}) do
+  @impl GenServer
+  def init(state) do
     send(self(), :checkup)
-    {:ok, %{config: config, guild: guild}}
+    {:ok, state}
   end
 
+  @impl GenServer
   def handle_info(:checkup, state) do
     guild_id = state.guild.id
     timers = Repo.all(from t in LookingForMiataTimer, where: t.discord_guild_id == ^guild_id)
     {:noreply, state, {:continue, timers}}
   end
 
+  @impl GenServer
   def handle_continue([timer | rest], state) do
     begin = timer.refreshed_at || timer.joined_at
     complete = Timex.shift(begin, days: 30)
@@ -75,10 +72,61 @@ defmodule MiataBotDiscord.Guild.LookingForMiataWorker do
     {:noreply, state, :hibernate}
   end
 
+  @impl Quarrel.Listener
+  def handle_guild_available(guild, state) do
+    for {_member_id, m} <- guild.members do
+      if state.config.looking_for_miata_role_id in m.roles do
+        ensure_looking_for_miata_timer(guild, m)
+      end
+    end
+
+    {:noreply, state}
+  end
+
+  @impl Quarrel.Listener
+  def handle_guild_member_update(old, new, state) do
+    if state.config.looking_for_miata_role_id in (new.roles -- old.roles) do
+      Logger.info("refreshing timer for #{new.user.username}")
+      timer = ensure_looking_for_miata_timer(state.guild, new)
+      refresh_looking_for_miata_timer(state.guild, timer)
+    end
+
+    if state.config.looking_for_miata_role_id in (old.roles -- new.roles) do
+      Logger.info("refreshing timer for #{new.user.username}")
+      timer = ensure_looking_for_miata_timer(state.guild, new)
+      Repo.delete!(timer)
+    end
+
+    {:noreply, state}
+  end
+
+  def ensure_looking_for_miata_timer(guild, member) do
+    case Repo.get_by(LookingForMiataTimer,
+           discord_user_id: member.user.id,
+           discord_guild_id: guild.id
+         ) do
+      nil ->
+        LookingForMiataTimer.changeset(%LookingForMiataTimer{}, %{
+          joined_at: member.joined_at,
+          discord_user_id: member.user.id,
+          discord_guild_id: guild.id
+        })
+        |> Repo.insert!()
+
+      timer ->
+        timer
+    end
+  end
+
+  def refresh_looking_for_miata_timer(_guild, timer) do
+    LookingForMiataTimer.changeset(timer, %{
+      refreshed_at: DateTime.utc_now()
+    })
+    |> Repo.update!()
+  end
+
   def do_expire_timer(timer, state) do
-    member =
-      GuildCache.get_guild_member(state.guild.id, timer.discord_user_id) ||
-        Nostrum.Api.get_guild_member!(state.guild.id, timer.discord_user_id)
+    member = get_guild_member!(state.guild.id, timer.discord_user_id)
 
     Logger.info("expiring timer for member: #{inspect(member)}")
 
@@ -95,7 +143,7 @@ defmodule MiataBotDiscord.Guild.LookingForMiataWorker do
         |> Embed.put_description("**#{Member.mention(member)} will be demoted**")
         |> Embed.put_footer("ID: #{member.user.id}")
 
-      Nostrum.Api.create_message!(state.config.bot_spam_channel_id, embed: embed)
+      create_message!(state.config.bot_spam_channel_id, embed: embed)
       delete(timer)
     else
       {:error, error} ->
@@ -112,7 +160,7 @@ defmodule MiataBotDiscord.Guild.LookingForMiataWorker do
           )
           |> Embed.put_footer("ID: #{member.user.id}")
 
-        Nostrum.Api.create_message!(state.config.bot_spam_channel_id, embed: fail_embed)
+        create_message!(state.config.bot_spam_channel_id, embed: fail_embed)
         delete(timer)
     end
   catch
@@ -122,7 +170,7 @@ defmodule MiataBotDiscord.Guild.LookingForMiataWorker do
   end
 
   def add_miata_fan(user_id, state) do
-    Nostrum.Api.add_guild_member_role(
+    add_guild_member_role(
       state.guild.id,
       user_id,
       state.config.miata_fan_role_id
@@ -130,7 +178,7 @@ defmodule MiataBotDiscord.Guild.LookingForMiataWorker do
   end
 
   def remove_miata_fan(user_id, state) do
-    Nostrum.Api.remove_guild_member_role(
+    remove_guild_member_role(
       state.guild.id,
       user_id,
       state.config.miata_fan_role_id
@@ -138,7 +186,7 @@ defmodule MiataBotDiscord.Guild.LookingForMiataWorker do
   end
 
   def add_looking_for_miata(user_id, state) do
-    Nostrum.Api.add_guild_member_role(
+    add_guild_member_role(
       state.guild.id,
       user_id,
       state.config.looking_for_miata_role_id
@@ -146,7 +194,7 @@ defmodule MiataBotDiscord.Guild.LookingForMiataWorker do
   end
 
   def remove_looking_for_miata(user_id, state) do
-    Nostrum.Api.remove_guild_member_role(
+    remove_guild_member_role(
       state.guild.id,
       user_id,
       state.config.looking_for_miata_role_id
