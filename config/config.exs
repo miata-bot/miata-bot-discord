@@ -5,7 +5,9 @@ config :nostrum,
   gateway_intents: :all,
   num_shards: :auto
 
-config :miata_bot, MiataBot.Partpicker, api_token: System.get_env("PARTPICKER_API_TOKEN")
+config :miata_bot, MiataBot.Partpicker,
+  api_token: System.get_env("PARTPICKER_API_TOKEN"),
+  base_url: System.get_env("PARTPICKER_BASE_URL")
 
 config :miata_bot,
   ecto_repos: [MiataBot.Repo, Quarrel.Repo]

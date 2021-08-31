@@ -1,11 +1,10 @@
 defmodule MiataBot.Partpicker do
   @api_token Application.get_env(:miata_bot, __MODULE__)[:api_token]
-  # @api_token || Mix.raise("missing api token")
+  @base_url Application.get_env(:miata_bot, __MODULE__)[:base_url] ||
+              "https://miatapartpicker.gay/api"
 
   use Tesla
-  plug(Tesla.Middleware.BaseUrl, "https://miatapartpicker.gay/api")
-
-  # plug Tesla.Middleware.BaseUrl, "http://localhost:4000/api"
+  plug Tesla.Middleware.BaseUrl, @base_url
 
   plug(Tesla.Middleware.Headers, [{"authorization", "Bearer #{@api_token}"}])
   plug(Tesla.Middleware.JSON)
