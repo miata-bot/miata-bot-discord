@@ -113,6 +113,9 @@ defmodule MiataBotDiscord.CarinfoAttachmentListener do
         embed =
           %Embed{}
           |> Embed.put_title("Could not find attachment")
+          |> Embed.put_description(
+            "First upload a photo in the CarInfo Channel, then call this command again."
+          )
           |> Embed.put_color(0xFF0000)
 
         {:ok, embed}
