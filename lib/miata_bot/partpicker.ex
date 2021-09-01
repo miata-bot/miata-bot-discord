@@ -3,11 +3,17 @@ defmodule MiataBot.Partpicker do
   @base_url Application.get_env(:miata_bot, __MODULE__)[:base_url] ||
               "https://miatapartpicker.gay/api"
 
+  @gateway_url Application.get_env(:miata_bot, __MODULE__)[:gateway_url] ||
+                 "wss://miatapartpicker.gay/api/gateway"
+
   use Tesla
   plug Tesla.Middleware.BaseUrl, @base_url
 
   plug(Tesla.Middleware.Headers, [{"authorization", "Bearer #{@api_token}"}])
   plug(Tesla.Middleware.JSON)
+
+  def base_url, do: @base_url
+  def gateway_uri, do: URI.parse(@gateway_url)
 
   defmodule Build do
     use Ecto.Schema
@@ -125,6 +131,20 @@ defmodule MiataBot.Partpicker do
     end
   end
 
+  def generate_random_card() do
+    case get!("/cards/generate_random_offer") do
+      %{status: 202, body: body} -> {:ok, parse_card(body)}
+      %{status: _, body: %{"errors" => errors}} -> {:error, errors}
+    end
+  end
+
+  def claim_card(card, discord_user_id) do
+    case post!("/cards/claim_random_offer", %{card_id: card.id, user_id: discord_user_id}) do
+      %{status: 201, body: body} -> {:ok, parse_card(body)}
+      %{status: _, body: %{"errors" => errors}} -> {:error, errors}
+    end
+  end
+
   def update_banner(discord_user_id, build_uid, params) do
     case post!("/users/#{discord_user_id}/builds/#{build_uid}/banner", %{photo: params}) do
       %{status: 202, body: body} -> {:ok, parse_build(body)}
@@ -148,6 +168,11 @@ defmodule MiataBot.Partpicker do
 
   def parse_photo(attrs) do
     photo_changeset(%Build.Photo{}, attrs)
+    |> Ecto.Changeset.apply_changes()
+  end
+
+  def parse_card(attrs) do
+    card_changeset(%Card{}, attrs)
     |> Ecto.Changeset.apply_changes()
   end
 

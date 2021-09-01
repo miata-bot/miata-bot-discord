@@ -11,7 +11,8 @@ defmodule MiataBot.Application do
       # Start the Ecto repository
       MiataBot.Repo,
       # Start the endpoint when the application starts
-      {Phoenix.PubSub, [name: MiataBot.PubSub, adapter: Phoenix.PubSub.PG2]}
+      {Phoenix.PubSub, [name: MiataBot.PubSub, adapter: Phoenix.PubSub.PG2]},
+      {MiataBot.Partpicker.Gateway, MiataBot.Partpicker.gateway_uri()}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
