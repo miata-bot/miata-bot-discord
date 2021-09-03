@@ -11,8 +11,7 @@ defmodule MiataBotDiscord.ChannelLimitsListener do
   @impl Quarrel.Listener
   def handle_message_create(
         %Message{channel_id: general_channel_id, member: %Member{} = member} = message,
-        %{config: %{general_channel_id: general_channel_id, miata_fan_role_id: miata_fan_role_id}} =
-          state
+        %{config: %{general_channel_id: general_channel_id, miata_fan_role_id: miata_fan_role_id}} = state
       ) do
     if miata_fan_role_id in member.roles do
       handle_miatafan(message, state)

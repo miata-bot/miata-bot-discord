@@ -155,9 +155,7 @@ defmodule MiataBotDiscord.LookingForMiataListener do
             nil,
             "https://cdn.discordapp.com/avatars/#{member.user.id}/#{member.user.avatar}?size=128"
           )
-          |> Embed.put_description(
-            "**#{Member.mention(member)} could not be demoted: #{inspect(error)} **"
-          )
+          |> Embed.put_description("**#{Member.mention(member)} could not be demoted: #{inspect(error)} **")
           |> Embed.put_footer("ID: #{member.user.id}")
 
         create_message!(state.config.bot_spam_channel_id, embed: fail_embed)

@@ -44,6 +44,14 @@ defmodule MiataBotDiscord.MemesChannelListener do
     {:noreply, state}
   end
 
+  @impl GenServer
+  def handle_info(:timeout, state) do
+    {:noreply,
+     state
+     |> assign(:timer, nil)
+     |> assign(:message_count, 0)}
+  end
+
   defp load_copy_pasta() do
     Repo.one(from cp in CopyPasta, order_by: fragment("RANDOM()"), limit: 1, select: cp.content) ||
       "Someone was too lazy to add any copypastas"
