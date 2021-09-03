@@ -9,7 +9,8 @@ defmodule MiataBotDiscord.Settings do
       looking_for_miata_role_id: nil,
       bot_spam_channel_id: nil,
       admin_role_id: nil,
-      carinfo_channel_id: nil
+      carinfo_channel_id: nil,
+      tcg_channel_id: nil
     }
   end
 
@@ -24,7 +25,24 @@ defmodule MiataBotDiscord.Settings do
         looking_for_miata_role_id: 504_088_951_485_890_561,
         miata_fan_role_id: 439_493_557_301_280_789,
         memes_channel_id: 555_431_196_884_992_000,
-        verification_channel_id: 322_127_502_212_333_570
+        verification_channel_id: 322_127_502_212_333_570,
+        tcg_channel_id: nil
+    })
+  end
+
+  def dev_server do
+    create_settings(643_947_339_895_013_416, %{
+      build()
+      | admin_role_id: 643_958_189_460_553_729,
+        bot_spam_channel_id: 778_353_870_593_982_485,
+        carinfo_channel_id: 822_114_165_841_068_102,
+        general_channel_id: 778_334_280_337_719_357,
+        offtopic_channel_id: 778_334_306_002_927_646,
+        looking_for_miata_role_id: 778_340_553_460_285_461,
+        miata_fan_role_id: 778_337_478_578_405_387,
+        memes_channel_id: 778_325_951_989_284_894,
+        verification_channel_id: 778_325_814_986_014_731,
+        tcg_channel_id: 883_408_087_598_391_376
     })
   end
 
@@ -49,5 +67,6 @@ defmodule MiataBotDiscord.Settings do
     Quarrel.add_setting(guild_id, :bot_spam_channel_id, Map.fetch!(attrs, :bot_spam_channel_id))
     Quarrel.add_setting(guild_id, :admin_role_id, Map.fetch!(attrs, :admin_role_id))
     Quarrel.add_setting(guild_id, :carinfo_channel_id, Map.fetch!(attrs, :carinfo_channel_id))
+    Quarrel.add_setting(guild_id, :tcg_channel_id, Map.fetch!(attrs, :tcg_channel_id))
   end
 end
