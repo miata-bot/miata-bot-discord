@@ -19,14 +19,15 @@ config :quarrel, Quarrel.Listener, api: Nostrum.Api
 
 config :quarrel, Quarrel.GuildSupervisor,
   children: [
-    MiataBotDiscord.SettingsListener,
+    MiataBotDiscord.AnnoyingHListener,
     MiataBotDiscord.AutoreplyListener,
-    MiataBotDiscord.CarinfoListener,
     MiataBotDiscord.CarinfoAttachmentListener,
+    MiataBotDiscord.CarinfoListener,
     MiataBotDiscord.ChannelLimitsListener,
     MiataBotDiscord.LookingForMiataListener,
     MiataBotDiscord.MemesChannelListener,
-    MiataBotDiscord.TCGListener
+    MiataBotDiscord.SettingsListener
+    # MiataBotDiscord.TCGListener,
   ]
 
 config :logger, backends: [:console, RingLogger]
