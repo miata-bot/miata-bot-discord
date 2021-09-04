@@ -6,16 +6,22 @@ defmodule MiataBotDiscord.TCGListener do
   use Quarrel.Listener
   require Logger
 
+  def force_generate_card(guild) do
+    guild
+    |> Quarrel.GuildSupervisor.NameProvider.via(__MODULE__)
+    |> GenServer.whereis()
+    |> send(:generate_card)
+  end
+
   @impl GenServer
   def init(state) do
-    IO.inspect(self(), label: "HE#RE")
-
     case state.config[:tcg_channel_id] do
       nil ->
         :ignore
 
       _channel ->
         timer = Process.send_after(self(), :generate_card, 3_600_000)
+        _ = Phoenix.PubSub.subscribe(MiataBot.PubSub, "tcg")
 
         {:ok,
          state
@@ -51,6 +57,34 @@ defmodule MiataBotDiscord.TCGListener do
         {:noreply,
          state
          |> assign(:timer, timer)}
+    end
+  end
+
+  def handle_info(["RANDOM_CARD_EXPIRE", %{id: id} = card], state) do
+    Logger.debug("Card expired")
+
+    expired_message_id =
+      Enum.find_value(state.assigns.messages, fn
+        {message_id, {_emoji, %{id: ^id}}} ->
+          message_id
+
+        {_message_id, _} = a ->
+          Logger.info(inspect(a))
+          false
+      end)
+
+    if expired_message_id do
+      Logger.info("Expired card edit")
+      {:ok, embed} = expire_embed(card)
+
+      with {:ok, message} <- edit_message(state.config.tcg_channel_id, expired_message_id, embed: embed) do
+        delete_all_reactions(state.config.tcg_channel_id, message.id)
+      end
+
+      {:noreply, state |> assign(:messages, Map.delete(state.assigns.messages, expired_message_id))}
+    else
+      Logger.warn("Expired card not found in state")
+      {:noreply, state}
     end
   end
 
@@ -101,6 +135,17 @@ defmodule MiataBotDiscord.TCGListener do
       |> Embed.put_image(card.asset_url)
       |> Embed.put_url("https://miatapartpicker.gay/cards")
       |> Embed.put_description(User.mention(%User{id: user_id}) <> " Has claimed this card.")
+
+    {:ok, embed}
+  end
+
+  def expire_embed(card) do
+    embed =
+      %Embed{}
+      |> Embed.put_title("Card expired")
+      |> Embed.put_image(card.asset_url)
+      |> Embed.put_url("https://miatapartpicker.gay/card")
+      |> Embed.put_description("get rekt idiot")
 
     {:ok, embed}
   end

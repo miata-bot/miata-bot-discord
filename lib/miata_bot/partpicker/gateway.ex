@@ -101,7 +101,8 @@ defmodule MiataBot.Partpicker.Gateway do
           stream: stream
         } = _socket
       ) do
-    with {:ok, [type, payload]} <- Jason.decode(data) do
+    with {:ok, [type, payload]} <- Jason.decode(data),
+         {:ok, payload} <- parse_payload(type, payload) do
       Phoenix.PubSub.broadcast(MiataBot.PubSub, "tcg", [type, payload])
       :keep_state_and_data
     else
@@ -171,4 +172,7 @@ defmodule MiataBot.Partpicker.Gateway do
       shutdown: 500
     }
   end
+
+  def parse_payload("CREATE_TRADE_REQUEST", _payload), do: {:error, "fixme"}
+  def parse_payload("RANDOM_CARD_EXPIRE", payload), do: {:ok, MiataBot.Partpicker.parse_card(payload)}
 end
