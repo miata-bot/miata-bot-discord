@@ -13,7 +13,11 @@ defmodule MiataBot.Partpicker do
   plug(Tesla.Middleware.JSON)
 
   def base_url, do: @base_url
-  def gateway_uri, do: URI.parse(@gateway_url)
+
+  def gateway_uri do
+    URI.parse(@gateway_url)
+    |> Map.put(:userinfo, "#{@api_token}")
+  end
 
   defmodule Build do
     use Ecto.Schema

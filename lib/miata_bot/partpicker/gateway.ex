@@ -3,11 +3,11 @@ defmodule MiataBot.Partpicker.Gateway do
   require Logger
 
   defmodule Socket do
-    defstruct [:gun, :stream, :protocol, :headers, :uri, :events, :handler]
+    defstruct [:gun, :stream, :protocol, :headers, :uri, :events]
   end
 
   @ping_timeout 5000
-  @reconnect_timeout 1000
+  @reconnect_timeout 5000
 
   @type socket :: %Socket{
           gun: nil | pid(),
@@ -40,15 +40,14 @@ defmodule MiataBot.Partpicker.Gateway do
   # disconnected state
 
   def disconnected(:timeout, :connect, socket) do
+    Logger.warn("[disconnected] timeout: attempting connect")
     connect(socket)
   end
 
-  def disconnected(
-        :info,
-        {:DOWN, _monitor, :process, pid, _reason},
-        %Socket{handler: {pid, _}} = socket
-      ) do
-    {:keep_state, %Socket{socket | handler: nil}}
+  def disconnected(:info, {:gun_data, _gun, {:websocket, _, _, _, _}, :fin, data}, _socket) do
+    Logger.warn("[disconnected] Unexpected websocket close #{data}")
+    actions = [{:timeout, @reconnect_timeout, :connect}]
+    {:keep_state_and_data, actions}
   end
 
   # connecting state
@@ -64,7 +63,6 @@ defmodule MiataBot.Partpicker.Gateway do
 
   def connecting(:info, {:gun_response, gun, _, _, status, headers}, %Socket{gun: gun} = socket) do
     Logger.error("[connecting] gun_response: #{inspect(status)} #{inspect(headers)}")
-    # todo schedule reconnect
     {:next_state, :disconnected, %Socket{socket | gun: nil, stream: nil}}
   end
 
@@ -74,17 +72,8 @@ defmodule MiataBot.Partpicker.Gateway do
         %Socket{gun: gun, stream: stream} = socket
       ) do
     Logger.error("[connecting] gun_error: #{inspect(reason)}")
-    # todo schedule reconnect
     actions = [{:timeout, @reconnect_timeout, :connect}]
     {:next_state, :disconnected, %Socket{socket | gun: nil, stream: nil}, actions}
-  end
-
-  def connecting(
-        :info,
-        {:DOWN, _monitor, :process, pid, _reason},
-        %Socket{handler: {pid, _}} = socket
-      ) do
-    {:keep_state, %Socket{socket | handler: nil}}
   end
 
   ## connected state
@@ -114,28 +103,23 @@ defmodule MiataBot.Partpicker.Gateway do
     {:next_state, :disconnected, %Socket{socket | gun: nil, stream: nil}, actions}
   end
 
-  def connected(
-        :info,
-        {:DOWN, _monitor, :process, pid, _reason},
-        %Socket{handler: {pid, _}} = socket
-      ) do
-    {:keep_state, %Socket{socket | handler: nil}}
-  end
-
   defp connect(socket) do
     Logger.info("gun:open/3")
 
     connect_opts = %{
       connect_timeout: :timer.minutes(1),
       retry: 10,
-      retry_timeout: 100,
+      retry_timeout: 1000,
       protocols: [:http]
     }
 
     with {:ok, gun} <-
            :gun.open(to_charlist(socket.uri.host), socket.uri.port || 443, connect_opts),
          {:ok, protocol} <- :gun.await_up(gun),
-         stream <- :gun.ws_upgrade(gun, to_charlist(socket.uri.path || '/'), []),
+         stream <-
+           :gun.ws_upgrade(gun, to_charlist(socket.uri.path || '/'), [
+             {"authorization", "Bearer #{socket.uri.userinfo || ""}"}
+           ]),
          new_socket <- %Socket{
            socket
            | gun: gun,
