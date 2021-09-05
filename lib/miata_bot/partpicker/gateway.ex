@@ -43,10 +43,6 @@ defmodule MiataBot.Partpicker.Gateway do
     connect(socket)
   end
 
-  # def disconnected(:info, {:gun_up, gun, :http}, socket) do
-
-  # end
-
   def disconnected(
         :info,
         {:DOWN, _monitor, :process, pid, _reason},
@@ -126,8 +122,6 @@ defmodule MiataBot.Partpicker.Gateway do
     {:keep_state, %Socket{socket | handler: nil}}
   end
 
-  @spec connect(socket) ::
-          {:next_state, :connecting, socket} | {:keep_state_and_data, [action_internal_connect]}
   defp connect(socket) do
     Logger.info("gun:open/3")
 

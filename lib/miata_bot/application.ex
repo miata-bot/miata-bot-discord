@@ -12,7 +12,7 @@ defmodule MiataBot.Application do
       MiataBot.Repo,
       # Start the endpoint when the application starts
       {Phoenix.PubSub, [name: MiataBot.PubSub, adapter: Phoenix.PubSub.PG2]},
-      {MiataBot.Partpicker.Gateway, MiataBot.Partpicker.gateway_uri()}
+      MiataBot.Partpicker.GatewaySupervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
