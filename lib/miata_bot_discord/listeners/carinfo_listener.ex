@@ -9,10 +9,14 @@ defmodule MiataBotDiscord.CarinfoListener do
   end
 
   @impl Quarrel.Listener
-  def handle_guild_member_add(%Member{user: user}, state) do
-    _ = fetch_or_create_featured_build(user)
-
-    {:noreply, state}
+  def handle_guild_member_add(%Member{user: discord_user}, state) do
+    with {:ok, user} <- fetch_or_create_user(discord_user),
+         {:ok, _build} <- fetch_or_create_featured_build(user) do
+      {:noreply, state}
+    else
+      error ->
+        Logger.error("Failed to create build for new member: #{inspect(error)}")
+    end
   end
 
   @impl Quarrel.Listener
