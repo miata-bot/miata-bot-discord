@@ -173,6 +173,6 @@ defmodule MiataBot.Partpicker.Gateway do
     }
   end
 
-  def parse_payload("CREATE_TRADE_REQUEST", _payload), do: {:error, "fixme"}
+  def parse_payload("CREATE_TRADE_REQUEST", payload), do: {:ok, MiataBot.Partpicker.parse_trade_request(payload)}
   def parse_payload("RANDOM_CARD_EXPIRE", payload), do: {:ok, MiataBot.Partpicker.parse_card(payload)}
 end

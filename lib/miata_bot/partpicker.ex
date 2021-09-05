@@ -49,6 +49,18 @@ defmodule MiataBot.Partpicker do
     end
   end
 
+  defmodule TradeRequest do
+    use Ecto.Schema
+
+    embedded_schema do
+      field :sender, Snowflake
+      field :receiver, Snowflake
+      field :status, :string
+      embeds_one :offer, Card
+      embeds_one :trade, Card
+    end
+  end
+
   defmodule User do
     use Ecto.Schema
     @primary_key {:discord_user_id, Snowflake, [autogenerate: false]}
@@ -176,6 +188,11 @@ defmodule MiataBot.Partpicker do
     |> Ecto.Changeset.apply_changes()
   end
 
+  def parse_trade_request(attrs) do
+    trade_request_changeset(%TradeRequest{}, attrs)
+    |> Ecto.Changeset.apply_changes()
+  end
+
   def photo_changeset(photo, attrs) do
     photo
     |> Ecto.Changeset.cast(attrs, [:filename, :uuid])
@@ -227,5 +244,15 @@ defmodule MiataBot.Partpicker do
       :id,
       :asset_url
     ])
+  end
+
+  def trade_request_changeset(trade_request, attrs) do
+    Ecto.Changeset.cast(trade_request, attrs, [
+      :sender,
+      :receiver,
+      :status
+    ])
+    |> Ecto.Changeset.cast_embed(:offer, with: &card_changeset/2)
+    |> Ecto.Changeset.cast_embed(:trade, with: &card_changeset/2)
   end
 end

@@ -88,6 +88,17 @@ defmodule MiataBotDiscord.TCGListener do
     end
   end
 
+  def handle_info(["CREATE_TRADE_REQUEST", request], state) do
+    with {:ok, request_part_1_embed, request_part_2_embed} <- request_embed(request),
+         {:ok, channel} <- create_dm(request.receiver),
+         {:ok, _} <- create_message(channel.id, embed: request_part_1_embed),
+         {:ok, _} <- create_message(channel.id, embed: request_part_2_embed) do
+      {:noreply, state}
+    else
+      _ -> {:noreply, state}
+    end
+  end
+
   @impl Quarrel.Listener
   def handle_message_reaction_add(%{user_id: user_id}, %{bot: %{id: user_id}} = state) do
     Logger.warn("not processing react")
@@ -144,10 +155,31 @@ defmodule MiataBotDiscord.TCGListener do
       %Embed{}
       |> Embed.put_title("Card expired")
       |> Embed.put_image(card.asset_url)
-      |> Embed.put_url("https://miatapartpicker.gay/card")
+      |> Embed.put_url("https://miatapartpicker.gay/cards")
       |> Embed.put_description("get rekt idiot")
 
     {:ok, embed}
+  end
+
+  def request_embed(request) do
+    sender = User.mention(%User{id: request.sender})
+    receiver = User.mention(%User{id: request.receiver})
+
+    embed_part_1 =
+      %Embed{}
+      |> Embed.put_title("New Trade Request")
+      |> Embed.put_description(sender <> " Is requesting to trade")
+      |> Embed.put_image(request.offer.asset_url)
+      |> Embed.put_url("https://miatapartpicker.gay/cards")
+
+    embed_part_2 =
+      %Embed{}
+      |> Embed.put_title("New Trade Request")
+      |> Embed.put_description(receiver <> " Will receive")
+      |> Embed.put_image(request.trade.asset_url)
+      |> Embed.put_url("https://miatapartpicker.gay/cards")
+
+    {:ok, embed_part_1, embed_part_2}
   end
 
   def offer_emoji(_card) do
