@@ -25,7 +25,7 @@ defmodule MiataBotDiscord.ChannelLimitsListener do
   end
 
   def handle_miatafan(%Message{author: %{id: author_id} = author} = message, state) do
-    old_limits_for_user = state.limits[author_id] || []
+    old_limits_for_user = state.assigns.limits[author_id] || []
     new_limits_for_user = [message | old_limits_for_user]
     new_limits = Map.put(state.assigns.limits, author_id, new_limits_for_user)
     offtopic_channel = %Channel{id: state.config.offtopic_channel_id}
