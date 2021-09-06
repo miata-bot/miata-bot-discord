@@ -89,26 +89,39 @@ defmodule MiataBotDiscord.TCGListener do
   end
 
   def handle_info(["CREATE_TRADE_REQUEST", request], state) do
-    with {:ok, request_part_1_embed, request_part_2_embed} <- request_embed(request),
+    with {:ok, request_embed} <- request_sender_embed(request),
          {:ok, channel} <- create_dm(request.receiver),
-         {:ok, _} <- create_message(channel.id, embed: request_part_1_embed),
-         {:ok, _} <- create_message(channel.id, embed: request_part_2_embed) do
+         {:ok, components} <- request_sender_components(request),
+         {:ok, _} <-
+           create_message(channel.id,
+             embed: request_embed,
+             components: [
+               %{
+                 type: 1,
+                 components: components
+               }
+             ]
+           ) do
       {:noreply, state}
     else
-      _ -> {:noreply, state}
+      error ->
+        Logger.error "Failed to handle trade request create: #{inspect(error)}"
+        {:noreply, state}
     end
   end
 
   @impl Quarrel.Listener
-  def handle_message_reaction_add(%{user_id: user_id}, %{bot: %{id: user_id}} = state) do
-    Logger.warn("not processing react")
+  def handle_interaction_create(arg0, state) do
+    IO.inspect(arg0)
+    {:noreply, state}
+  end
 
+  @impl Quarrel.Listener
+  def handle_message_reaction_add(%{user_id: user_id}, %{bot: %{id: user_id}} = state) do
     {:noreply, state}
   end
 
   def handle_message_reaction_add(%{user_id: user_id, message_id: message_id, emoji: %{name: claim_emoji}}, state) do
-    Logger.info("processing react")
-
     case state.assigns.messages[message_id] do
       {^claim_emoji, card} ->
         handle_claim_card(card, user_id, message_id, state)
@@ -161,25 +174,49 @@ defmodule MiataBotDiscord.TCGListener do
     {:ok, embed}
   end
 
-  def request_embed(request) do
+  def request_sender_embed(request) do
     sender = User.mention(%User{id: request.sender})
-    receiver = User.mention(%User{id: request.receiver})
 
-    embed_part_1 =
+    embed =
       %Embed{}
       |> Embed.put_title("New Trade Request")
-      |> Embed.put_description(sender <> " Is requesting to trade")
+      |> Embed.put_description(sender <> " offers to you")
       |> Embed.put_image(request.offer.asset_url)
       |> Embed.put_url("https://miatapartpicker.gay/cards")
 
-    embed_part_2 =
+    {:ok, embed}
+  end
+
+  def request_receiver_embed(request) do
+    receiver = User.mention(%User{id: request.receiver})
+
+    embed =
       %Embed{}
       |> Embed.put_title("New Trade Request")
-      |> Embed.put_description(receiver <> " Will receive")
+      |> Embed.put_description(receiver <> " will receive")
       |> Embed.put_image(request.trade.asset_url)
       |> Embed.put_url("https://miatapartpicker.gay/cards")
 
-    {:ok, embed_part_1, embed_part_2}
+    {:ok, embed}
+  end
+
+  def request_sender_components(request) do
+    components = [
+      %{type: 2, label: "Accept", style: 3, custom_id: "trade_request.accept.#{request.id}"},
+      %{type: 2, label: "Decline", style: 4, custom_id: "trade_request.decline.#{request.id}"},
+      %{type: 2, label: "Next", style: 1, custom_id: "trade_request.next.#{request.id}"}
+    ]
+    {:ok, components}
+  end
+
+  def request_receiver_components(request) do
+    components = [
+      %{type: 2, label: "Accept", style: 3, custom_id: "trade_request.accept.#{request.id}"},
+      %{type: 2, label: "Decline", style: 4, custom_id: "trade_request.decline.#{request.id}"},
+      %{type: 2, label: "Previous", style: 1, custom_id: "trade_request.previous.#{request.id}"}
+    ]
+    {:ok, components}
+
   end
 
   def offer_emoji(_card) do
