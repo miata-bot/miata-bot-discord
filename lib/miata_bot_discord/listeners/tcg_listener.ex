@@ -120,6 +120,10 @@ defmodule MiataBotDiscord.TCGListener do
     {:noreply, state}
   end
 
+  # todo: make this one try per user.
+  # todo: maybe prevent users from getting two in a row?
+  #       if it's only one try per user tho, it's pretty unlikely to get 2+
+
   def handle_message_reaction_add(
         %{user_id: user_id, message_id: message_id, emoji: %{name: claim_emoji}},
         state
@@ -127,6 +131,10 @@ defmodule MiataBotDiscord.TCGListener do
     case state.assigns.messages[message_id] do
       {%{name: ^claim_emoji}, card, amount} ->
         handle_claim_card(card, user_id, message_id, amount, state)
+
+      # first one in the chain should not fail after a first guess
+      {%{name: _}, _card, 3} ->
+        {:noreply, state}
 
       {%{name: _}, card, _amount} ->
         handle_claim_fail(card, user_id, message_id, state)
