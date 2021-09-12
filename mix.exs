@@ -55,7 +55,9 @@ defmodule MiataBot.MixProject do
       {:phoenix_pubsub, "~> 2.0"},
       {:nostrum, github: "kraigie/nostrum", ref: "c0c872e880f3af360167179f66df72695c1f051e", override: true},
       # {:quarrel, path: "../quarrel"}
-      {:quarrel, "~> 0.1"}
+      {:quarrel, "~> 0.1"},
+      {:exmoji, "~> 0.2.2"},
+      {:poison, "~> 3.0", override: true}
     ]
   end
 

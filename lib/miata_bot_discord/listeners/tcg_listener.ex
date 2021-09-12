@@ -34,22 +34,21 @@ defmodule MiataBotDiscord.TCGListener do
   def handle_info(:generate_card, state) do
     tcg_channel_id = state.config.tcg_channel_id
     timer = Process.send_after(self(), :generate_card, random_timeout_ms())
+    amount = 3
 
     with {:ok, [%{author: %{id: id}} | _]} when id != state.bot.id <- get_channel_messages(tcg_channel_id, 1),
          {:ok, card} <- MiataBot.Partpicker.generate_random_card(),
          {:ok, embed} <- offer_embed(card),
          {:ok, message} <- create_message(tcg_channel_id, embed: embed),
-         {:ok, offer_emoji_a, offer_emoji_b, offer_emoji_c} <- offer_emoji(card),
-         {:ok} <- create_reaction_ex(message.channel_id, message.id, offer_emoji_a),
-         {:ok} <- create_reaction_ex(message.channel_id, message.id, offer_emoji_b),
-         {:ok} <- create_reaction_ex(message.channel_id, message.id, offer_emoji_c) do
+         {:ok, emojis} <- offer_emoji(card, amount),
+         {:ok} <- create_reactions_ex_list(message, emojis) do
       Logger.info("Card offered")
-      claim_emoji = Enum.random([offer_emoji_a, offer_emoji_b, offer_emoji_c])
+      claim_emoji = Enum.random(emojis)
 
       {:noreply,
        state
        |> assign(:timer, timer)
-       |> assign(:messages, Map.put(state.assigns.messages, message.id, {claim_emoji, card}))}
+       |> assign(:messages, Map.put(state.assigns.messages, message.id, {claim_emoji, card, amount}))}
     else
       error ->
         Logger.error("Failed to offer card: #{inspect(error)}")
@@ -105,7 +104,7 @@ defmodule MiataBotDiscord.TCGListener do
       {:noreply, state}
     else
       error ->
-        Logger.error "Failed to handle trade request create: #{inspect(error)}"
+        Logger.error("Failed to handle trade request create: #{inspect(error)}")
         {:noreply, state}
     end
   end
@@ -121,10 +120,16 @@ defmodule MiataBotDiscord.TCGListener do
     {:noreply, state}
   end
 
-  def handle_message_reaction_add(%{user_id: user_id, message_id: message_id, emoji: %{name: claim_emoji}}, state) do
+  def handle_message_reaction_add(
+        %{user_id: user_id, message_id: message_id, emoji: %{name: claim_emoji}},
+        state
+      ) do
     case state.assigns.messages[message_id] do
-      {^claim_emoji, card} ->
-        handle_claim_card(card, user_id, message_id, state)
+      {%{name: ^claim_emoji}, card, amount} ->
+        handle_claim_card(card, user_id, message_id, amount, state)
+
+      {%{name: _}, card, _amount} ->
+        handle_claim_fail(card, user_id, message_id, state)
 
       _ ->
         # reacted to the wrong one or not a offer message
@@ -132,13 +137,36 @@ defmodule MiataBotDiscord.TCGListener do
     end
   end
 
-  def handle_claim_card(card, user_id, message_id, state) do
+  def handle_claim_card(card, user_id, message_id, amount, state) do
     with {:ok, card} <- MiataBot.Partpicker.claim_card(card, user_id),
          {:ok} <- delete_message(state.config.tcg_channel_id, message_id),
          {:ok, claim_embed} <- claim_embed(card, user_id),
-         {:ok, _} <- create_message(state.config.tcg_channel_id, embed: claim_embed) do
-      {:noreply, state |> assign(:messages, Map.delete(state.assigns.messages, message_id))}
+         {:ok, _} <- create_message(state.config.tcg_channel_id, embed: claim_embed),
+         {:ok, card} <- MiataBot.Partpicker.generate_random_card(),
+         {:ok, embed} <- offer_embed(card),
+         {:ok, message} <- create_message(state.config.tcg_channel_id, embed: embed),
+         {:ok, emojis} <- offer_emoji(card, amount + 1),
+         {:ok} <- create_reactions_ex_list(message, emojis) do
+      Logger.info("Card chain offered")
+      claim_emoji = Enum.random(emojis)
+
+      messages =
+        Map.delete(state.assigns.messages, message_id)
+        |> Map.put(message.id, {claim_emoji, card, amount + 1})
+
+      {:noreply, state |> assign(:messages, messages)}
     end
+  end
+
+  def handle_claim_fail(card, _user_id, message_id, state) do
+    Logger.info("Expired card edit")
+    {:ok, embed} = expire_embed(card)
+
+    with {:ok, message} <- edit_message(state.config.tcg_channel_id, message_id, embed: embed) do
+      delete_all_reactions(state.config.tcg_channel_id, message.id)
+    end
+
+    {:noreply, state |> assign(:messages, Map.delete(state.assigns.messages, message_id))}
   end
 
   def offer_embed(card) do
@@ -206,6 +234,7 @@ defmodule MiataBotDiscord.TCGListener do
       %{type: 2, label: "Decline", style: 4, custom_id: "trade_request.decline.#{request.id}"},
       %{type: 2, label: "Next", style: 1, custom_id: "trade_request.next.#{request.id}"}
     ]
+
     {:ok, components}
   end
 
@@ -215,17 +244,20 @@ defmodule MiataBotDiscord.TCGListener do
       %{type: 2, label: "Decline", style: 4, custom_id: "trade_request.decline.#{request.id}"},
       %{type: 2, label: "Previous", style: 1, custom_id: "trade_request.previous.#{request.id}"}
     ]
-    {:ok, components}
 
+    {:ok, components}
   end
 
-  def offer_emoji(_card) do
-    [a, b, c] =
-      ~w(🏁 🐔 ⛎ 🎳 💃 🔝 👉 🔥 🛌 ❗️ 👘 🚦 😱 🙇 🍰 😻 🍗 🌯 🏷 🍫 🚼 ⏏ 🈴 💥 ⌛️ 🆚 🌃 3️⃣ 👝 🌳 🍔 📎 😦 🌱 💏 📳 🤖 8️⃣ 👳 😿 ⏭ 🍘 🆗 🗓 ◀️ ✌️ ⛓ 🚿 ▪️ 📁 📈 🖖)
+  def offer_emoji(_card, amount) do
+    emojis =
+      Exmoji.all()
       |> Enum.shuffle()
-      |> Enum.take(3)
+      |> Enum.take(amount)
+      |> Enum.map(fn %Exmoji.EmojiChar{unified: unified} ->
+        %Nostrum.Struct.Emoji{name: Exmoji.unified_to_char(unified)}
+      end)
 
-    {:ok, a, b, c}
+    {:ok, emojis}
   end
 
   def random_timeout_ms(at_least \\ 2_700_000, random_max \\ 900_000) do
@@ -250,4 +282,12 @@ defmodule MiataBotDiscord.TCGListener do
         {:error, reason}
     end
   end
+
+  def create_reactions_ex_list(%Message{id: message_id, channel_id: channel_id} = message, [emoji | rest]) do
+    with {:ok} <- create_reaction_ex(channel_id, message_id, emoji) do
+      create_reactions_ex_list(message, rest)
+    end
+  end
+
+  def create_reactions_ex_list(_, []), do: {:ok}
 end
