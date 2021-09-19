@@ -73,6 +73,7 @@ defmodule MiataBot.Partpicker do
       field :prefered_unit, Ecto.Enum, values: [:km, :miles]
       field :hand_size, :float
       field :foot_size, :float
+      field :steam_id, :string
       embeds_many :builds, Build
       embeds_many :cards, Card
       embeds_one :featured_build, Build
@@ -218,7 +219,8 @@ defmodule MiataBot.Partpicker do
       :instagram_handle,
       :prefered_unit,
       :hand_size,
-      :foot_size
+      :foot_size,
+      :steam_id
     ])
     |> Ecto.Changeset.cast_embed(:featured_build, with: &build_changeset/2)
   end

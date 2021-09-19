@@ -10,6 +10,8 @@ config :miata_bot, MiataBot.Partpicker,
   base_url: System.get_env("PARTPICKER_BASE_URL"),
   gateway_url: System.get_env("PARTPICKER_GATEWAY_URL")
 
+config :miata_bot, TrackerGG, api_token: System.get_env("TRACKER_GG_TOKEN")
+
 config :miata_bot,
   ecto_repos: [MiataBot.Repo, Quarrel.Repo]
 
