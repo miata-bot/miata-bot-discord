@@ -5,13 +5,15 @@ defmodule MiataBotDiscord.CarinfoListener do
 
   @impl GenServer
   def init(state) do
-    {:ok, state}
+    {:ok,
+     state
+     |> assign(:pages, %{})}
   end
 
   @impl Quarrel.Listener
   def handle_guild_member_add(%Member{user: discord_user}, state) do
     with {:ok, user} <- fetch_or_create_user(discord_user),
-         {:ok, _build} <- fetch_or_create_featured_build(user) do
+         {:ok, _user} <- fetch_or_create_featured_build(user) do
       {:noreply, state}
     else
       error ->
@@ -35,11 +37,15 @@ defmodule MiataBotDiscord.CarinfoListener do
       ) do
     with {:ok, discord_user} <- get_discord_user(user_discord_id, guild_id),
          {:ok, user} <- fetch_or_create_user(discord_user),
-         {:ok, build} <- fetch_or_create_featured_build(user),
-         embed <- embed_from_info(discord_user, user, build) do
-      response = %{type: 4, data: %{embeds: [embed]}}
-      create_interaction_response(iaction, response)
-      {:noreply, state}
+         {:ok, user} <- fetch_or_create_featured_build(user),
+         {:ok, components} <- init_carinfo_component(user.discord_user_id),
+         embed <- embed_from_info(discord_user, user, user.featured_build) do
+      response = %{type: 4, data: %{embeds: [embed], components: components}}
+      {:ok} = create_interaction_response(iaction, response)
+
+      {:noreply,
+       state
+       |> assign(:pages, Map.put(state.assigns.pages, to_string(user.discord_user_id), {discord_user, user, 0}))}
     else
       {:ok, embed} ->
         response = %{type: 4, data: %{embeds: [embed]}}
@@ -65,17 +71,61 @@ defmodule MiataBotDiscord.CarinfoListener do
         state
       ) do
     with {:ok, user} <- fetch_or_create_user(member),
-         {:ok, build} <- fetch_or_create_featured_build(user) do
-      embed = embed_from_info(member, user, build)
-      response = %{type: 4, data: %{embeds: [embed]}}
-      create_interaction_response(iaction, response)
-      {:noreply, state}
+         {:ok, user} <- fetch_or_create_featured_build(user),
+         {:ok, component} <- init_carinfo_component(user.discord_user_id) do
+      embed = embed_from_info(member, user, user.featured_build)
+      response = %{type: 4, data: %{embeds: [embed], components: [component]}}
+      {:ok} = create_interaction_response(iaction, response)
+
+      {:noreply,
+       state
+       |> assign(:pages, Map.put(state.assigns.pages, to_string(user.discord_user_id), {member, user, 0}))}
     else
       {:ok, embed} ->
         response = %{type: 4, data: %{embeds: [embed]}}
         create_interaction_response(iaction, response)
         {:noreply, state}
 
+      error ->
+        response = %{type: 4, data: %{content: "Unknown error happened: #{inspect(error)}"}}
+        create_interaction_response(iaction, response)
+        {:noreply, state}
+    end
+  end
+
+  def handle_interaction_create(
+        iaction = %Interaction{
+          data: %{component_type: 2, custom_id: "carinfo.previous." <> discord_user_id}
+        },
+        state
+      ) do
+    with {:ok, embed, record} <- previous_carinfo_embed(state.assigns.pages[discord_user_id]),
+         {:ok, response} <- carinfo_update_page_response(embed, discord_user_id),
+         {:ok} <- create_interaction_response(iaction, response) do
+      {:noreply,
+       state
+       |> assign(:pages, Map.put(state.assigns.pages, discord_user_id, record))}
+    else
+      error ->
+        response = %{type: 4, data: %{content: "Unknown error happened: #{inspect(error)}"}}
+        create_interaction_response(iaction, response)
+        {:noreply, state}
+    end
+  end
+
+  def handle_interaction_create(
+        iaction = %Interaction{
+          data: %{component_type: 2, custom_id: "carinfo.next." <> discord_user_id}
+        },
+        state
+      ) do
+    with {:ok, embed, record} <- next_carinfo_embed(state.assigns.pages[discord_user_id]),
+         {:ok, response} <- carinfo_update_page_response(embed, discord_user_id),
+         {:ok} <- create_interaction_response(iaction, response) do
+      {:noreply,
+       state
+       |> assign(:pages, Map.put(state.assigns.pages, discord_user_id, record))}
+    else
       error ->
         response = %{type: 4, data: %{content: "Unknown error happened: #{inspect(error)}"}}
         create_interaction_response(iaction, response)

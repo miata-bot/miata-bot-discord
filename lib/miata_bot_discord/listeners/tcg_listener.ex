@@ -111,7 +111,7 @@ defmodule MiataBotDiscord.TCGListener do
 
   @impl Quarrel.Listener
   def handle_interaction_create(arg0, state) do
-    IO.inspect(arg0)
+    # IO.inspect(arg0)
     {:noreply, state}
   end
 

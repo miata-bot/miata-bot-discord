@@ -34,17 +34,14 @@ defmodule MiataBotDiscord.CarinfoListener.Util do
     create_featured_build(user.discord_user_id, %{})
   end
 
-  def fetch_or_create_featured_build(%MiataBot.Partpicker.User{featured_build: build}) do
-    {:ok, build}
+  def fetch_or_create_featured_build(%MiataBot.Partpicker.User{} = user) do
+    {:ok, user}
   end
 
   def create_featured_build(discord_user_id, attrs) do
     case MiataBot.Partpicker.create_build(discord_user_id, attrs) do
       {:ok, build} ->
-        case MiataBot.Partpicker.update_user_featured_build(discord_user_id, build.uid) do
-          {:ok, %{featured_build: build}} -> {:ok, build}
-          {:error, reason} -> {:error, reason}
-        end
+        MiataBot.Partpicker.update_user_featured_build(discord_user_id, build.uid)
 
       {:error, reason} ->
         {:error, reason}
@@ -188,5 +185,72 @@ defmodule MiataBotDiscord.CarinfoListener.Util do
       :error ->
         {:error, "unknown data: #{inspect(data)}"}
     end
+  end
+
+  def init_carinfo_component(discord_user_id) do
+    components = %{
+      type: 1,
+      components: [
+        %{type: 2, label: "Previous", style: 1, custom_id: "carinfo.previous.#{discord_user_id}"},
+        %{type: 2, label: "Next", style: 1, custom_id: "carinfo.next.#{discord_user_id}"}
+      ]
+    }
+
+    {:ok, components}
+  end
+
+  # def previous_carinfo_embed(nil) do
+  #   {:error, "couldn't find info in cache"}
+  # end
+
+  def previous_carinfo_embed({discord_user, user, index}) do
+    case Enum.at(user.builds, index - 1) do
+      %MiataBot.Partpicker.Build{} = build ->
+        embed = embed_from_info(discord_user, user, build)
+
+        {:ok, embed, {discord_user, user, index - 1}}
+
+      nil ->
+        embed = embed_from_info(discord_user, user, user.featured_build)
+        {:ok, embed, {discord_user, user, 0}}
+    end
+  end
+
+  def next_carinfo_embed({discord_user, user, index}) do
+    if index >= Enum.count(user.builds) - 1 do
+      embed = embed_from_info(discord_user, user, user.featured_build)
+      {:ok, embed, {discord_user, user, 0}}
+    else
+      case Enum.at(user.builds, index + 1) do
+        %MiataBot.Partpicker.Build{} = build ->
+          embed = embed_from_info(discord_user, user, build)
+
+          {:ok, embed, {discord_user, user, index - 1}}
+
+        nil ->
+          embed = embed_from_info(discord_user, user, user.featured_build)
+          {:ok, embed, {discord_user, user, 0}}
+      end
+    end
+  end
+
+  def carinfo_update_page_response(embed, discord_user_id) do
+    response = %{
+      type: 7,
+      data: %{
+        embeds: [embed],
+        components: [
+          %{
+            type: 1,
+            components: [
+              %{type: 2, label: "Previous", style: 1, custom_id: "carinfo.previous.#{discord_user_id}"},
+              %{type: 2, label: "Next", style: 1, custom_id: "carinfo.next.#{discord_user_id}"}
+            ]
+          }
+        ]
+      }
+    }
+
+    {:ok, response}
   end
 end
