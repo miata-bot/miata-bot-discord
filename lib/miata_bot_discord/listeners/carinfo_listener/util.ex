@@ -187,7 +187,12 @@ defmodule MiataBotDiscord.CarinfoListener.Util do
     end
   end
 
-  def init_carinfo_component(discord_user_id) do
+  # don't display buttons if there's only one build
+  def init_carinfo_component(_, %MiataBot.Partpicker.User{builds: [_], featured_build: %{}}) do
+    {:ok, nil}
+  end
+
+  def init_carinfo_component(discord_user_id, _) do
     components = %{
       type: 1,
       components: [
@@ -251,6 +256,16 @@ defmodule MiataBotDiscord.CarinfoListener.Util do
       }
     }
 
+    {:ok, response}
+  end
+
+  def assemble_carinfo_get_response(embed, nil) do
+    response = %{type: 4, data: %{embeds: [embed]}}
+    {:ok, response}
+  end
+
+  def assemble_carinfo_get_response(embed, component) do
+    response = %{type: 4, data: %{embeds: [embed], components: [component]}}
     {:ok, response}
   end
 end

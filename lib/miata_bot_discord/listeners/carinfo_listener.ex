@@ -38,9 +38,9 @@ defmodule MiataBotDiscord.CarinfoListener do
     with {:ok, discord_user} <- get_discord_user(user_discord_id, guild_id),
          {:ok, user} <- fetch_or_create_user(discord_user),
          {:ok, user} <- fetch_or_create_featured_build(user),
-         {:ok, components} <- init_carinfo_component(user.discord_user_id),
-         embed <- embed_from_info(discord_user, user, user.featured_build) do
-      response = %{type: 4, data: %{embeds: [embed], components: components}}
+         {:ok, component} <- init_carinfo_component(user.discord_user_id, user),
+         embed <- embed_from_info(discord_user, user, user.featured_build),
+         {:ok, response} <- assemble_carinfo_get_response(embed, component) do
       {:ok} = create_interaction_response(iaction, response)
 
       {:noreply,
@@ -72,9 +72,9 @@ defmodule MiataBotDiscord.CarinfoListener do
       ) do
     with {:ok, user} <- fetch_or_create_user(member),
          {:ok, user} <- fetch_or_create_featured_build(user),
-         {:ok, component} <- init_carinfo_component(user.discord_user_id) do
-      embed = embed_from_info(member, user, user.featured_build)
-      response = %{type: 4, data: %{embeds: [embed], components: [component]}}
+         {:ok, component} <- init_carinfo_component(user.discord_user_id, user),
+         embed <- embed_from_info(member, user, user.featured_build),
+         {:ok, response} <- assemble_carinfo_get_response(embed, component) do
       {:ok} = create_interaction_response(iaction, response)
 
       {:noreply,
