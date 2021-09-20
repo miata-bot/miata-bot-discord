@@ -30,6 +30,7 @@ config :quarrel, Quarrel.GuildSupervisor,
     MiataBotDiscord.LookingForMiataListener,
     MiataBotDiscord.MemesChannelListener,
     MiataBotDiscord.SettingsListener,
+    MiataBotDiscord.SplitgateListener,
     MiataBotDiscord.TCGListener
   ]
 

@@ -1,6 +1,21 @@
 defmodule MiataBotDiscord.Interactions do
   def interactions do
-    [carinfo(), trade(), inventory()]
+    [carinfo(), trade(), inventory(), splitgate()]
+  end
+
+  def splitgate do
+    %{
+      name: "splitgate",
+      description: "Get Splitgate stats",
+      options: [
+        %{
+          description: "Get splitgate stats for yourself or another user",
+          name: "get",
+          options: [%{description: "get info for a user", name: "user", type: 6}],
+          type: 1
+        }
+      ]
+    }
   end
 
   def carinfo do
