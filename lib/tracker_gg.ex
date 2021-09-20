@@ -95,6 +95,9 @@ defmodule TrackerGG do
       {:ok, %{status: 200, body: %{"data" => data}}} ->
         {:ok, parse_splitgate_profile(data)}
 
+      {:ok, %{status: 404}} ->
+        {:error, "could not find profile for #{platformUserIdentifier}"}
+
       error ->
         error
     end
@@ -106,6 +109,9 @@ defmodule TrackerGG do
     case get("/splitgate/standard/search?#{query}") do
       {:ok, %{status: 200, body: %{"data" => data}}} ->
         {:ok, Enum.map(data, &parse_splitgate_user/1)}
+
+      {:ok, %{status: 404}} ->
+        {:error, "could not find user by search: #{query}"}
 
       error ->
         error
