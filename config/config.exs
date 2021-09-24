@@ -31,7 +31,8 @@ config :quarrel, Quarrel.GuildSupervisor,
     MiataBotDiscord.MemesChannelListener,
     MiataBotDiscord.SettingsListener,
     MiataBotDiscord.SplitgateListener,
-    MiataBotDiscord.TCGListener
+    MiataBotDiscord.TCGListener,
+    MiataBotDiscord.TimeInteractionListener
   ]
 
 config :logger, backends: [:console, RingLogger]

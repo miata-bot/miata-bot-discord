@@ -74,6 +74,7 @@ defmodule MiataBot.Partpicker do
       field :hand_size, :float
       field :foot_size, :float
       field :steam_id, :string
+      field :preferred_timezone, :string
       embeds_many :builds, Build
       embeds_many :cards, Card
       embeds_one :featured_build, Build
@@ -220,7 +221,8 @@ defmodule MiataBot.Partpicker do
       :prefered_unit,
       :hand_size,
       :foot_size,
-      :steam_id
+      :steam_id,
+      :preferred_timezone
     ])
     |> Ecto.Changeset.cast_embed(:featured_build, with: &build_changeset/2)
   end
