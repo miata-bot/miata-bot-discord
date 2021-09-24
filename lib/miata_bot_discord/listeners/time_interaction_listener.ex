@@ -25,6 +25,10 @@ defmodule MiataBotDiscord.TimeInteractionListener do
         response = %{type: 4, data: %{content: "that user has not configured their timezone. maybe ping them about it"}}
         create_interaction_response(iaction, response)
 
+      {:error, %{"error" => ["not found"]}} ->
+        response = %{type: 4, data: %{content: "that user has never logged into miatapartpicker"}}
+        create_interaction_response(iaction, response)
+
       error ->
         response = %{type: 4, data: %{content: "error getting time for user: #{inspect(error)}"}}
         create_interaction_response(iaction, response)
