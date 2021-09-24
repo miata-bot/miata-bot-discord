@@ -5,8 +5,8 @@ defmodule MiataBotDiscord.CarinfoListener.Util do
 
   def do_update_build(author, params) do
     with {:ok, user} <- fetch_or_create_user(author),
-         {:ok, build} <- fetch_or_create_featured_build(user),
-         {:ok, build} <- update_build(author, build, params),
+         {:ok, user} <- fetch_or_create_featured_build(user),
+         {:ok, build} <- update_build(author, user.featured_build, params),
          embed <- embed_from_info(author, user, build) do
       {:ok, embed}
     else
