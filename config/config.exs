@@ -8,6 +8,7 @@ config :nostrum,
 config :miata_bot, MiataBot.Partpicker,
   api_token: System.get_env("PARTPICKER_API_TOKEN"),
   base_url: System.get_env("PARTPICKER_BASE_URL"),
+  asset_url: System.get_env("PARTPICKER_ASSET_URL"),
   gateway_url: System.get_env("PARTPICKER_GATEWAY_URL")
 
 config :miata_bot, TrackerGG, api_token: System.get_env("TRACKER_GG_TOKEN")

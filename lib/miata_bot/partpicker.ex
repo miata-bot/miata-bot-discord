@@ -1,5 +1,8 @@
 defmodule MiataBot.Partpicker do
   @api_token Application.get_env(:miata_bot, __MODULE__)[:api_token]
+  @asset_url Application.get_env(:miata_bot, __MODULE__)[:asset_url] ||
+               "https://miatapartpicker.gay/media/"
+
   @base_url Application.get_env(:miata_bot, __MODULE__)[:base_url] ||
               "https://miatapartpicker.gay/api"
 
@@ -13,10 +16,20 @@ defmodule MiataBot.Partpicker do
   plug(Tesla.Middleware.JSON)
 
   def base_url, do: @base_url
+  def asset_url, do: @asset_url
 
   def gateway_uri do
     URI.parse(@gateway_url)
     |> Map.put(:userinfo, "#{@api_token}")
+  end
+
+  defmodule Photo do
+    use Ecto.Schema
+    @primary_key {:uuid, :binary_id, [autogenerate: false]}
+    embedded_schema do
+      field :filename, :string
+      field :url, :string
+    end
   end
 
   defmodule Build do
@@ -33,10 +46,7 @@ defmodule MiataBot.Partpicker do
       field :mileage, :integer
       field :ride_height, :float
 
-      embeds_many :photos, Photo, primary_key: {:uuid, :binary_id, [autogenerate: false]} do
-        field :filename, :string
-        field :url, :string
-      end
+      embeds_many :photos, Photo
 
       field :tires, :string
       field :wheels, :string
@@ -172,6 +182,15 @@ defmodule MiataBot.Partpicker do
     end
   end
 
+  def random_photo(discord_user_ids) do
+    case post!("/photos/random", %{"discord_user_ids" => discord_user_ids}) do
+      %{status: 200, body: body} -> {:ok, parse_photo(body)}
+      %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
+      %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
+      %{status: _, body: %{"errors" => errors}} -> {:error, errors}
+    end
+  end
+
   def parse_user(attrs) do
     user_changeset(%User{}, attrs)
     |> Ecto.Changeset.cast_embed(:builds, with: &build_changeset/2)
@@ -185,7 +204,7 @@ defmodule MiataBot.Partpicker do
   end
 
   def parse_photo(attrs) do
-    photo_changeset(%Build.Photo{}, attrs)
+    photo_changeset(%Photo{}, attrs)
     |> Ecto.Changeset.apply_changes()
   end
 
@@ -207,7 +226,7 @@ defmodule MiataBot.Partpicker do
 
   def put_photo_url(changeset, field, uuid_field) do
     if uuid = Ecto.Changeset.get_field(changeset, uuid_field) do
-      Ecto.Changeset.put_change(changeset, field, "https://miatapartpicker.gay/media/#{uuid}")
+      Ecto.Changeset.put_change(changeset, field, "#{@asset_url}/#{uuid}")
     else
       changeset
     end
