@@ -192,6 +192,23 @@ defmodule MiataBotDiscord.CarinfoListener do
     {:noreply, state}
   end
 
+  def handle_interaction_create(
+        iaction = %Interaction{
+          data: %{
+            name: "carinfo",
+            options: [%{name: "random_photo"}]
+          }
+        },
+        state
+      ) do
+    discord_ids = state.guild.members |> Enum.map(fn {discord_id, _} -> discord_id end)
+    {:ok, %{url: url}} = MiataBot.Partpicker.random_photo(discord_ids)
+    embed = Embed.put_image(%Embed{}, url)
+    response = %{type: 4, data: %{embeds: [embed]}}
+    create_interaction_response(iaction, response)
+    {:noreply, state}
+  end
+
   def handle_interaction_create(_interaction, state) do
     # Logger.warn("unhandled interaction: #{inspect(interaction)}")
     {:noreply, state}
