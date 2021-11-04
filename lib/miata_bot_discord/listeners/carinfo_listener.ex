@@ -13,7 +13,7 @@ defmodule MiataBotDiscord.CarinfoListener do
   @impl Quarrel.Listener
   def handle_guild_member_add(%Member{user: discord_user}, state) do
     with {:ok, user} <- fetch_or_create_user(discord_user),
-         {:ok, _user} <- fetch_or_create_featured_build(user) do
+         {:ok, _build} <- fetch_or_create_featured_build(user) do
       {:noreply, state}
     else
       error ->
@@ -37,9 +37,9 @@ defmodule MiataBotDiscord.CarinfoListener do
       ) do
     with {:ok, discord_user} <- get_discord_user(user_discord_id, guild_id),
          {:ok, user} <- fetch_or_create_user(discord_user),
-         {:ok, user} <- fetch_or_create_featured_build(user),
+         {:ok, featured_build} <- fetch_or_create_featured_build(user),
          {:ok, component} <- init_carinfo_component(user.discord_user_id, user),
-         embed <- embed_from_info(discord_user, user, user.featured_build),
+         embed <- embed_from_info(discord_user, user, featured_build),
          {:ok, response} <- assemble_carinfo_get_response(embed, component) do
       {:ok} = create_interaction_response(iaction, response)
 
@@ -71,9 +71,9 @@ defmodule MiataBotDiscord.CarinfoListener do
         state
       ) do
     with {:ok, user} <- fetch_or_create_user(member),
-         {:ok, user} <- fetch_or_create_featured_build(user),
+         {:ok, featured_build} <- fetch_or_create_featured_build(user),
          {:ok, component} <- init_carinfo_component(user.discord_user_id, user),
-         embed <- embed_from_info(member, user, user.featured_build),
+         embed <- embed_from_info(member, user, featured_build),
          {:ok, response} <- assemble_carinfo_get_response(embed, component) do
       {:ok} = create_interaction_response(iaction, response)
 

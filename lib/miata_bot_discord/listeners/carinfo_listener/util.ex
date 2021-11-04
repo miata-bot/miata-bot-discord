@@ -5,8 +5,8 @@ defmodule MiataBotDiscord.CarinfoListener.Util do
 
   def do_update_build(author, params) do
     with {:ok, user} <- fetch_or_create_user(author),
-         {:ok, user} <- fetch_or_create_featured_build(user),
-         {:ok, build} <- update_build(author, user.featured_build, params),
+         {:ok, featured_build} <- fetch_or_create_featured_build(user),
+         {:ok, build} <- update_build(author, featured_build, params),
          embed <- embed_from_info(author, user, build) do
       {:ok, embed}
     else
@@ -35,7 +35,7 @@ defmodule MiataBotDiscord.CarinfoListener.Util do
   end
 
   def fetch_or_create_featured_build(%MiataBot.Partpicker.User{} = user) do
-    {:ok, user}
+    {:ok, user.featured_build}
   end
 
   def create_featured_build(discord_user_id, attrs) do

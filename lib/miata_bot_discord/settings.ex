@@ -30,7 +30,7 @@ defmodule MiataBotDiscord.Settings do
     })
   end
 
-  def dev_server do
+  def secondary_server do
     create_settings(643_947_339_895_013_416, %{
       build()
       | admin_role_id: 643_958_189_460_553_729,
@@ -43,6 +43,22 @@ defmodule MiataBotDiscord.Settings do
         memes_channel_id: 778_325_951_989_284_894,
         verification_channel_id: 778_325_814_986_014_731,
         tcg_channel_id: 883_408_087_598_391_376
+    })
+  end
+
+  def dev_server do
+    create_settings(865_257_998_691_991_572, %{
+      build()
+      | admin_role_id: 905_841_646_380_396_604,
+        bot_spam_channel_id: 865_257_998_691_991_575,
+        carinfo_channel_id: 865_257_998_691_991_575,
+        general_channel_id: 865_257_998_691_991_575,
+        offtopic_channel_id: 865_257_998_691_991_575,
+        looking_for_miata_role_id: 905_841_855_554_519_101,
+        miata_fan_role_id: 905_841_955_701_928_057,
+        memes_channel_id: 865_257_998_691_991_575,
+        verification_channel_id: 865_257_998_691_991_575,
+        tcg_channel_id: 865_257_998_691_991_575
     })
   end
 
