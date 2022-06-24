@@ -231,6 +231,9 @@ messages = [
   You motherfuckers are some of the least, sympathetic, most judgemental, least accepting people I've EVER met and should be absolutely ashamed of your childish, bullying tolerant environment and behavior.
   You all will never anything but a waste of human space and oxygen and your ape brains will never comprehend how to talk to people with any SHRED of charisma or tolerance. A buch of useless chad fucks that suck and fuck eachother off. Your power hungry chad mods are also nothing but a waste of human space and oxygen as they encourage the bullying just as much if not moreso..
   Enjoy my reddit post on your own subreddit you pathetic chad fucks. Go back to sucking and fucking eachother until your irrelevant piece of shit server fades into obscurity, cunts
+  """,
+  """
+  Hey guys, did you know that in terms of male human and female coilover breeding, female Tein is the most compatible coilover for humans? Not only are they in the humanoid mascot group, which is mostly comprised of boring brand mascots, they are an average of 3"03' tall and 15 pounds. this means they're large enough to be able to handle human di-
   """
 ]
 for message <- messages, do: MiataBot.Repo.insert!(%MiataBot.CopyPasta{content: message, created_by_discord_id: 758372245512388650})
