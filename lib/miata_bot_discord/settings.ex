@@ -5,7 +5,7 @@ defmodule MiataBotDiscord.Settings do
       memes_channel_id: nil,
       general_channel_id: nil,
       offtopic_channel_id: nil,
-      miata_fan_role_id: nil,
+      accepted_role_id: nil,
       looking_for_miata_role_id: nil,
       bot_spam_channel_id: nil,
       admin_role_id: nil,
@@ -23,7 +23,7 @@ defmodule MiataBotDiscord.Settings do
         general_channel_id: 322_080_266_761_797_633,
         offtopic_channel_id: 322_162_421_156_282_369,
         looking_for_miata_role_id: 504_088_951_485_890_561,
-        miata_fan_role_id: 439_493_557_301_280_789,
+        accepted_role_id: 591899819132583936,
         memes_channel_id: 555_431_196_884_992_000,
         verification_channel_id: 322_127_502_212_333_570,
         tcg_channel_id: nil
@@ -39,7 +39,7 @@ defmodule MiataBotDiscord.Settings do
         general_channel_id: 778_334_280_337_719_357,
         offtopic_channel_id: 778_334_306_002_927_646,
         looking_for_miata_role_id: 778_340_553_460_285_461,
-        miata_fan_role_id: 778_337_478_578_405_387,
+        accepted_role_id: 992581401402675224,
         memes_channel_id: 778_325_951_989_284_894,
         verification_channel_id: 778_325_814_986_014_731,
         tcg_channel_id: 883_408_087_598_391_376
@@ -55,7 +55,7 @@ defmodule MiataBotDiscord.Settings do
         general_channel_id: 865_257_998_691_991_575,
         offtopic_channel_id: 865_257_998_691_991_575,
         looking_for_miata_role_id: 905_841_855_554_519_101,
-        miata_fan_role_id: 905_841_955_701_928_057,
+        accepted_role_id: 992581401402675224,
         memes_channel_id: 865_257_998_691_991_575,
         verification_channel_id: 865_257_998_691_991_575,
         tcg_channel_id: 865_257_998_691_991_575
@@ -72,7 +72,7 @@ defmodule MiataBotDiscord.Settings do
     Quarrel.add_setting(guild_id, :memes_channel_id, Map.fetch!(attrs, :memes_channel_id))
     Quarrel.add_setting(guild_id, :general_channel_id, Map.fetch!(attrs, :general_channel_id))
     Quarrel.add_setting(guild_id, :offtopic_channel_id, Map.fetch!(attrs, :offtopic_channel_id))
-    Quarrel.add_setting(guild_id, :miata_fan_role_id, Map.fetch!(attrs, :miata_fan_role_id))
+    Quarrel.add_setting(guild_id, :accepted_role_id, Map.fetch!(attrs, :accepted_role_id))
 
     Quarrel.add_setting(
       guild_id,

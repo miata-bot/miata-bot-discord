@@ -11,10 +11,10 @@ defmodule MiataBotDiscord.ChannelLimitsListener do
   @impl Quarrel.Listener
   def handle_message_create(
         %Message{channel_id: general_channel_id, member: %Member{} = member} = message,
-        %{config: %{general_channel_id: general_channel_id, miata_fan_role_id: miata_fan_role_id}} = state
+        %{config: %{general_channel_id: general_channel_id, accepted_role_id: accepted_role_id}} = state
       ) do
-    if miata_fan_role_id in member.roles do
-      handle_miatafan(message, state)
+    if accepted_role_id in member.roles do
+      handle_accepted(message, state)
     else
       {:noreply, state}
     end
@@ -24,7 +24,7 @@ defmodule MiataBotDiscord.ChannelLimitsListener do
     {:noreply, state}
   end
 
-  def handle_miatafan(%Message{author: %{id: author_id} = author} = message, state) do
+  def handle_accepted(%Message{author: %{id: author_id} = author} = message, state) do
     old_limits_for_user = state.assigns.limits[author_id] || []
     new_limits_for_user = [message | old_limits_for_user]
     new_limits = Map.put(state.assigns.limits, author_id, new_limits_for_user)

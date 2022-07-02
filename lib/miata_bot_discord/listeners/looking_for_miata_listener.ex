@@ -4,6 +4,7 @@ defmodule MiataBotDiscord.LookingForMiataListener do
   use Quarrel.Listener
   alias MiataBot.{Repo, LookingForMiataTimer}
   import Ecto.Query
+  @expiry_days 69
 
   def debug_expire_timer(timer, refreshed_at \\ nil) do
     refreshed_at =
@@ -43,7 +44,7 @@ defmodule MiataBotDiscord.LookingForMiataListener do
   @impl GenServer
   def handle_continue([timer | rest], state) do
     begin = timer.refreshed_at || timer.joined_at
-    complete = Timex.shift(begin, days: 30)
+    complete = Timex.shift(begin, days: @expiry_days)
     now = DateTime.utc_now()
 
     case Timex.compare(now, complete, :days) do
@@ -131,7 +132,7 @@ defmodule MiataBotDiscord.LookingForMiataListener do
     Logger.info("expiring timer for member: #{inspect(member)}")
 
     with {:ok} <- remove_looking_for_miata(member.user.id, state),
-         {:ok} <- add_miata_fan(member.user.id, state) do
+         {:ok} <- add_accepted(member.user.id, state) do
       embed =
         %Embed{}
         |> Embed.put_color(1_146_534)
@@ -167,19 +168,19 @@ defmodule MiataBotDiscord.LookingForMiataListener do
       delete(timer)
   end
 
-  def add_miata_fan(user_id, state) do
+  def add_accepted(user_id, state) do
     add_guild_member_role(
       state.guild.id,
       user_id,
-      state.config.miata_fan_role_id
+      state.config.accepted_role_id
     )
   end
 
-  def remove_miata_fan(user_id, state) do
+  def remove_accepted(user_id, state) do
     remove_guild_member_role(
       state.guild.id,
       user_id,
-      state.config.miata_fan_role_id
+      state.config.accepted_role_id
     )
   end
 
