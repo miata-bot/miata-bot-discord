@@ -234,6 +234,44 @@ messages = [
   """,
   """
   Hey guys, did you know that in terms of male human and female coilover breeding, female Tein is the most compatible coilover for humans? Not only are they in the humanoid mascot group, which is mostly comprised of boring brand mascots, they are an average of 3"03' tall and 15 pounds. this means they're large enough to be able to handle human di-
+  """,
+  """
+  what is the oil change interval for mobil 1 advanced full synthetic?every 5000miles or 10000miles?
+
+  Full synthetic oil NEVER breaks down. Color change means NOTHING. Mobil successfully sued another vendor
+  brainwashing people with such lies. Oil additives can be used up and dirt can accumulate (but only due to a lesser filter).
+  Oils now add Molybdenum for 1-2% lower friction, calcium and magnesium for cleaning (in different ways).
+  Boron, phosphorus, ZDDP, or zinc can deplete by "sticking" to the metal (forming metal oxides) to make the metal
+  harder for high temps (less noise and cooler engine running) - reduced amounts now protect your converter.
+  With an online rebate of $15, this is by far the best buy in motor oil (common for big companies to have a $10 coupon).
+  Most car companies recommend using synthetic oils. NEVER use a non full synthetic. Quaker State used to be the best but
+  it's not even from the Quaker State (PA) anymore. Synthetic oil is less likely to form troublesome sludge,
+  is thinner, resists temp extremes, and lasts longer. Yes, you can actually change your oil once a year (or longer).
+  Doing it more often is a TOTAL WASTE OF MONEY. The reason this oil can claim 20,000 miles is that it's mostly highway miles
+  (the typical way to get that many miles in a year) and the wear at 65 miles per hour is a tenth of that of stop and go city driving.
+  For this reason, driving 20,000 miles a year puts LESS wear on your engine than only driving say 4,000.
+  At 120,000 miles under intense dyno testing, changing the oil every 20,000 miles, varnish, sludge, deposits
+  was analyzed and oils were tested every 5,000 miles for minerals and viscosity. This is an industry standard test.
+  Such tests confirm no problems. Mobil also did this for a HALF MILLION highway miles for a Chevy Silverado with
+  changing the oil every 20,000 miles maintained a perfectly good engine (the transmission only lasted 300k miles).
+  Mobile has also run NYC cabs for 15 years changing the oil every 20,000 mile for city stop go driving.
+  In these tests they also changed the filters 20,000 miles and found the top filters hold up as well IF they
+  used an improved gasket material (the difference between a M1-110 and a M1-110A filter). Thus, it's important to get an oil
+  filter that matches your oil (the M1-110A filter is also the industry's best). Ignore people using info from
+  last century based on conventional oils breaking down (unlike synthetic, they do break down), and they do so quite quickly.
+  Such people still use paper maps and insist on old manual transmissions. It is easy to confirm all of this online.
+  Synthetics produce less resistance in the engine and thus offer more horsepower and better efficiency.
+  Your engine is cooled by the oil. Today's engines, especially in motorcycles, have greater requirements than conventional oils can deliver.
+  Synthetic's better temp performance is important for air-cooled machines with their wider temperature fluctuations.
+  The base oil for motorcycle and automotive oil is identical. The only difference is the additives for motorcycles.
+  Other good brands include Castrol Acteveo, Lucas HP, Royal Purple, Shell Rotella T6, and Polaris VES.
+  BUT, Mobil has the best coupons and so costs MUCH less. With a $15 coupon, this costs less than $10.
+  It used to be the average driver managed 15,000 miles a year (10,000 in Tucson) with seniors driving half of that.
+  However, with more people using Amazon (etc), that's dropped by a third. This is why EVs are BAD for the environment.
+  They require more miles per year to ever pay back the DOUBLE carbon footprint when new. As a senior living in Tucson,
+  drive 4,000 mile a year. And so, change my oil once a year. This works out quite well with there only being a Mobil oil
+  (and filter) coupon once a year. Yea! Moreover, engines used to be designed for 100k miles but are now made to last 400k.
+  If you do this wrong and cut the life of the engine in half... I've never owned a car for 200k miles, so who cares?!?:-)
   """
 ]
 for message <- messages, do: MiataBot.Repo.insert!(%MiataBot.CopyPasta{content: message, created_by_discord_id: 758372245512388650})
