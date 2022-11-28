@@ -272,6 +272,21 @@ messages = [
   drive 4,000 mile a year. And so, change my oil once a year. This works out quite well with there only being a Mobil oil
   (and filter) coupon once a year. Yea! Moreover, engines used to be designed for 100k miles but are now made to last 400k.
   If you do this wrong and cut the life of the engine in half... I've never owned a car for 200k miles, so who cares?!?:-)
+  """,
+  """
+  At the the beginning of the model year 2002, Mazda wanted to experiment with online ordering. They picked the Miata as the model for the test. For a period of about 30 days (Sept 17-Oct 15, 2001) you could go online and custom order your Miata direct from Mazda. You then had to take that build order to the Mazda dealer of your choice to finalize the deal (price. etc)
+
+  The models and option packages were no different than what could be ordered through the dealer. But as an enticement, Mazda offered two color options ($150) that would only be available through the Custom Order Miata Program, Laser Blue Mica and Vivid Yellow. They are the same colors that were available on the Protege5 at the time.
+
+  There were only 239 Vivid Yellows and 151 Laser Blues, (59 Cloth, 62 leather) built as a result.
+
+  Some owners were the original COP orderer and some of us were lucky enough to buy one off the dealer lot when non-delivered units were put back in the dealer stock pool.
+
+  It is nice that Mazda kept their word and didn't use these colors again on the NB. I know some SE people weren't happy when their SE color became a regular color the next year.
+
+  The new Winning Blue on the NC is close but doesn't have as much magenta as Laser, it's more silvery.
+
+  I think Vivid Yellow was used on the NB for an SE in the UK and I know that Laser Blue (Starry Blue) was a Limited Edition model in several European countries. The same Starry Blue was also used for a Limited Production Mazdaspeed NB in Japan (16" gold wheels).
   """
 ]
 for message <- messages, do: MiataBot.Repo.insert!(%MiataBot.CopyPasta{content: message, created_by_discord_id: 758372245512388650})
