@@ -236,42 +236,35 @@ messages = [
   Hey guys, did you know that in terms of male human and female coilover breeding, female Tein is the most compatible coilover for humans? Not only are they in the humanoid mascot group, which is mostly comprised of boring brand mascots, they are an average of 3"03' tall and 15 pounds. this means they're large enough to be able to handle human di-
   """,
   """
-  what is the oil change interval for mobil 1 advanced full synthetic?every 5000miles or 10000miles?
+  At the the beginning of the model year 2002, Mazda wanted to experiment with online ordering. They picked the Miata as the model for the test. For a period of about 30 days (Sept 17-Oct 15, 2001) you could go online and custom order your Miata direct from Mazda. You then had to take that build order to the Mazda dealer of your choice to finalize the deal (price. etc)
 
-  Full synthetic oil NEVER breaks down. Color change means NOTHING. Mobil successfully sued another vendor
-  brainwashing people with such lies. Oil additives can be used up and dirt can accumulate (but only due to a lesser filter).
-  Oils now add Molybdenum for 1-2% lower friction, calcium and magnesium for cleaning (in different ways).
-  Boron, phosphorus, ZDDP, or zinc can deplete by "sticking" to the metal (forming metal oxides) to make the metal
-  harder for high temps (less noise and cooler engine running) - reduced amounts now protect your converter.
-  With an online rebate of $15, this is by far the best buy in motor oil (common for big companies to have a $10 coupon).
-  Most car companies recommend using synthetic oils. NEVER use a non full synthetic. Quaker State used to be the best but
-  it's not even from the Quaker State (PA) anymore. Synthetic oil is less likely to form troublesome sludge,
-  is thinner, resists temp extremes, and lasts longer. Yes, you can actually change your oil once a year (or longer).
-  Doing it more often is a TOTAL WASTE OF MONEY. The reason this oil can claim 20,000 miles is that it's mostly highway miles
-  (the typical way to get that many miles in a year) and the wear at 65 miles per hour is a tenth of that of stop and go city driving.
-  For this reason, driving 20,000 miles a year puts LESS wear on your engine than only driving say 4,000.
-  At 120,000 miles under intense dyno testing, changing the oil every 20,000 miles, varnish, sludge, deposits
-  was analyzed and oils were tested every 5,000 miles for minerals and viscosity. This is an industry standard test.
-  Such tests confirm no problems. Mobil also did this for a HALF MILLION highway miles for a Chevy Silverado with
-  changing the oil every 20,000 miles maintained a perfectly good engine (the transmission only lasted 300k miles).
-  Mobile has also run NYC cabs for 15 years changing the oil every 20,000 mile for city stop go driving.
-  In these tests they also changed the filters 20,000 miles and found the top filters hold up as well IF they
-  used an improved gasket material (the difference between a M1-110 and a M1-110A filter). Thus, it's important to get an oil
-  filter that matches your oil (the M1-110A filter is also the industry's best). Ignore people using info from
-  last century based on conventional oils breaking down (unlike synthetic, they do break down), and they do so quite quickly.
-  Such people still use paper maps and insist on old manual transmissions. It is easy to confirm all of this online.
-  Synthetics produce less resistance in the engine and thus offer more horsepower and better efficiency.
-  Your engine is cooled by the oil. Today's engines, especially in motorcycles, have greater requirements than conventional oils can deliver.
-  Synthetic's better temp performance is important for air-cooled machines with their wider temperature fluctuations.
-  The base oil for motorcycle and automotive oil is identical. The only difference is the additives for motorcycles.
-  Other good brands include Castrol Acteveo, Lucas HP, Royal Purple, Shell Rotella T6, and Polaris VES.
-  BUT, Mobil has the best coupons and so costs MUCH less. With a $15 coupon, this costs less than $10.
-  It used to be the average driver managed 15,000 miles a year (10,000 in Tucson) with seniors driving half of that.
-  However, with more people using Amazon (etc), that's dropped by a third. This is why EVs are BAD for the environment.
-  They require more miles per year to ever pay back the DOUBLE carbon footprint when new. As a senior living in Tucson,
-  drive 4,000 mile a year. And so, change my oil once a year. This works out quite well with there only being a Mobil oil
-  (and filter) coupon once a year. Yea! Moreover, engines used to be designed for 100k miles but are now made to last 400k.
-  If you do this wrong and cut the life of the engine in half... I've never owned a car for 200k miles, so who cares?!?:-)
+  The models and option packages were no different than what could be ordered through the dealer. But as an enticement, Mazda offered two color options ($150) that would only be available through the Custom Order Miata Program, Laser Blue Mica and Vivid Yellow. They are the same colors that were available on the Protege5 at the time.
+
+  There were only 239 Vivid Yellows and 151 Laser Blues, (59 Cloth, 62 leather) built as a result.
+
+  Some owners were the original COP orderer and some of us were lucky enough to buy one off the dealer lot when non-delivered units were put back in the dealer stock pool.
+
+  It is nice that Mazda kept their word and didn't use these colors again on the NB. I know some SE people weren't happy when their SE color became a regular color the next year.
+
+  The new Winning Blue on the NC is close but doesn't have as much magenta as Laser, it's more silvery.
+
+  I think Vivid Yellow was used on the NB for an SE in the UK and I know that Laser Blue (Starry Blue) was a Limited Edition model in several European countries. The same Starry Blue was also used for a Limited Production Mazdaspeed NB in Japan (16" gold wheels).
+  """,
+  """
+  Determination is a vital component of success. So is a lack of fear when it comes to learning new things. 
+
+  If my unsolicited opinion carries any weight, she should really pay attention to making it stop faster and turn better. 
+
+  Stainless steel brake lines, a master cylinder brace, DOT 4 fluid, high performance brake pads and then urethane steering rack bushings, stiffer sway bars and better end links, better lateral links and better a-arms. 
+
+  She don't need a fast car, but one that can stop and steer way better......that might help her out... 
+
+
+
+  *from a friend
+  """,
+  """
+  okay listen so the rx8 and nc were built on the same platform. it would be basically trivial put the entire drivetrain from an rx8 directly under the NC chassis. all u need is...
   """
 ]
 for message <- messages, do: MiataBot.Repo.insert!(%MiataBot.CopyPasta{content: message, created_by_discord_id: 758372245512388650})
