@@ -262,6 +262,9 @@ messages = [
 
 
   *from a friend
+  """,
+  """
+  okay listen so the rx8 and nc were built on the same platform. it would be basically trivial put the entire drivetrain from an rx8 directly under the NC chassis. all u need is...
   """
 ]
 for message <- messages, do: MiataBot.Repo.insert!(%MiataBot.CopyPasta{content: message, created_by_discord_id: 758372245512388650})
