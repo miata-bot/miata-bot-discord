@@ -23,7 +23,6 @@ config :quarrel, Quarrel.Listener, api: Nostrum.Api
 config :quarrel, Quarrel.GuildSupervisor,
   children: [
     MiataBotDiscord.AutoreplyListener,
-    MiataBotDiscord.CarinfoAttachmentListener,
     MiataBotDiscord.CarinfoListener,
     MiataBotDiscord.ChannelLimitsListener,
     MiataBotDiscord.InventoryListener,
