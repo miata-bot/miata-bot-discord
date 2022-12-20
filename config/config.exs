@@ -24,7 +24,6 @@ config :quarrel, Quarrel.GuildSupervisor,
   children: [
     MiataBotDiscord.AnnoyingHListener,
     MiataBotDiscord.AutoreplyListener,
-    MiataBotDiscord.CarinfoAttachmentListener,
     MiataBotDiscord.CarinfoListener,
     MiataBotDiscord.ChannelLimitsListener,
     MiataBotDiscord.InventoryListener,
