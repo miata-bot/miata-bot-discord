@@ -133,7 +133,44 @@ defmodule MiataBotDiscord.CarinfoListener do
     end
   end
 
-  # update 07-03-21: too lazy after interactions update. Maybe no one will notice.
+  def handle_interaction_create(
+        iaction = %Interaction{
+          member: member = %{user: %{id: user_discord_id}},
+          data: %{
+            name: "carinfo",
+            options: [%{name: "update", 
+                options: [%{name: image, type: 11}]}],
+            resolved: %{
+              attachments: attachments
+            }
+          }
+        },
+        state
+      ) do
+
+    attachment = Enum.reduce(attachments, 0, fn {_k,v}, acc -> acc = v end)
+    
+    with {:ok, embed} <-
+          do_update_image(member.user, %{
+            attachment_url: attachment.url,
+            discord_user_id: user_discord_id
+          }) do
+      Logger.info("Updated carinfo: #{inspect(embed)}")
+      response = %{type: 4, data: %{embeds: [embed]}}
+      create_interaction_response(iaction, response)
+      {:noreply, state}
+    else
+      {:ok, embed} ->
+        response = %{type: 4, data: %{embeds: [embed]}}
+        create_interaction_response(iaction, response)
+        {:noreply, state}
+
+      error ->
+        response = %{type: 4, data: %{content: "Unknown error happened: #{inspect(error)}"}}
+        create_interaction_response(iaction, response)
+        {:noreply, state}
+    end
+  end
 
   def handle_interaction_create(
         iaction = %Interaction{
@@ -212,5 +249,26 @@ defmodule MiataBotDiscord.CarinfoListener do
   def handle_interaction_create(_interaction, state) do
     # Logger.warn("unhandled interaction: #{inspect(interaction)}")
     {:noreply, state}
+  end
+
+  defp do_update_image(author, params) do
+    with {:ok, user} <- fetch_or_create_user(author),
+         {:ok, build} <- fetch_or_create_featured_build(user),
+         {:ok, build} <- update_image(author, build, params),
+         embed <- embed_from_info(author, user, build) do
+      {:ok, embed}
+    else
+      {:error, reason} ->
+        embed =
+          %Embed{}
+          |> Embed.put_title("Error updating info")
+          |> Embed.put_color(0xFF0000)
+          |> put_errors(reason)
+
+        {:ok, embed}
+
+      unknown ->
+        raise "unknown error #{inspect(unknown)}"
+    end
   end
 end
