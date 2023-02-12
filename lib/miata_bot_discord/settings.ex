@@ -55,7 +55,7 @@ defmodule MiataBotDiscord.Settings do
         general_channel_id: 865_257_998_691_991_575,
         offtopic_channel_id: 865_257_998_691_991_575,
         looking_for_miata_role_id: 905_841_855_554_519_101,
-        accepted_role_id: 992581401402675224,
+        accepted_role_id: 591_899_819_132_583_936,
         memes_channel_id: 865_257_998_691_991_575,
         verification_channel_id: 865_257_998_691_991_575,
         tcg_channel_id: 865_257_998_691_991_575
