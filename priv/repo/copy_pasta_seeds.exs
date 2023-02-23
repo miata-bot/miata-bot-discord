@@ -123,12 +123,6 @@ messages = [
   """,
   "𝐄𝐏𝐒𝐓𝐄𝐈𝐍 𝐃𝐈𝐃𝐍'𝐓 𝐊𝐈𝐋𝐋 𝐇𝐈𝐌𝐒𝐄𝐋𝐅",
   """
-  Uh??? Hello 📞 📞👋?? Yeah retard 🕺🏻 I’m talking 🗣🗣 to you 👉. Unless you
-  would like a 👊 knuckle sandwich 🥪 you best listen here 👇. It’s me God 😳😎
-  and uuh, I saw you nut 🥜🍆💦. And basically 💅 it’s the one month ⏱ you
-  ain’t allowed ❌ do that 🤷‍♀️ so uuh enjoy hell 👺 I guess. ⚡️⚡️
-  """,
-  """
   Ok 👌🏻 Boomer 👴🏻 See 👀 that 👈🏾 I 🙋‍♂️ just called 🗣 you 👴🏻👈🏻 a boomer
   💀👴🏻👴🏻 haha 😂 it’s funny 😆 because you 💀 were born 👶🏿 between 🙏🏻
   1946 and ☝️ 1964 and you🤞 are old 👴🏻👴🏻👴🏻 because 🤷‍♂️ thats what 👋🏿a
