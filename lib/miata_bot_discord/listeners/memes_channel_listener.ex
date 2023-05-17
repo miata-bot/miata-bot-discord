@@ -25,7 +25,7 @@ defmodule MiataBotDiscord.MemesChannelListener do
 
     case state.assigns.message_count do
       count when count >= @max ->
-        create_message!(channel_id, content: load_copy_pasta(), tts: true)
+        create_message!(channel_id, content: load_copy_pasta())
 
         {:noreply,
          state
