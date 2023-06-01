@@ -11,8 +11,6 @@ config :miata_bot, MiataBot.Partpicker,
   asset_url: System.get_env("PARTPICKER_ASSET_URL"),
   gateway_url: System.get_env("PARTPICKER_GATEWAY_URL")
 
-config :miata_bot, TrackerGG, api_token: System.get_env("TRACKER_GG_TOKEN")
-
 config :miata_bot,
   ecto_repos: [MiataBot.Repo, Quarrel.Repo]
 
@@ -29,13 +27,10 @@ config :quarrel, Quarrel.GuildSupervisor,
     MiataBotDiscord.LookingForMiataListener,
     MiataBotDiscord.MemesChannelListener,
     MiataBotDiscord.SettingsListener,
-    MiataBotDiscord.SplitgateListener,
-    MiataBotDiscord.TCGListener,
     MiataBotDiscord.TimeInteractionListener
   ]
 
 config :logger, backends: [:console, RingLogger]
-
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

@@ -48,46 +48,63 @@ defmodule MiataBotDiscord.CarinfoListener.Util do
     end
   end
 
-  def fetch_or_create_user(%Nostrum.Struct.Guild.Member{user: user}) do
-    fetch_or_create_user(user)
+  def fetch_or_create_user(%Nostrum.Struct.Guild.Member{user_id: user_id}) do
+    fetch_or_create_user(user_id)
   end
 
-  def fetch_or_create_user(author) do
-    case MiataBot.Partpicker.user(author.id) do
+  def fetch_or_create_user(%{user_id: user_id}) do
+    fetch_or_create_user(user_id)
+  end
+
+  def fetch_or_create_user(author_id) do
+    case MiataBot.Partpicker.user(author_id) do
       {:ok, user} -> {:ok, user}
-      {:error, %{"error" => ["not found"]}} -> create_user(author)
+      {:error, %{"error" => ["not found"]}} -> create_user(author_id)
       {:error, reason} -> {:error, reason}
     end
   end
 
-  def create_user(author) do
-    MiataBot.Partpicker.create_user(author.id)
+  def create_user(%{user_id: user_id}) do
+    create_user(user_id)
   end
 
-  def update_build(author, info, params) do
-    MiataBot.Partpicker.update_build(author.id, info.uid, params)
+  def create_user(author_id) do
+    MiataBot.Partpicker.create_user(author_id)
+  end
+
+  def update_build(%{user_id: user_id}, info, params) do
+    update_build(user_id, info, params)
+  end
+
+  def update_build(author_id, info, params) do
+    MiataBot.Partpicker.update_build(author_id, info.uid, params)
   end
 
   @doc """
   params:
       %{attachment_url: attachment.url, discord_user_id: author.id}
   """
-  def update_image(author, build, params) do
-    MiataBot.Partpicker.update_banner(author.id, build.uid, params)
+  def update_image(%{user_id: user_id}, build, params) do
+    update_image(user_id, build, params)
   end
 
-  def embed_from_info(%Nostrum.Struct.Guild.Member{user: discord_user}, user, build) do
-    embed_from_info(discord_user, user, build)
+  def update_image(author_id, build, params) do
+    MiataBot.Partpicker.update_banner(author_id, build.uid, params)
+  end
+
+  def embed_from_info(%Nostrum.Struct.Guild.Member{user_id: user_id}, user, build) do
+    embed_from_info(user_id, user, build)
   end
 
   def embed_from_info(
-        %Nostrum.Struct.User{} = discord_user,
+        # %Nostrum.Struct.User{} = discord_user,
+        user_id,
         %MiataBot.Partpicker.User{} = user,
         %MiataBot.Partpicker.Build{} = build
       ) do
     %Embed{}
-    |> Embed.put_title("#{discord_user.username}'s Miata")
-    |> Embed.put_url("https://miatapartpicker.gay/car/#{build.uid}")
+    |> Embed.put_title("#{build.year} #{build.make} #{build.model}")
+    |> Embed.put_url("https://partpicker.fly.dev/car/#{build.uid}")
     |> Embed.put_description(build.description)
     |> maybe_add_year(build)
     |> maybe_add_color(build)
@@ -101,6 +118,9 @@ defmodule MiataBotDiscord.CarinfoListener.Util do
     |> maybe_add_hand_size(user)
     |> maybe_add_foot_size(user)
     |> maybe_add_instagram(user)
+    |> Embed.put_footer(
+      "[If the image doesn't load, it's not my fault. It's discord's fault. See this issue: https://github.com/discord/discord-api-docs/issues/6171 ]"
+    )
   end
 
   def maybe_add_year(embed, %{year: nil}), do: embed

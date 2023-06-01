@@ -3,8 +3,8 @@ defmodule MiataBot.CopyPasta do
   import Ecto.Changeset
 
   schema "copy_pastas" do
-    field :content, :string, null: false
-    field :created_by_discord_id, Snowflake, null: false
+    field :content, :string
+    field :created_by_discord_id, Snowflake
     timestamps()
   end
 

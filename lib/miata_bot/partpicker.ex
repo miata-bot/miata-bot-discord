@@ -1,25 +1,36 @@
 defmodule MiataBot.Partpicker do
-  @api_token Application.get_env(:miata_bot, __MODULE__)[:api_token]
-  @asset_url Application.get_env(:miata_bot, __MODULE__)[:asset_url] ||
-               "https://miatapartpicker.gay/media/"
-
-  @base_url Application.get_env(:miata_bot, __MODULE__)[:base_url] ||
-              "https://miatapartpicker.gay/api"
-
-  @gateway_url Application.get_env(:miata_bot, __MODULE__)[:gateway_url] ||
-                 "wss://miatapartpicker.gay/api/gateway"
-
   use Tesla
-  plug Tesla.Middleware.BaseUrl, @base_url
 
-  plug(Tesla.Middleware.Headers, [{"authorization", "Bearer #{@api_token}"}])
-  plug(Tesla.Middleware.JSON)
+  def base_url,
+    do:
+      Application.get_env(:miata_bot, __MODULE__)[:base_url] ||
+        "https://partpicker.fly.dev/api"
 
-  def base_url, do: @base_url
-  def asset_url, do: @asset_url
+  def asset_url,
+    do:
+      Application.get_env(:miata_bot, __MODULE__)[:asset_url] ||
+        "https://partpicker.fly.dev/media/"
+
+  def api_token do
+    Application.get_env(:miata_bot, __MODULE__)[:api_token]
+  end
+
+  def client do
+    middleware = [
+      {Tesla.Middleware.BaseUrl, base_url()},
+      Tesla.Middleware.JSON,
+      {Tesla.Middleware.Headers, [{"authorization", "Bearer " <> api_token()}]}
+    ]
+
+    Tesla.client(middleware)
+  end
 
   def gateway_uri do
-    URI.parse(@gateway_url)
+    gateway_url =
+      Application.get_env(:miata_bot, __MODULE__)[:gateway_url] ||
+        "wss://partpicker.fly.dev/api/gateway"
+
+    URI.parse(gateway_url)
     |> Map.put(:userinfo, "#{@api_token}")
   end
 
@@ -92,14 +103,14 @@ defmodule MiataBot.Partpicker do
   end
 
   def user(discord_user_id) do
-    case get!("/users/#{discord_user_id}") do
+    case get!(client(), "/users/#{discord_user_id}") do
       %{status: 200, body: body} -> {:ok, parse_user(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
     end
   end
 
   def create_user(discord_user_id) do
-    case post!("/users/", %{user: %{discord_user_id: discord_user_id}}) do
+    case post!(client(), "/users/", %{user: %{discord_user_id: discord_user_id}}) do
       %{status: 201, body: body} -> {:ok, parse_user(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
     end
@@ -108,14 +119,14 @@ defmodule MiataBot.Partpicker do
   def update_user_featured_build(discord_user_id, featured_build_uid) do
     attrs = %{featured_build_id: featured_build_uid}
 
-    case put!("/users/#{discord_user_id}/featured_build", attrs) do
+    case put!(client(), "/users/#{discord_user_id}/featured_build", attrs) do
       %{status: 202, body: body} -> {:ok, parse_user(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
     end
   end
 
   def update_user(discord_user_id, params) do
-    case put!("/users/#{discord_user_id}", %{user: params}) do
+    case put!(client(), "/users/#{discord_user_id}", %{user: params}) do
       %{status: 202, body: body} -> {:ok, parse_user(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
@@ -124,7 +135,7 @@ defmodule MiataBot.Partpicker do
   end
 
   def create_build(discord_user_id, params) do
-    case post!("/users/#{discord_user_id}/builds/", %{build: params}) do
+    case post!(client(), "/users/#{discord_user_id}/builds/", %{build: params}) do
       %{status: 201, body: body} -> {:ok, parse_build(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
@@ -133,7 +144,7 @@ defmodule MiataBot.Partpicker do
   end
 
   def update_build(discord_user_id, build_uid, params) do
-    case put!("/users/#{discord_user_id}/builds/#{build_uid}", %{build: params}) do
+    case put!(client(), "/users/#{discord_user_id}/builds/#{build_uid}", %{build: params}) do
       %{status: 202, body: body} -> {:ok, parse_build(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
@@ -142,7 +153,7 @@ defmodule MiataBot.Partpicker do
   end
 
   def builds(discord_user_id) do
-    case get!("/users/#{discord_user_id}/builds/") do
+    case get!(client(), "/users/#{discord_user_id}/builds/") do
       %{status: 200, body: body} -> {:ok, Enum.map(body, &parse_build/1)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
@@ -151,7 +162,7 @@ defmodule MiataBot.Partpicker do
   end
 
   def build(discord_user_id, build_uid) do
-    case get!("/users/#{discord_user_id}/builds/#{build_uid}") do
+    case get!(client(), "/users/#{discord_user_id}/builds/#{build_uid}") do
       %{status: 200, body: body} when is_list(body) -> {:ok, Enum.map(body, &parse_build/1)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
@@ -160,21 +171,21 @@ defmodule MiataBot.Partpicker do
   end
 
   def generate_random_card() do
-    case get!("/cards/generate_random_offer") do
+    case get!(client(), "/cards/generate_random_offer") do
       %{status: 202, body: body} -> {:ok, parse_card(body)}
       %{status: _, body: %{"errors" => errors}} -> {:error, errors}
     end
   end
 
   def claim_card(card, discord_user_id) do
-    case post!("/cards/claim_random_offer", %{card_id: card.id, user_id: discord_user_id}) do
+    case post!(client(), "/cards/claim_random_offer", %{card_id: card.id, user_id: discord_user_id}) do
       %{status: 201, body: body} -> {:ok, parse_card(body)}
       %{status: _, body: %{"errors" => errors}} -> {:error, errors}
     end
   end
 
   def update_banner(discord_user_id, build_uid, params) do
-    case post!("/users/#{discord_user_id}/builds/#{build_uid}/banner", %{photo: params}) do
+    case post!(client(), "/users/#{discord_user_id}/builds/#{build_uid}/banner", %{photo: params}) do
       %{status: 202, body: body} -> {:ok, parse_build(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
@@ -183,7 +194,7 @@ defmodule MiataBot.Partpicker do
   end
 
   def random_photo(discord_user_ids) do
-    case post!("/photos/random", %{"discord_user_ids" => discord_user_ids}) do
+    case post!(client(), "/photos/random", %{"discord_user_ids" => discord_user_ids}) do
       %{status: 200, body: body} -> {:ok, parse_photo(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
@@ -226,7 +237,7 @@ defmodule MiataBot.Partpicker do
 
   def put_photo_url(changeset, field, uuid_field) do
     if uuid = Ecto.Changeset.get_field(changeset, uuid_field) do
-      Ecto.Changeset.put_change(changeset, field, "#{@asset_url}/#{uuid}")
+      Ecto.Changeset.put_change(changeset, field, "#{asset_url()}/#{uuid}")
     else
       changeset
     end

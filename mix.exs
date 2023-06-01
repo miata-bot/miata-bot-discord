@@ -43,21 +43,17 @@ defmodule MiataBot.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:cowlib, "~> 2.11", override: true},
-      {:gun, "~> 1.3", override: true},
-      {:ecto_sql, "~> 3.7"},
-      {:postgrex, "~> 0.15"},
+      {:cowlib, "~> 2.12.1", override: true},
+      {:gun, "~> 2.0.1", override: true},
       {:hackney, "~> 1.17"},
       {:jason, "~> 1.0"},
       {:ring_logger, "~> 0.8"},
       {:tesla, "~> 1.4"},
       {:timex, "~> 3.7"},
       {:phoenix_pubsub, "~> 2.0"},
-      {:nostrum, github: "kraigie/nostrum", ref: "c0c872e880f3af360167179f66df72695c1f051e", override: true},
-      # {:quarrel, path: "../quarrel"}
       {:quarrel, "~> 0.1"},
       {:exmoji, "~> 0.2.2"},
-      {:poison, "~> 3.0", override: true}
+      {:poison, "~> 3.1.0", override: true}
     ]
   end
 

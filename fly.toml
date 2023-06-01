@@ -1,0 +1,19 @@
+# fly.toml app configuration file generated for miata-bot on 2023-05-29T16:09:46-06:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "miata-bot"
+primary_region = "den"
+
+[env]
+  PORT = "8080"
+  ECTO_IPV6=true
+  ERL_AFLAGS="-proto_dist inet6_tcp"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 0

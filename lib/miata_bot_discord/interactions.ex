@@ -62,11 +62,11 @@ defmodule MiataBotDiscord.Interactions do
           type: 1
         },
         %{
-           description: "get a random carinfo image (for debugging)",
-           name: "random_photo",
-           options: [],
-           type: 1
-         }
+          description: "get a random carinfo image (for debugging)",
+          name: "random_photo",
+          options: [],
+          type: 1
+        }
       ]
     }
   end

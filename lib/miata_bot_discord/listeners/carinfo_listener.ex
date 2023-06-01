@@ -11,8 +11,12 @@ defmodule MiataBotDiscord.CarinfoListener do
   end
 
   @impl Quarrel.Listener
-  def handle_guild_member_add(%Member{user: discord_user}, state) do
-    with {:ok, user} <- fetch_or_create_user(discord_user),
+  def handle_guild_member_add(%Member{user_id: user_id}, state) do
+    handle_guild_member_add(user_id, state)
+  end
+
+  def handle_guild_member_add(user_id, state) do
+    with {:ok, user} <- fetch_or_create_user(user_id),
          {:ok, _build} <- fetch_or_create_featured_build(user) do
       {:noreply, state}
     else
@@ -74,9 +78,8 @@ defmodule MiataBotDiscord.CarinfoListener do
          {:ok, featured_build} <- fetch_or_create_featured_build(user),
          {:ok, component} <- init_carinfo_component(user.discord_user_id, user),
          embed <- embed_from_info(member, user, featured_build),
-         {:ok, response} <- assemble_carinfo_get_response(embed, component) do
-      {:ok} = create_interaction_response(iaction, response)
-
+         {:ok, response} <- assemble_carinfo_get_response(embed, component),
+         {:ok} <- create_interaction_response(iaction, response) do
       {:noreply,
        state
        |> assign(:pages, Map.put(state.assigns.pages, to_string(user.discord_user_id), {member, user, 0}))}
@@ -138,8 +141,7 @@ defmodule MiataBotDiscord.CarinfoListener do
           member: member = %{user: %{id: user_discord_id}},
           data: %{
             name: "carinfo",
-            options: [%{name: "update", 
-                options: [%{name: image, type: 11}]}],
+            options: [%{name: "update", options: [%{name: image, type: 11}]}],
             resolved: %{
               attachments: attachments
             }
@@ -147,14 +149,13 @@ defmodule MiataBotDiscord.CarinfoListener do
         },
         state
       ) do
+    attachment = Enum.reduce(attachments, 0, fn {_k, v}, acc -> acc = v end)
 
-    attachment = Enum.reduce(attachments, 0, fn {_k,v}, acc -> acc = v end)
-    
     with {:ok, embed} <-
-          do_update_image(member.user, %{
-            attachment_url: attachment.url,
-            discord_user_id: user_discord_id
-          }) do
+           do_update_image(member.user, %{
+             attachment_url: attachment.url,
+             discord_user_id: user_discord_id
+           }) do
       Logger.info("Updated carinfo: #{inspect(embed)}")
       response = %{type: 4, data: %{embeds: [embed]}}
       create_interaction_response(iaction, response)

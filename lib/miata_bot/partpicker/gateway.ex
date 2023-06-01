@@ -19,7 +19,7 @@ defmodule MiataBot.Partpicker.Gateway do
 
   @type action_internal_connect :: {:next_event, :internal, :connect}
 
-  @derive {Inspect, only: [:gun, :stream]}
+  # @derive {Inspect, only: [:gun, :stream]}
 
   def start_link(%{} = uri) do
     :gen_statem.start_link({:local, __MODULE__}, __MODULE__, uri, [])

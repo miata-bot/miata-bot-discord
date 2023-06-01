@@ -23,7 +23,7 @@ defmodule MiataBotDiscord.Settings do
         general_channel_id: 322_080_266_761_797_633,
         offtopic_channel_id: 322_162_421_156_282_369,
         looking_for_miata_role_id: 504_088_951_485_890_561,
-        accepted_role_id: 591899819132583936,
+        accepted_role_id: 591_899_819_132_583_936,
         memes_channel_id: 555_431_196_884_992_000,
         verification_channel_id: 322_127_502_212_333_570,
         tcg_channel_id: nil
@@ -39,7 +39,7 @@ defmodule MiataBotDiscord.Settings do
         general_channel_id: 778_334_280_337_719_357,
         offtopic_channel_id: 778_334_306_002_927_646,
         looking_for_miata_role_id: 778_340_553_460_285_461,
-        accepted_role_id: 992581401402675224,
+        accepted_role_id: 992_581_401_402_675_224,
         memes_channel_id: 778_325_951_989_284_894,
         verification_channel_id: 778_325_814_986_014_731,
         tcg_channel_id: 883_408_087_598_391_376

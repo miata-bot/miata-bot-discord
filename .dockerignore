@@ -5,3 +5,5 @@ priv/static
 test
 .env
 .cache
+backup
+erl_crash.dump
