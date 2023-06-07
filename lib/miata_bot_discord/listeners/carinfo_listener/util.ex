@@ -104,7 +104,7 @@ defmodule MiataBotDiscord.CarinfoListener.Util do
       ) do
     %Embed{}
     |> Embed.put_title("#{build.year} #{build.make} #{build.model}")
-    |> Embed.put_url("https://partpicker.fly.dev/car/#{build.uid}")
+    |> Embed.put_url("https://miatapartpicker.gay/car/#{build.uid}")
     |> Embed.put_description(build.description)
     |> maybe_add_year(build)
     |> maybe_add_color(build)
@@ -118,9 +118,6 @@ defmodule MiataBotDiscord.CarinfoListener.Util do
     |> maybe_add_hand_size(user)
     |> maybe_add_foot_size(user)
     |> maybe_add_instagram(user)
-    |> Embed.put_footer(
-      "[If the image doesn't load, it's not my fault. It's discord's fault. See this issue: https://github.com/discord/discord-api-docs/issues/6171 ]"
-    )
   end
 
   def maybe_add_year(embed, %{year: nil}), do: embed

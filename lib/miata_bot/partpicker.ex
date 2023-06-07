@@ -105,18 +105,21 @@ defmodule MiataBot.Partpicker do
   end
 
   def user(discord_user_id) do
-    user = case get!(client(), "/users/#{discord_user_id}") do
-      %{status: 200, body: body} -> {:ok, parse_user(body)}
-      %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
-    end
+    user =
+      case get!(client(), "/users/#{discord_user_id}") do
+        %{status: 200, body: body} -> {:ok, parse_user(body)}
+        %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
+      end
+
     with {:ok, user} <- user,
-    {:ok, builds} <- builds(discord_user_id),
-    {:ok, featured_build} <- maybe_get_featured_build(user) do
+         {:ok, builds} <- builds(discord_user_id),
+         {:ok, featured_build} <- maybe_get_featured_build(user) do
       {:ok, %{user | builds: builds, featured_build: featured_build}}
     end
   end
 
   def maybe_get_featured_build(%{featured_build: nil}), do: {:ok, nil}
+
   def maybe_get_featured_build(%{discord_user_id: discord_user_id, featured_build: build_id}) do
     build(discord_user_id, build_id)
   end
@@ -269,6 +272,7 @@ defmodule MiataBot.Partpicker do
       :builds,
       :featured_build
     ])
+
     # |> Ecto.Changeset.cast_embed(:featured_build, with: &build_changeset/2)
   end
 
