@@ -198,8 +198,8 @@ defmodule MiataBotDiscord.CarinfoListener do
         "ride_height"
       ])
 
-    with {:ok, build_embed} <- do_update_build(member.user, car_params),
-         {:ok, _} <- MiataBot.Partpicker.update_user(member.user.id, user_params) do
+    with {:ok, build_embed} <- do_update_build(member, car_params),
+         {:ok, _} <- MiataBot.Partpicker.update_user(member.user_id, user_params) do
       response = %{type: 4, data: %{embeds: [build_embed]}}
       create_interaction_response(iaction, response)
       {:noreply, state}
