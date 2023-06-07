@@ -96,17 +96,29 @@ defmodule MiataBot.Partpicker do
       field :foot_size, :float
       field :steam_id, :string
       field :preferred_timezone, :string
-      embeds_many :builds, Build
-      embeds_many :cards, Card
-      embeds_one :featured_build, Build
+      field :builds, {:array, :string}
+      field :featured_build, :string
+      # embeds_many :builds, Build
+      # embeds_many :cards, Card
+      # embeds_one :featured_build, Build
     end
   end
 
   def user(discord_user_id) do
-    case get!(client(), "/users/#{discord_user_id}") do
+    user = case get!(client(), "/users/#{discord_user_id}") do
       %{status: 200, body: body} -> {:ok, parse_user(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
     end
+    with {:ok, user} <- user,
+    {:ok, builds} <- builds(discord_user_id),
+    {:ok, featured_build} <- maybe_get_featured_build(user) do
+      {:ok, %{user | builds: builds, featured_build: featured_build}}
+    end
+  end
+
+  def maybe_get_featured_build(%{featured_build: nil}), do: {:ok, nil}
+  def maybe_get_featured_build(%{discord_user_id: discord_user_id, featured_build: build_id}) do
+    build(discord_user_id, build_id)
   end
 
   def create_user(discord_user_id) do
@@ -164,6 +176,7 @@ defmodule MiataBot.Partpicker do
   def build(discord_user_id, build_uid) do
     case get!(client(), "/users/#{discord_user_id}/builds/#{build_uid}") do
       %{status: 200, body: body} when is_list(body) -> {:ok, Enum.map(body, &parse_build/1)}
+      %{status: 200, body: body} -> {:ok, parse_build(body)}
       %{status: 404, body: _body} -> {:error, %{"error" => ["not found"]}}
       %{status: _, body: body} when is_binary(body) -> {:error, %{"error" => [body]}}
       %{status: _, body: %{"errors" => errors}} -> {:error, errors}
@@ -204,8 +217,8 @@ defmodule MiataBot.Partpicker do
 
   def parse_user(attrs) do
     user_changeset(%User{}, attrs)
-    |> Ecto.Changeset.cast_embed(:builds, with: &build_changeset/2)
-    |> Ecto.Changeset.cast_embed(:cards, with: &card_changeset/2)
+    # |> Ecto.Changeset.cast_embed(:builds, with: &build_changeset/2)
+    # |> Ecto.Changeset.cast_embed(:cards, with: &card_changeset/2)
     |> Ecto.Changeset.apply_changes()
   end
 
@@ -252,9 +265,11 @@ defmodule MiataBot.Partpicker do
       :hand_size,
       :foot_size,
       :steam_id,
-      :preferred_timezone
+      :preferred_timezone,
+      :builds,
+      :featured_build
     ])
-    |> Ecto.Changeset.cast_embed(:featured_build, with: &build_changeset/2)
+    # |> Ecto.Changeset.cast_embed(:featured_build, with: &build_changeset/2)
   end
 
   def build_changeset(build, attrs) do
