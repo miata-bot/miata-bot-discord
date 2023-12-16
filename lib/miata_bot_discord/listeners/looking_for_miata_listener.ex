@@ -87,13 +87,13 @@ defmodule MiataBotDiscord.LookingForMiataListener do
   @impl Quarrel.Listener
   def handle_guild_member_update(old, new, state) do
     if state.config.looking_for_miata_role_id in (new.roles -- old.roles) do
-      Logger.info("refreshing timer for #{new.user.username}")
+      Logger.info("refreshing timer for #{new.user_id}")
       timer = ensure_looking_for_miata_timer(state.guild, new)
       refresh_looking_for_miata_timer(state.guild, timer)
     end
 
     if state.config.looking_for_miata_role_id in (old.roles -- new.roles) do
-      Logger.info("refreshing timer for #{new.user.username}")
+      Logger.info("refreshing timer for #{new.user_id}")
       timer = ensure_looking_for_miata_timer(state.guild, new)
       Repo.delete!(timer)
     end
@@ -103,13 +103,13 @@ defmodule MiataBotDiscord.LookingForMiataListener do
 
   def ensure_looking_for_miata_timer(guild, member) do
     case Repo.get_by(LookingForMiataTimer,
-           discord_user_id: member.user.id,
+           discord_user_id: member.user_id,
            discord_guild_id: guild.id
          ) do
       nil ->
         LookingForMiataTimer.changeset(%LookingForMiataTimer{}, %{
-          joined_at: member.joined_at,
-          discord_user_id: member.user.id,
+          joined_at: DateTime.utc_now(),
+          discord_user_id: member.user_id,
           discord_guild_id: guild.id
         })
         |> Repo.insert!()
