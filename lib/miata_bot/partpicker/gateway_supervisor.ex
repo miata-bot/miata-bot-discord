@@ -10,7 +10,7 @@ defmodule MiataBot.Partpicker.GatewaySupervisor do
   @impl Supervisor
   def init(_) do
     children = [
-      {MiataBot.Partpicker.Gateway, MiataBot.Partpicker.gateway_uri()}
+      # {MiataBot.Partpicker.Gateway, MiataBot.Partpicker.gateway_uri()}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
