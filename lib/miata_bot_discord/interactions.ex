@@ -98,4 +98,27 @@ defmodule MiataBotDiscord.Interactions do
       ]
     }
   end
+
+  def pastabot() do
+    %{
+      name: "pasta",
+      description: "MiataBot copy pastas",
+      options: [
+        %{
+          name: "modify",
+          description: "modify the pasta",
+          options: [
+            %{description: "add a copypasta", name: "add", type: 3}
+          ],
+          type: 1
+        },
+        %{
+          name: "random",
+          description: "get a random copypasta",
+          options: [],
+          type: 1
+        }
+      ]
+    }
+  end
 end
