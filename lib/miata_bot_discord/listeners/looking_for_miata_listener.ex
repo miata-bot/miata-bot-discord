@@ -74,12 +74,12 @@ defmodule MiataBotDiscord.LookingForMiataListener do
   end
 
   @impl Quarrel.Listener
-  def handle_guild_available(guild, state) do
-    for {_member_id, m} <- guild.members do
-      if state.config.looking_for_miata_role_id in m.roles do
-        ensure_looking_for_miata_timer(guild, m)
-      end
-    end
+  def handle_guild_available(_guild, state) do
+    # for {_member_id, m} <- guild.members do
+    #   if state.config.looking_for_miata_role_id in m.roles do
+    #     ensure_looking_for_miata_timer(guild, m)
+    #   end
+    # end
 
     {:noreply, state}
   end
