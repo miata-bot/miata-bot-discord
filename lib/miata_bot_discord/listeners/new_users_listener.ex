@@ -131,7 +131,10 @@ defmodule MiataBotDiscord.NewUsersListener do
 
     Logger.info("expiring new user timer for member: #{inspect(member)}")
 
-    Nostrum.Api.remove_guild_member(state.guild.id, timer.discord_user_id, "afk non-member")
+    if(member.roles == [state.config.accepted_role_id]) do
+      Nostrum.Api.remove_guild_member(state.guild.id, timer.discord_user_id, "afk non-member")
+    end
+
     delete(timer)
   catch
     _, error ->
