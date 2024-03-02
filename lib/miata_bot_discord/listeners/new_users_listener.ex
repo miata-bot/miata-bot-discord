@@ -4,6 +4,8 @@ defmodule MiataBotDiscord.NewUsersListener do
   use Quarrel.Listener
   alias MiataBot.{Repo, NewUsersTimer}
   import Ecto.Query
+  alias Nostrum.Struct.Embed
+
   @expiry_days 69
 
   def debug_expire_timer(timer, refreshed_at \\ nil) do
@@ -89,12 +91,36 @@ defmodule MiataBotDiscord.NewUsersListener do
     if state.config.accepted_role_id in (new.roles -- old.roles) do
       Logger.info("refreshing timer for #{new.user_id}")
       timer = ensure_new_user_timer(state.guild, new)
+
+      embed =
+        %Embed{}
+        |> Embed.put_title("NewUsersTimer")
+        |> Embed.put_description("Timer Refreshing")
+        |> Embed.put_field("User: ", "<@#{new.user_id}>")
+        |> Embed.put_color(0x11FFAA)
+        |> Embed.put_footer("ID: #{new.user_id}")
+        |> Embed.put_timestamp(to_string(DateTime.utc_now()))
+
+      create_message(state.config.bot_spam_channel_id, embed: embed)
+
       refresh_looking_for_miata_timer(state.guild, timer)
     end
 
     if state.config.accepted_role_id in (old.roles -- new.roles) do
-      Logger.info("refreshing timer for #{new.user_id}")
+      Logger.info("deleting timer for #{new.user_id}")
       timer = ensure_new_user_timer(state.guild, new)
+
+      embed =
+        %Embed{}
+        |> Embed.put_title("NewUsersTimer")
+        |> Embed.put_description("Timer Deletion")
+        |> Embed.put_field("User: ", "<@#{new.user_id}>")
+        |> Embed.put_color(0xFF0000)
+        |> Embed.put_footer("ID: #{new.user_id}")
+        |> Embed.put_timestamp(to_string(DateTime.utc_now()))
+
+      create_message(state.config.bot_spam_channel_id, embed: embed)
+
       Repo.delete!(timer)
     end
 
@@ -130,6 +156,17 @@ defmodule MiataBotDiscord.NewUsersListener do
     member = get_guild_member!(state.guild.id, timer.discord_user_id)
 
     Logger.info("expiring new user timer for member: #{inspect(member)}")
+
+    embed =
+      %Embed{}
+      |> Embed.put_title("NewUsersTimer")
+      |> Embed.put_description("Kicking non-member")
+      |> Embed.put_field("User: ", "<@#{timer.discord_user_id}>")
+      |> Embed.put_color(0xFF0000)
+      |> Embed.put_footer("ID: #{timer.discord_user_id}")
+      |> Embed.put_timestamp(to_string(DateTime.utc_now()))
+
+    create_message(state.config.bot_spam_channel_id, embed: embed)
 
     if(member.roles == [state.config.accepted_role_id]) do
       Nostrum.Api.remove_guild_member(state.guild.id, timer.discord_user_id, "afk non-member")
