@@ -131,18 +131,16 @@ defmodule MiataBotDiscord.LookingForMiataListener do
 
     Logger.info("expiring timer for member: #{inspect(member)}")
 
-    with {:ok} <- remove_looking_for_miata(member.user.id, state),
-         {:ok} <- add_accepted(member.user.id, state) do
+    with {:ok} <- remove_looking_for_miata(member.user_id, state),
+         {:ok} <- add_accepted(member.user_id, state) do
       embed =
         %Embed{}
-        |> Embed.put_color(1_146_534)
-        |> Embed.put_author(
-          "#{member.user.username}##{member.user.discriminator}",
-          nil,
-          "https://cdn.discordapp.com/avatars/#{member.user.id}/#{member.user.avatar}?size=128"
-        )
-        |> Embed.put_description("**#{Member.mention(member)} will be demoted**")
-        |> Embed.put_footer("ID: #{member.user.id}")
+        |> Embed.put_title("LookingForMiataTimer")
+        |> Embed.put_description("demoting LFM")
+        |> Embed.put_field("User: ", "<@#{timer.discord_user_id}>")
+        |> Embed.put_color(0xFF0000)
+        |> Embed.put_footer("ID: #{timer.discord_user_id}")
+        |> Embed.put_timestamp(to_string(DateTime.utc_now()))
 
       create_message!(state.config.bot_spam_channel_id, embed: embed)
       delete(timer)
@@ -150,14 +148,13 @@ defmodule MiataBotDiscord.LookingForMiataListener do
       {:error, error} ->
         fail_embed =
           %Embed{}
-          |> Embed.put_color(1_146_534)
-          |> Embed.put_author(
-            "#{member.user.username}##{member.user.discriminator}",
-            nil,
-            "https://cdn.discordapp.com/avatars/#{member.user.id}/#{member.user.avatar}?size=128"
-          )
-          |> Embed.put_description("**#{Member.mention(member)} could not be demoted: #{inspect(error)} **")
-          |> Embed.put_footer("ID: #{member.user.id}")
+          |> Embed.put_title("LookingForMiataTimer")
+          |> Embed.put_description("failed to demote LFM")
+          |> Embed.put_field("User: ", "<@#{timer.discord_user_id}>")
+          |> Embed.put_field("Error:", "#{inspect(error)}")
+          |> Embed.put_color(0xFF0000)
+          |> Embed.put_footer("ID: #{timer.discord_user_id}")
+          |> Embed.put_timestamp(to_string(DateTime.utc_now()))
 
         create_message!(state.config.bot_spam_channel_id, embed: fail_embed)
         delete(timer)
