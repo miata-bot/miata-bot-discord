@@ -89,12 +89,36 @@ defmodule MiataBotDiscord.LookingForMiataListener do
     if state.config.looking_for_miata_role_id in (new.roles -- old.roles) do
       Logger.info("refreshing timer for #{new.user_id}")
       timer = ensure_looking_for_miata_timer(state.guild, new)
+
+      embed =
+        %Embed{}
+        |> Embed.put_title("LookingForMiataTimer")
+        |> Embed.put_description("Timer Refreshing")
+        |> Embed.put_field("User: ", "<@#{new.user_id}>")
+        |> Embed.put_color(0x11FFAA)
+        |> Embed.put_footer("ID: #{new.user_id}")
+        |> Embed.put_timestamp(to_string(DateTime.utc_now()))
+
+      create_message(state.config.bot_spam_channel_id, embed: embed)
+
       refresh_looking_for_miata_timer(state.guild, timer)
     end
 
     if state.config.looking_for_miata_role_id in (old.roles -- new.roles) do
       Logger.info("refreshing timer for #{new.user_id}")
       timer = ensure_looking_for_miata_timer(state.guild, new)
+
+      embed =
+        %Embed{}
+        |> Embed.put_title("LookingForMiataTimer")
+        |> Embed.put_description("Timer Deletion")
+        |> Embed.put_field("User: ", "<@#{new.user_id}>")
+        |> Embed.put_color(0xFF0000)
+        |> Embed.put_footer("ID: #{new.user_id}")
+        |> Embed.put_timestamp(to_string(DateTime.utc_now()))
+
+      create_message(state.config.bot_spam_channel_id, embed: embed)
+
       Repo.delete!(timer)
     end
 
