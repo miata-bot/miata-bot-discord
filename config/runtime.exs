@@ -23,8 +23,8 @@ if System.get_env("RELEASE_MODE") do
 
   config :miata_bot, MiataBot.Repo,
     url: database_url,
-    pool_size: 10,
-    socket_options: [:inet6]
+    pool_size: 10
+    # socket_options: [:inet6]
 
   quarrel_database_url =
     URI.parse(database_url)
@@ -33,8 +33,8 @@ if System.get_env("RELEASE_MODE") do
 
   config :quarrel, Quarrel.Repo,
     url: quarrel_database_url,
-    pool_size: 10,
-    socket_options: [:inet6]
+    pool_size: 10
+    # socket_options: [:inet6]
 
   config :nostrum,
     token: System.get_env("DISCORD_TOKEN"),
