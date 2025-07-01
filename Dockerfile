@@ -85,7 +85,3 @@ COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/miata_bot ./
 USER nobody
 
 CMD ["/app/bin/miata_bot", "start"]
-
-# Appended by flyctl
-ENV ECTO_IPV6 true
-ENV ERL_AFLAGS "-proto_dist inet6_tcp"
