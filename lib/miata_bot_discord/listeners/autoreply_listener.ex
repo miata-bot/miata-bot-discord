@@ -43,6 +43,21 @@ defmodule MiataBotDiscord.AutoreplyListener do
     This isn’t even getting into them trapping moisture which can be a pain too, but basically outdoor car covers are a giant marketing ploy and are all trash. Anyone reasonably knowledgable in detailing will recommend you run like hell from them.
     """
   )
+  
+  bang(
+    "?crashedmycarintoabridge",
+    "I love it"
+  )
+
+  bang(
+    "?baled",
+    "https://tenor.com/view/funny-epic-fail-hay-rolling-gif-17133418"
+  )
+
+  bang(
+    "meow",
+    "meow x2"
+  )
 
   def handle_message_create(_message, state) do
     {:noreply, state}
