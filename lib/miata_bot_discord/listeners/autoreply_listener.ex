@@ -34,17 +34,6 @@ defmodule MiataBotDiscord.AutoreplyListener do
   )
 
   bang(
-    "!carcover",
-    """
-    Basically what happens, is that any car cover, no matter how soft the inside layer claims to be, will scratch / abrade the hell out of your paint when the wind blows and the cover moves around. 3 main ways this happens:
-    1. Just general dry contact. Even a dry microfiber towel will cause scratches if not lubricated somehow (granted they’re small, but if you do it a bunch they’ll build up over time)
-    2. Dirt / Grit. It’ll get under the cover, whether it was there before you put it on or gets blown under by the wind. Then the cover will move around and grind that dirt into the paint, causing holograms. 
-    3. Pressure points. If you try to really cinch the cover down so it doesn’t move around (pro tip, this impossible and the wind will find a way), you’ll create pressure points along body lines, edges, etc where the cover will press down harder than it should. This will amplify the effects of the first two issues.
-    This isn’t even getting into them trapping moisture which can be a pain too, but basically outdoor car covers are a giant marketing ploy and are all trash. Anyone reasonably knowledgable in detailing will recommend you run like hell from them.
-    """
-  )
-  
-  bang(
     "?crashedmycarintoabridge",
     "I love it"
   )
@@ -52,6 +41,11 @@ defmodule MiataBotDiscord.AutoreplyListener do
   bang(
     "?baled",
     "https://tenor.com/view/funny-epic-fail-hay-rolling-gif-17133418"
+  )
+
+  bang(
+    "good morning",
+    "goooooooood morning"
   )
 
   bang(
