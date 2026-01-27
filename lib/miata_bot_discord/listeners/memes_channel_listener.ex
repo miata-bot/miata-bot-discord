@@ -6,8 +6,8 @@ defmodule MiataBotDiscord.MemesChannelListener do
   alias MiataBot.{Repo, CopyPasta}
   import Ecto.Query
 
-  @timeout 60_000
-  @max 5
+  @timeout 600_000
+  @max 3
 
   @admin_role 643_958_189_460_553_729
 
@@ -85,7 +85,7 @@ defmodule MiataBotDiscord.MemesChannelListener do
         },
         state
       ) do
-    if Enum.member?(roles, @admin_role) do
+    if Enum.member?(roles, @admin_role) or id == 276436248263000065 do
       case MiataBot.Repo.insert(%MiataBot.CopyPasta{content: copypasta, created_by_discord_id: id}) do
         {:ok, _} ->
           response = %{type: 4, data: %{content: "successfully added pasta! \"#{copypasta}\""}}

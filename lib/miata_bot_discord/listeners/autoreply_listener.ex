@@ -43,16 +43,6 @@ defmodule MiataBotDiscord.AutoreplyListener do
     "https://tenor.com/view/funny-epic-fail-hay-rolling-gif-17133418"
   )
 
-  bang(
-    "good morning",
-    "goooooooood morning"
-  )
-
-  bang(
-    "meow",
-    "meow x2"
-  )
-
   def handle_message_create(_message, state) do
     {:noreply, state}
   end
