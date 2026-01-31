@@ -34,6 +34,11 @@ defmodule MiataBotDiscord.AutoreplyListener do
   )
 
   bang(
+    "gay ass hands",
+    "you single?"
+  )
+
+  bang(
     "?crashedmycarintoabridge",
     "I love it"
   )
