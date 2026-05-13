@@ -85,7 +85,7 @@ defmodule MiataBotDiscord.MemesChannelListener do
         },
         state
       ) do
-    if Enum.member?(roles, @admin_role) or id in [276436248263000065, 171420095871057922, 174025143746691072, 297575318263300098, 276245115985592321, 330383880139833345] do
+    if Enum.member?(roles, @admin_role) or id in [276436248263000065, 171420095871057922, 174025143746691072, 297575318263300098, 276245115985592321, 330383880139833345, 133668364915572737] do
       case MiataBot.Repo.insert(%MiataBot.CopyPasta{content: copypasta, created_by_discord_id: id}) do
         {:ok, _} ->
           response = %{type: 4, data: %{content: "successfully added pasta! \"#{copypasta}\""}}
